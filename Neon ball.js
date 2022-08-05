@@ -684,9 +684,11 @@ function mainStart() {
         main(time , fullTime) {
             let chvTime = fullTime / 10;
             time = normalize(time);
-            while (time > 0) {
+            main: while (time > 0) {
                 let timeIn = this.findSmallestTime(fullTime- time, 0.003, fullTime);
+                if (timeIn.type === true && timeIn.t === 0) break;
                 while (timeIn.t === 0) {
+                    if (timeIn.type === true && timeIn.t === 0) break main;
                     timeIn = this.findSmallestTime(fullTime - time, 0.003, fullTime);
                 }
                 const time2 = timeIn.t;
@@ -922,10 +924,10 @@ function mainStart() {
             }
         }
 
-        findSmallestTime(part = 0, smallest, fullTime, reverse) {
+        findSmallestTime(part = 0, smallest, fullTime) {
+            let reverse = false;
             let time;
-            if (reverse) time = new Shoot(smallest, true);
-            else time = new Shoot(fullTime - part, true);
+            time = new Shoot(fullTime - part, true);
             main: for (let i = 0, j = this.#elemsInSystem[i]; i < this.#elemsInSystem.length; i++, j = this.#elemsInSystem[i]) {
                 let amount = 0;
                 for (let k of j.nearBalls) {
@@ -1539,6 +1541,9 @@ function mainStart() {
 
     const switchFns = {
         level(lvl) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             if (!levels[lvl]) return;
             actualLevel = lvl;
             pages.lvls.close(true);
@@ -1546,11 +1551,17 @@ function mainStart() {
             removeDark();
         },
         menu(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             pages.lvlCleared.close();
             pages.canvasClose();
             setTimeout(() => pages.lvls.open(), 500);
         },
         retry(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             el.firstElementChild.style.transform = "rotate(0deg)";
             el.firstElementChild.style.transition = "transform 0.4s ease 0s";
             el.firstElementChild.style.transform = "rotate(360deg)";
@@ -1561,39 +1572,58 @@ function mainStart() {
 
         },
         next(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             pages.lvlCleared.close();
             pages.canvasClose(true);
-            window.requestAnimationFrame(()=>pages.openLevel(levels[String(Number(actualLevel) + 1)]));
-            actualLevel = String(Number(actualLevel) + 1);
+            window.requestAnimationFrame(()=>{pages.openLevel(levels[String(Number(actualLevel) + 1)]); actualLevel = String(Number(actualLevel) + 1);});
             removeDark();
         },
         start(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             if (document.getElementById("secretStyle")) document.getElementById("secretStyle").remove();
             pages.home.close();
-
             setTimeout(() => {
                 pages.lvls.open();
             }, 500);
         },
         info(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             if (document.getElementById("secretStyle")) document.getElementById("secretStyle").remove();
             pages.info.open();
         },
         closeInfo() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             pages.info.close();
         },
         closeLvls() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             pages.lvls.close()
             setTimeout(() => {
                 pages.home.open();
             }, 500);
         },
         pause() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             if (pitch?.cleared) return;
             stop();
             pages.lvlPause.open(String(actualLevel));
         },
         continue() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
             setTimeout(() => start(), 500);
             pages.lvlPause.close();
         }

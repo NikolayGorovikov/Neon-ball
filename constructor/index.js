@@ -888,10 +888,13 @@ class Physics extends HTMLElement {
         const fps = this.#fps;
         let chvTime = 1/this.#fps/10;
         time = normalize(time);
-        while (time > 0) {
+        main: while (time > 0) {
             let timeIn = this.findSmallestTime(1/fps-time, 0.003, fps);
             i = 0;
+            if (timeIn.t === 0 && timeIn.type === true) break;
             while (timeIn.t === 0) {
+                console.log(timeIn);
+                if (timeIn.t === 0 && timeIn.type === true) break main;
                 timeIn = this.findSmallestTime(1/fps-time, 0.003, fps);
                 i++
             }
