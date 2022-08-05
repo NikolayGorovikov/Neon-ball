@@ -46,7 +46,7 @@ setTimeout(()=>{
         }
     });
     document.querySelector(".downloading").style.opacity = "1";
-    loadStart();
+    setTimeout(()=>loadStart(), 3000);
 }, 802);
 
 function allLoaded() {
@@ -62,7 +62,7 @@ function allLoaded() {
 function loadStart() {
     const script = document.createElement("script");
     script.src = "Neon%20ball.js";
-    script.onload = allLoaded();
+    script.onload = allLoaded;
     document.head.append(script);
     document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css">`);
 

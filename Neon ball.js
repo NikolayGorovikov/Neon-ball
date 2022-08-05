@@ -1,5 +1,13 @@
 // спасибо катя
 function mainStart() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+            || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
     const aspectRatio = 6 / 5;
 
     class Circle {
@@ -372,7 +380,6 @@ function mainStart() {
         }
 
         renderCanvas(time) {
-            console.log("render", time);
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             for (let i of this.#airLines) i.renderCanvas(this.context);
             if (this.finish) this.finish.renderCanvas(this.context, time);
@@ -677,28 +684,29 @@ function mainStart() {
             this.#fps = this.#realFPS / this.#speed;
         }
 
-        main(time = 1 / this.#fps) {
-            const fps = this.#fps;
-            let chvTime = 1 / this.#fps / 10;
+        main(time , fps ) {
+            let chvTime = 1 / fps / 10;
             time = normalize(time);
+            console.log("work");
             while (time > 0) {
+                console.log("work");
                 let timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
                 while (timeIn.t === 0) {
                     timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
                 }
                 const time2 = timeIn.t;
-                if (time2 > 1 / this.#fps / 10) {
-                    this.drawFrame(1 / this.#fps / 10);
-                    this.changeVectors(1 / this.#fps / 10);
-                    time = normalize(time - 1 / this.#fps / 10);
+                if (time2 > 1 / fps / 10) {
+                    this.drawFrame(1 / fps / 10);
+                    this.changeVectors(1 / fps / 10);
+                    time = normalize(time - 1 / fps / 10);
                     continue;
                 }
                 chvTime = normalize(chvTime - time2);
                 if (chvTime <= 0) {
                     this.drawFrame(chvTime + time2);
-                    this.changeVectors(1 / this.#fps / 10);
+                    this.changeVectors(1 / fps / 10);
                     time = normalize(time - (chvTime + time2));
-                    chvTime = 1 / this.#fps / 10;
+                    chvTime = 1 / fps / 10;
                     continue;
                 }
                 this.drawFrame(time2);
@@ -711,23 +719,33 @@ function mainStart() {
                 }
                 time = normalize(time - time2);
             }
-            this.renderCanvas(1 / this.#fps);
+            this.renderCanvas(1 / fps);
         }
 
         start() {
-            this.inMain();
+            this.inMain(true);
             this.play = true;
         }
 
-        inMain() {
-            this.#movie = setTimeout(() => {
+        inMain(first) {
+            if (first) {
+                window.requestAnimationFrame((time) => {
+                    this.time = time;
+                });
+            }
+            this.#movie = window.requestAnimationFrame((time) => {
+                if (time-this.time > 100) {
+                    this.time = time - 17;
+                    console.log("paused");
+                }
+                this.main(normalize((time-this.time)/1000), normalize(1000/(time-this.time)));
                 this.inMain();
-                this.main();
-            }, 1000 / this.#realFPS);
+                this.time = time;
+            });
         }
 
         stop() {
-            clearTimeout(this.#movie);
+            window.cancelAnimationFrame(this.#movie);
             this.play = false;
         }
 
@@ -1596,11 +1614,6 @@ function mainStart() {
             pages.lvlPause.close();
         }
     }
-
-    function closeLvlCleared() {
-
-    }
-
     let version;
 
     let levels, actualLevel = 1;
@@ -2025,7 +2038,7 @@ function mainStart() {
 }</style>`);
 
     const lvlsBack = `
-    <video src="neon%20ball%20back.mov" onloadstart="console.log(2)" onloadeddata="console.log(1)" autoplay loop width="100%" height="100%"></video>
+    <video src="neon%20ball%20back.mov" autoplay loop width="100%" height="100%"></video>
 `;
 
     const canvases = new Set();

@@ -27,3 +27,6 @@ url('fonts/logo/fckbeans-wjox-webfont.ttf') format('truetype');
     -ms-user-select: none;
     -webkit-user-select: none;
 }
+video::-webkit-media-controls {
+    display:none !important;
+}
