@@ -491,7 +491,7 @@ function mainStart() {
                 this.finish.y2 *= scale;
                 this.finish.main();
             }
-            this.renderCanvas();
+            this.renderCanvas(0);
             this.renderPassiveCanvas();
         }
 
@@ -681,27 +681,27 @@ function mainStart() {
             this.#fps = this.#realFPS / this.#speed;
         }
 
-        main(time , fps ) {
-            let chvTime = 1 / fps / 10;
+        main(time , fullTime) {
+            let chvTime = fullTime / 10;
             time = normalize(time);
             while (time > 0) {
-                let timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
+                let timeIn = this.findSmallestTime(fullTime- time, 0.003, fullTime);
                 while (timeIn.t === 0) {
-                    timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
+                    timeIn = this.findSmallestTime(fullTime - time, 0.003, fullTime);
                 }
                 const time2 = timeIn.t;
-                if (time2 > 1 / fps / 10) {
-                    this.drawFrame(1 / fps / 10);
-                    this.changeVectors(1 / fps / 10);
-                    time = normalize(time - 1 / fps / 10);
+                if (time2 > fullTime / 10) {
+                    this.drawFrame(fullTime / 10);
+                    this.changeVectors(fullTime / 10);
+                    time = normalize(time - fullTime / 10);
                     continue;
                 }
                 chvTime = normalize(chvTime - time2);
                 if (chvTime <= 0) {
                     this.drawFrame(chvTime + time2);
-                    this.changeVectors(1 / fps / 10);
+                    this.changeVectors(fullTime / 10);
                     time = normalize(time - (chvTime + time2));
-                    chvTime = 1 / fps / 10;
+                    chvTime = fullTime / 10;
                     continue;
                 }
                 this.drawFrame(time2);
@@ -714,12 +714,12 @@ function mainStart() {
                 }
                 time = normalize(time - time2);
             }
-            this.renderCanvas(1 / fps);
+            this.renderCanvas(fullTime);
         }
 
         start() {
-            this.inMain(true);
             this.play = true;
+            this.inMain(true);
         }
 
         inMain(first) {
@@ -728,11 +728,12 @@ function mainStart() {
                     this.time = time;
                 });
             }
+            if (!this.play) return;
             this.#movie = window.requestAnimationFrame((time) => {
                 if (time-this.time > 100) {
-                    this.time = time - 17;
+                    this.time = time;
                 }
-                this.main(normalize((time-this.time)/1000), normalize(1000/(time-this.time)));
+                this.main(normalize((time-this.time)/1000), normalize((time-this.time)/1000));
                 this.inMain();
                 this.time = time;
             });
@@ -921,10 +922,10 @@ function mainStart() {
             }
         }
 
-        findSmallestTime(part = 0, smallest, fps, reverse) {
+        findSmallestTime(part = 0, smallest, fullTime, reverse) {
             let time;
             if (reverse) time = new Shoot(smallest, true);
-            else time = new Shoot(1 / fps - part, true);
+            else time = new Shoot(fullTime - part, true);
             main: for (let i = 0, j = this.#elemsInSystem[i]; i < this.#elemsInSystem.length; i++, j = this.#elemsInSystem[i]) {
                 let amount = 0;
                 for (let k of j.nearBalls) {
