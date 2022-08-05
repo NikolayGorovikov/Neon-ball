@@ -5,5 +5,5 @@
     ,
     "2": {"inPitch":{"fps":60,"g":1000,"G":1},"blur":15,"lines":[{"x1":10.390625,"x2":476.359375,"y1":576.7265624,"y2":576.7265625}],"balls":[{"fixed":1,"x":233.296875,"y":23.33984375,"vx":0,"vy":0,"ax":0,"ay":0,"m":1,"radius":20,"elos":1,"gravity":1,"fixedBeforeTouch":1,"main":0,"touchRemove":0}],"airLines":[],"tntBalls":[],"flexLines":[],"drawings":[],"width":487,"height":585,"pitchParams":{"mainBallColor":"rgb(37, 90, 181)","mainBallColorShadowColor":"rgb(37, 90, 181)","lineColor":"rgb(252, 243, 211)","lineShadowColor":"rgb(175, 125, 46)","airColor":"rgba(165, 115, 41, 0.5)","ballColor":"rgb(254, 254, 254)","ballShadowColor":"rgb(254, 254, 254)","lineWidth":5,"finishColor":"252, 243, 211","finishShadowColor":"175, 125, 46","startBackColor":"21, 10, 13","endBackColor":"60, 30, 40","startDrColor":"100, 50, 57","endDrColor":"60, 30, 40","ballColor2":"254, 254, 254","elosLimit":20,"fixedBallColor":"250, 223, 160"}}
   },
-  "version": "0.0.2"
+  "version": "0.0.3"
 }

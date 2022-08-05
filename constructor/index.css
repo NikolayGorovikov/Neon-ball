@@ -1,0 +1,164 @@
+physics-circle, .lowVisible, tnt-physics{
+    position: absolute;
+    border-radius: 50%;
+    background-color: transparent;
+    /*background-color: green;*/
+    display: block;
+    z-index: 2;
+}
+.lowVisible{
+    background-image:radial-gradient(circle, transparent, transparent 69%, black 69%, black 100%);
+}
+.area{
+    background-color: rgba(0,0,0,0.4);
+    position: absolute;
+    z-index: 1;
+}
+*{
+    user-select: none;
+}
+physics-area{
+    position: relative;
+    display: block;
+    width: calc(90vh * 5 / 6);
+    height: 90vh;
+    margin: 5vh;
+    padding: 0;
+    /*background-color: rgb(74, 21, 29);*/
+    overflow: hidden;
+}
+physics-line{
+    position: absolute;
+    display: block;
+    transform-origin: center center;
+}
+body{
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+.red{
+    background-color: red;
+}
+#menu{
+    width: calc(100vw - 90vh);
+    height: 90vh;
+    margin: 5vh;
+    box-sizing: border-box;
+    border: #6e97bf solid 1vh;
+}
+#menu > * > *{
+    flex-basis: 100%;
+    margin: 5px;
+    flex-wrap: wrap;
+}
+#menu > * {
+    flex-wrap: wrap;
+}
+.bt {
+    border-radius: 1em;
+    border: #6e97bf solid 4px;
+    display: inline-block;
+    min-width: 3em;
+    padding: 0.3em;
+    background-color: white;
+}
+.popup {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(10, 10, 10, 0.7);
+    z-index: 100;
+}
+.passive{
+    display: none;
+}
+.active{
+    display: flex;
+}
+.content {
+    margin: auto;
+}
+.addingCircle{
+    cursor: cell;
+}
+.lowVisible{
+    background-image: radial-gradient(circle at center, transparent 0% 69%, rgba(10, 10, 10, 0.6) 69%);
+}
+
+#sameMovingBall{
+    width: inherit;
+    height: inherit;
+    border-radius: 50%;
+    background-image: radial-gradient(circle at center, transparent 0% 69%, rgba(10, 10, 10, 0.3) 69%);
+    z-index: -1;
+}
+
+#moveSpot{
+    width: min(35%, 25px);
+    height: min(35%, 25px);
+    background-color: black;
+    border-radius: 50%;
+    position: absolute;
+    left: calc(50% - min(35%, 25px)/2);
+    top:  calc(50% - min(35%, 25px)/2);
+    cursor: move;
+}
+
+.resizer{
+    width: calc(min(35%, 40px)*3/4);
+    height: calc(min(35%, 40px)*3/4);
+    background-color: black;
+    position: absolute;
+    opacity: 0.5;
+    left: calc(50% - min(35%, 40px)*3/4/2);
+    top: calc(min(35%, 40px)*3/4*(-1)*10/9);
+    border-radius: 10%;
+    border: black solid thin;
+    box-sizing: border-box;
+    background-image: linear-gradient(45deg, white 30%, transparent 30% 69%, white 69% 100%), linear-gradient(135deg, white 30%, transparent 30% 69%, white 69% 100%), linear-gradient(180deg, transparent 46%, white 46% 54%, transparent 54% 100%);
+    cursor: ns-resize;
+}
+
+.managing{
+    z-index: 100;
+}
+
+.linelw{
+    opacity: 0.6;
+}
+
+.angles{
+    width: calc(min(35%, 40px)*3/8);
+    height: calc(min(35%, 40px)*3/4);
+    position: absolute;
+    opacity: 0.3;
+}
+#angle1 div, #angle2 div{
+    display: block;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background-color: black;
+    content: "";
+    border-radius: 2px;
+    transform-origin: 50% 50%;
+}
+#angle1 div{
+    left: 0;
+}
+#angle2 div{
+    right: 0;
+}
+
+.moveSpot{
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: black solid 4px;
+    box-sizing: border-box;
+    position: absolute;
+    border-radius: 50%;
+    z-index: 100;
+    opacity: 0.6;
+}

@@ -348,7 +348,6 @@ function mainStart() {
 
         win() {
             if (this.cleared) return;
-            console.log("win");
             this.cleared = true;
             // stop();();
             pages.lvlCleared.open(actualLevel);
@@ -420,10 +419,8 @@ function mainStart() {
         }
 
         resize(w) {
-            console.log(w);
             const scale = w / this.width;
             this.width = w;
-            console.log(scale);
             this.canvas.width = w;
             this.canvasPassive.width = w;
             this.canvas.height = w * aspectRatio;
@@ -687,9 +684,7 @@ function mainStart() {
         main(time , fps ) {
             let chvTime = 1 / fps / 10;
             time = normalize(time);
-            console.log("work");
             while (time > 0) {
-                console.log("work");
                 let timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
                 while (timeIn.t === 0) {
                     timeIn = this.findSmallestTime(1 / fps - time, 0.003, fps);
@@ -736,7 +731,6 @@ function mainStart() {
             this.#movie = window.requestAnimationFrame((time) => {
                 if (time-this.time > 100) {
                     this.time = time - 17;
-                    console.log("paused");
                 }
                 this.main(normalize((time-this.time)/1000), normalize(1000/(time-this.time)));
                 this.inMain();
@@ -1348,7 +1342,6 @@ function mainStart() {
         }
 
         set lines(a) {
-            console.log(a);
             this.linesIn = a;
         }
 
@@ -1831,7 +1824,6 @@ function mainStart() {
                 pitch.start();
                 pitch.specialInterval = setInterval(() => {
                     if (pitch.clickable.size > 0) {
-                        console.log(pitch.clickable.values());
                         Array.from(pitch.clickable.values())[0].explodeStart();
                         pitch.clickable.delete(Array.from(pitch.clickable.values())[0]);
                     }
