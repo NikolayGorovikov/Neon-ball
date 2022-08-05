@@ -57,7 +57,7 @@ body{
     .welcome {
         font-size: calc(100vh/7);
     }
-    .levelName{
+    .levelName, .mailCopied{
         font-size: calc(100vh/15);
     }
     .infoText > *{
@@ -117,7 +117,7 @@ body{
     .welcome {
         font-size: calc(100vw * 6 / 5 /7);
     }
-    .levelName{
+    .levelName, .mailCopied{
         font-size: calc(100vw * 6 / 5/15);
     }
     .infoText > *{
@@ -455,6 +455,7 @@ canvas{
     animation-duration: 7s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
+    animation-delay: 0.5s;
 }
 
 @keyframes rl1 {
@@ -535,7 +536,6 @@ canvas{
         opacity: 0;
     }
 }
-
 
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */

@@ -1,4 +1,6 @@
 {
+    window.added = 0;
+    window.requestedLength = 3;
     const canvas = document.querySelector("canvas");
     const con = canvas.getContext("2d");
     canvas.width = window.innerWidth;
@@ -85,11 +87,11 @@
         script.onload = a;
         document.head.append(script);
         document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css">`);
-        const link = document.createElement("link");
-        link.rel = "prefetch";
-        link.href = "rolling.png";
-        link.onload = a;
-        document.head.append(link);
+        const img = document.createElement("img");
+        img.src = "rolling.png";
+        img.style.display = "none";
+        document.body.append(img);
+        img.onload = a;
         function readTextFile(file, callback) {
             var rawFile = new XMLHttpRequest();
             rawFile.overrideMimeType("application/json");
@@ -115,5 +117,4 @@
         added++;
         if (added === requestedLength) allLoaded();
     }
-    let added = 0, requestedLength = 3;
 }

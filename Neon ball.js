@@ -1918,7 +1918,7 @@ function mainStart() {
                 <div class="infoTextIn">Автор и разработчик - Горовиков Николай Константинович</div>
                 <div class="infoTextIn">Версия - ${version}</div>
                 <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя</div>
-                <div class="infoTextIn">Контактные данные - gorovikov.work@gmail.com</div>
+                <div class="infoTextIn mail" >Контактные данные - gorovikov.work@gmail.com</div>
                 <div class="infoTextIn">&copy Горовиков Николай Константинович, 2021-2022 | Все права защищены</div>
             </div>
             `;

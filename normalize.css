@@ -20,13 +20,18 @@ url('fonts/logo/fckbeans-wjox-webfont.ttf') format('truetype');
     font-style: normal;
 }
 
-*:not(.info){
+*:not(.infoTextIn){
     touch-action: none;
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
 }
-video::-webkit-media-controls {
-    display:none !important;
+
+.mail{
+    touch-action: auto; !important;
+    user-select: auto;!important;
+    -moz-user-select: auto;!important;
+    -ms-user-select: auto;!important;
+    -webkit-user-select: auto;!important;
 }
