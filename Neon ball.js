@@ -497,7 +497,7 @@ function mainStart() {
         }
 
         constructor(obj) {
-            setTimeout(() => {
+            window.requestAnimationFrame(() => {
                 canvases.add(this);
                 this.canvas = document.createElement("canvas");
                 this.context = this.canvas.getContext("2d");
