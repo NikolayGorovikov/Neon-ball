@@ -733,7 +733,7 @@ function mainStart() {
                 if (time-this.time > 100) {
                     this.time = time;
                 }
-                this.main(normalize((time-this.time)/1000), normalize((time-this.time)/1000));
+                this.main((time-this.time)/1000, (time-this.time)/1000);
                 this.inMain();
                 this.time = time;
             });
@@ -1563,7 +1563,7 @@ function mainStart() {
         next(el) {
             pages.lvlCleared.close();
             pages.canvasClose(true);
-            pages.openLevel(levels[String(Number(actualLevel) + 1)]);
+            window.requestAnimationFrame(()=>pages.openLevel(levels[String(Number(actualLevel) + 1)]));
             actualLevel = String(Number(actualLevel) + 1);
             removeDark();
         },
