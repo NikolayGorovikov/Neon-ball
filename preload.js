@@ -61,7 +61,7 @@ function allLoaded() {
 
 function loadStart() {
     const script = document.createElement("script");
-    script.src = "index.js";
+    script.src = "Neon%20ball.js";
     script.onload = allLoaded();
     document.head.append(script);
     document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css">`);
