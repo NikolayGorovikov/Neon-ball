@@ -1735,7 +1735,7 @@ function mainStart() {
         </div>
         <div class="subMenu">
             <div data-link="menu"></div>
-            ${pause ? `<div data-link="continue"></div>` : Number(name) < 30 ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
+            ${pause ? `<div data-link="continue"></div>` : levels[String(Number(name)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
             <div data-link="retry"></div>
         </div>
     </div>
@@ -1745,7 +1745,7 @@ function mainStart() {
                 document.querySelector(`[data-link="retry"]`).append(canvasRetry);
                 document.querySelector(`[data-link=${pause ? "continue" : "next"}]`).append(canvasNext);
                 document.querySelector(".subMenu").addEventListener("pointerdown", (event) => {
-                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : Number(name) < 30 ? `,[data-link="next"]` : ""}`)
+                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(name)+1)] ? `,[data-link="next"]` : ""}`)
                     if (el) makeButton(el);
                 })
             },
@@ -1893,6 +1893,7 @@ function mainStart() {
             },
             close(bol) {
                 canvases.forEach(i => canvases.delete(i));
+                document.querySelectorAll(".rolling0, .rolling1").forEach(i=>i.style.animationPlayState = "paused");
                 document.querySelector(".levels").style.animationName = "remove";
                 if (bol) {
                     document.querySelector(".video").style.animationName = "removeCan";

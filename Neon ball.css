@@ -12,6 +12,7 @@ body{
 #pitchIn{
     margin: auto;
     position: relative;
+    overflow-x: hidden;
 }
 
 @media screen and (min-aspect-ratio: 5/6) {
