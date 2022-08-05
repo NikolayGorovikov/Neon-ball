@@ -5,7 +5,7 @@
     canvas.height = window.innerHeight;
     con.strokeStyle = "rgb(252, 243, 211)";
     con.lineCap = "round";
-
+    let isDrawing = false;
     const fn1 = (e) => {
         if (isDrawing && e.isPrimary) {
             con.lineTo(e.pageX, e.pageY);
@@ -58,7 +58,6 @@
         con.closePath();
         con.beginPath();
         con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
-        let isDrawing = false;
         document.addEventListener("pointermove", fn1);
         document.addEventListener("pointerdown", fn2);
         document.addEventListener("pointerup", fn3);
