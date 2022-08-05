@@ -496,6 +496,17 @@ function mainStart() {
         }
 
         constructor(obj) {
+            pitch = this;
+            start = () => {
+                this.start();
+            };
+            stop = () => {
+                this.stop();
+            }
+
+            this.elem = document.createElement("div");
+            this.elem.classList.add("canvasHolder");
+            this.elem.physics = this;
             window.requestAnimationFrame(() => {
                 canvases.add(this);
                 this.canvas = document.createElement("canvas");
@@ -618,18 +629,8 @@ function mainStart() {
                 this.rocksGr = gradient;
                 this.renderCanvas();
                 this.renderPassiveCanvas();
-
+                start();
             });
-            pitch = this;
-            start = () => {
-                this.start();
-            };
-            stop = () => {
-                this.stop();
-            }
-
-            this.elem = document.createElement("div");
-            this.elem.classList.add("canvasHolder");
         }
 
         get g() {
@@ -1512,6 +1513,9 @@ function mainStart() {
 
     const pitchIn = document.getElementById("pitchIn");
     pitchIn.addEventListener("pointerdown", (event) => {
+        if (!pitch) {
+            pitch = document.querySelector(".canvasHolder")?.physics;
+        }
         if (!pitch) return;
         const x1 = event.pageX - pitch.elem.getBoundingClientRect().left;
         const y1 = event.pageY - pitch.elem.getBoundingClientRect().top;
@@ -1551,7 +1555,7 @@ function mainStart() {
             el.firstElementChild.style.transform = "rotate(360deg)";
             pages.lvlCleared.close();
             pages.canvasClose(true);
-            pages.openLevel(levels[actualLevel]);
+            window.requestAnimationFrame(()=>pages.openLevel(levels[actualLevel]));
             removeDark();
 
         },
@@ -1600,8 +1604,6 @@ function mainStart() {
             const obj = JSON.parse(json);
             const pt = new Physics(obj);
             document.getElementById("pitchIn").append(pt.elem);
-            start();
-            pitch = pt;
             const pause = `<div class="closeBar" data-link="pause"></div>`;
             const can = document.createElement("canvas");
             can.resize = () => {
@@ -1827,21 +1829,25 @@ function mainStart() {
             pages.canvases?.forEach(i => canvases.delete(i));
             if (bol) {
                 stop();
-                pitch = null;
-                start = null;
-                stop = null;
                 const can = document.querySelector(".canvasHolder");
-                can.style.animationName = "removeCan";
+                window.requestAnimationFrame(()=>{
+                    pitch = null;
+                    start = null;
+                    stop = null;
+                    can.style.animationName = "removeCan";
+                });
                 setTimeout(() => {
                     can.remove();
                 }, 500);
             } else setTimeout(() => {
                 stop();
-                document.querySelector(".canvasHolder").remove();
-                canvases.delete(pitch);
-                pitch = null;
-                start = null;
-                stop = null;
+                window.requestAnimationFrame(()=>{
+                    document.querySelector(".canvasHolder").remove();
+                    canvases.delete(pitch);
+                    pitch = null;
+                    start = null;
+                    stop = null;
+                });
             }, 500);
         },
         lvls: {
