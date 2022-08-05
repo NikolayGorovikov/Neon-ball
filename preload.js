@@ -82,9 +82,38 @@
     function loadStart() {
         const script = document.createElement("script");
         script.src = "Neon%20ball.js";
-        script.onload = allLoaded;
+        script.onload = a;
         document.head.append(script);
         document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css">`);
+        const link = document.createElement("link");
+        link.rel = "prefetch";
+        link.href = "rolling.png";
+        link.onload = a;
+        document.head.append(link);
+        function readTextFile(file, callback) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.overrideMimeType("application/json");
+            rawFile.open("GET", file, true);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4) {
+                    callback(rawFile.responseText);
+                }
+            }
+            rawFile.send(null);
+        }
+        window.actualLevel = 1;
+        readTextFile("main.json", function (text) {
+            const all = JSON.parse(text);
+            window.levels = all.levels;
+            for (let i in levels) levels[i] = JSON.stringify(levels[i]);
+            window.version = all.version;
+            a();
+        });
 
     }
+    function a(){
+        added++;
+        if (added === requestedLength) allLoaded();
+    }
+    let added = 0, requestedLength = 3;
 }

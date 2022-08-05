@@ -140,7 +140,6 @@ function mainStart() {
             this.#fixedBeforeTouch = a;
             if (a) {
                 this.fixed = true;
-                console.log(true);
             }
         }
 
@@ -1528,19 +1527,6 @@ function mainStart() {
         }
     });
 
-
-    function readTextFile(file, callback) {
-        var rawFile = new XMLHttpRequest();
-        rawFile.overrideMimeType("application/json");
-        rawFile.open("GET", file, true);
-        rawFile.onreadystatechange = function () {
-            if (rawFile.readyState === 4) {
-                callback(rawFile.responseText);
-            }
-        }
-        rawFile.send(null);
-    }
-
     function removeDark() {
         document.querySelector(".dark").style.animationName = "removeCan";
         setTimeout(() => document.querySelector(".dark").remove(), 500);
@@ -1607,16 +1593,7 @@ function mainStart() {
             pages.lvlPause.close();
         }
     }
-    let version;
 
-    let levels, actualLevel = 1;
-    readTextFile("main.json", function (text) {
-        const all = JSON.parse(text);
-        levels = all.levels;
-        for (let i in levels) levels[i] = JSON.stringify(levels[i]);
-        version = all.version;
-        pages.home.open();
-    });
 
     const pages = {
         openLevel(json) {
@@ -1918,11 +1895,11 @@ function mainStart() {
                 canvases.forEach(i => canvases.delete(i));
                 document.querySelector(".levels").style.animationName = "remove";
                 if (bol) {
-                    document.querySelector("video").style.animationName = "removeCan";
-                    setTimeout(() => document.querySelector("video").remove(), 500)
+                    document.querySelector(".video").style.animationName = "removeCan";
+                    setTimeout(() => document.querySelector(".video").remove(), 500)
                 } else setTimeout(() => {
-                    document.querySelector("video").style.animationName = "removeCan";
-                    setTimeout(() => document.querySelector("video").remove(), 500)
+                    document.querySelector(".video").style.animationName = "removeCan";
+                    setTimeout(() => document.querySelector(".video").remove(), 500)
                 }, 500);
                 setTimeout(() => {
                     document.querySelector(".levels").remove();
@@ -2028,9 +2005,18 @@ function mainStart() {
 #lt3{
     animation: 0.2s linear 0.4s 2 bl1 ,0.2s linear 1s 1 bl1,0.2s linear 2s 2 bl1, 0.5s linear 2.8s 1 bl2, 0.2s linear 3.5s 2 bl1;
 }</style>`);
+    let result = "";
+    for (let i = 0; i < 25; i++) {
+        let inner = "";
+        for (let j = 0; j < 5; j++) {
+            inner += "<div class='rollingInner'></div>"
+        }
+        result = result + `<div class="rolling${i % 2}">${inner}</div>`;
+    }
 
     const lvlsBack = `
-    <video src="neon%20ball%20back.mov" autoplay loop width="100%" height="100%"></video>
+    <div class="video">${result}
+</div>
 `;
 
     const canvases = new Set();
@@ -2038,4 +2024,6 @@ function mainStart() {
     window.onresize = () => {
         canvases.forEach(i => i.resize(pitchIn.getBoundingClientRect().width));
     }
+
+    pages.home.open();
 }
