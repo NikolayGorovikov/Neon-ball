@@ -327,6 +327,7 @@ function mainStart() {
         #fps = this.#realFPS;
         #movie;
         #g = 1000;
+        boomkf = 10000000;
         #G = 1;
         clickable = new Set();
         drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
@@ -417,78 +418,92 @@ function mainStart() {
             this.contextPassive.closePath();
         }
 
-        resize(w) {
-            const scale = w / this.width;
+        resize(w, h) {
+            if (this.fullScreenScale) {
+                w = document.body.getBoundingClientRect().width;
+                h = document.body.getBoundingClientRect().height;
+            }
+            else {
+                h = w * aspectRatio;
+            }
+
+            let scalex, scaley, scale;
+            scalex = w / this.width;
+            scaley = h / this.height;
+            scale = Math.sqrt(scalex*scaley);
+
             this.width = w;
+            this.height = h;
             this.canvas.width = w;
             this.canvasPassive.width = w;
-            this.canvas.height = w * aspectRatio;
-            this.canvasPassive.height = w * aspectRatio;
+            this.canvas.height = h;
+            this.canvasPassive.height = h;
             this.g *= scale;
             this.G *= scale;
+            this.boomkf*=scale;
             window.elosLimit = Number(window.elosLimit) * scale;
             window.lineWidth *= scale;
             blur = blur * scale;
             for (const i of this.linesInSystem) {
-                i.x1 *= scale;
-                i.x2 *= scale;
-                i.y1 *= scale;
-                i.y2 *= scale;
+                i.x1 *= scalex;
+                i.x2 *= scalex;
+                i.y1 *= scaley;
+                i.y2 *= scaley;
                 i.main();
             }
 
             for (const i of this.elemsInSystem) {
                 const [x, y] = [i.x, i.y];
                 i.radius *= scale;
-                i.x = x * scale;
-                i.y = y * scale;
-                i.vector = [i.vector[0] * scale, i.vector[1] * scale];
-                i.ax *= scale;
-                i.ax *= scale;
+                i.x = x * scalex;
+                i.y = y * scaley;
+                i.vector = [i.vector[0] * scalex, i.vector[1] * scaley];
+                i.ax *= scalex;
+                i.ay *= scaley;
                 i.m *= scale;
                 i.rboom *= scale;
                 i.f *= scale;
             }
 
             for (const i of this.#airLines) {
-                i.x1 *= scale;
-                i.x2 *= scale;
-                i.y1 *= scale;
-                i.y2 *= scale;
+                i.x1 *= scalex;
+                i.x2 *= scalex;
+                i.y1 *= scaley;
+                i.y2 *= scaley;
                 i.length *= scale;
                 i.f *= scale;
                 i.main();
             }
 
             for (const i of this.flexLinesInSystem) {
-                i.x1 *= scale;
-                i.x2 *= scale;
-                i.y1 *= scale;
-                i.y2 *= scale;
+                i.x1 *= scalex;
+                i.x2 *= scalex;
+                i.y1 *= scaley;
+                i.y2 *= scaley;
                 i.lines.forEach((line) => {
-                    line.x1 *= scale;
-                    line.x2 *= scale;
-                    line.y1 *= scale;
-                    line.y2 *= scale;
+                    line.x1 *= scalex;
+                    line.x2 *= scalex;
+                    line.y1 *= scaley;
+                    line.y2 *= scaley;
                 });
                 i.spots.forEach(spot => {
-                    spot[0] *= scale;
-                    spot[1] *= scale;
+                    spot[0] *= scalex;
+                    spot[1] *= scaley;
                 });
             }
 
             for (const i of this.drawings.all) {
                 i.spots.forEach(spot => {
-                    spot[0] *= scale;
-                    spot[1] *= scale;
+                    spot[0] *= scalex;
+                    spot[1] *= scaley;
                 });
             }
 
             if (this.finish) {
-                this.finish.x1 *= scale;
-                this.finish.x2 *= scale;
-                this.finish.y1 *= scale;
-                this.finish.y2 *= scale;
+                this.finish.x1 *= scalex;
+                this.finish.x2 *= scalex;
+                this.finish.y1 *= scaley;
+                this.finish.y2 *= scaley;
                 this.finish.main();
             }
             this.renderCanvas(0);
@@ -507,11 +522,14 @@ function mainStart() {
             this.elem = document.createElement("div");
             this.elem.classList.add("canvasHolder");
             this.elem.physics = this;
+            this.fullScreenScale = Boolean(Number(obj.fullScreenScale));
+            if (this.fullScreenScale) this.elem.classList.add("fullScreen");
             window.requestAnimationFrame(() => {
                 canvases.add(this);
                 this.canvas = document.createElement("canvas");
                 this.context = this.canvas.getContext("2d");
                 this.width = this.elem.getBoundingClientRect().width;
+                this.height = this.elem.getBoundingClientRect().height;
                 this.canvas.width = this.elem.getBoundingClientRect().width;
                 this.canvas.height = this.elem.getBoundingClientRect().height;
 
@@ -527,53 +545,58 @@ function mainStart() {
                 this.elem.append(this.canvasPassive);
                 this.elem.append(this.canvas);
                 {
+                    let scalex, scaley, scale;
+                    scalex = this.elem.getBoundingClientRect().width / obj.width;
+                    scaley = this.elem.getBoundingClientRect().height / obj.height;
+                    scale = Math.sqrt(scalex*scaley);
+
                     for (const i in obj.inPitch) this[i] = Number(obj.inPitch[i]);
                     for (const i in obj.pitchParams) window[i] = obj.pitchParams[i];
 
-                    const scale = this.canvas.width / obj.width;
                     this.g *= scale;
                     this.G *= scale;
+                    this.boomkf*=scale;
                     window.elosLimit = Number(window.elosLimit) * scale;
                     window.lineWidth *= scale;
                     blur = obj.blur * scale;
                     for (const i of obj.lines) {
-                        i.x1 *= scale;
-                        i.x2 *= scale;
-                        i.y1 *= scale;
-                        i.y2 *= scale;
+                        i.x1 *= scalex;
+                        i.x2 *= scalex;
+                        i.y1 *= scaley;
+                        i.y2 *= scaley;
                         this.addedToLinesSystem(new Line(i));
                     }
 
                     for (const i of obj.balls) {
-                        i.x *= scale;
-                        i.y *= scale;
+                        i.x *= scalex;
+                        i.y *= scaley;
                         i.radius *= scale;
-                        i.vx *= scale;
-                        i.vy *= scale;
-                        i.ax *= scale;
-                        i.ax *= scale;
+                        i.vx *= scalex;
+                        i.vy *= scaley;
+                        i.ax *= scalex;
+                        i.ax *= scaley;
                         i.m *= scale;
                         this.addedToSystem(new Circle(i, this));
                     }
 
                     for (const i of obj.airLines) {
-                        i.x1 *= scale;
-                        i.x2 *= scale;
-                        i.y1 *= scale;
-                        i.y2 *= scale;
+                        i.x1 *= scalex;
+                        i.x2 *= scalex;
+                        i.y1 *= scaley;
+                        i.y2 *= scaley;
                         i.length *= scale;
                         i.f *= scale;
                         this.addAirLine(new airLine(i));
                     }
 
                     for (const i of obj.tntBalls) {
-                        i.x *= scale;
-                        i.y *= scale;
+                        i.x *= scalex;
+                        i.y *= scaley;
                         i.radius *= scale;
-                        i.vx *= scale;
-                        i.vy *= scale;
-                        i.ax *= scale;
-                        i.ax *= scale;
+                        i.vx *= scalex;
+                        i.vy *= scaley;
+                        i.ax *= scalex;
+                        i.ax *= scaley;
                         i.rboom *= scale;
                         i.f *= scale;
                         i.m *= scale;
@@ -581,20 +604,20 @@ function mainStart() {
                     }
 
                     for (const i of obj.flexLines) {
-                        i.x1 *= scale;
-                        i.x2 *= scale;
-                        i.y1 *= scale;
-                        i.y2 *= scale;
+                        i.x1 *= scalex;
+                        i.x2 *= scalex;
+                        i.y1 *= scaley;
+                        i.y2 *= scaley;
                         i.lines = i.lines.map((line) => {
-                            line.x1 *= scale;
-                            line.x2 *= scale;
-                            line.y1 *= scale;
-                            line.y2 *= scale;
+                            line.x1 *= scalex;
+                            line.x2 *= scalex;
+                            line.y1 *= scaley;
+                            line.y2 *= scaley;
                             return new Line(line);
                         });
                         i.spots = i.spots.map(spot => {
-                            spot[0] *= scale;
-                            spot[1] *= scale;
+                            spot[0] *= scalex;
+                            spot[1] *= scaley;
                             return spot;
                         });
 
@@ -603,17 +626,17 @@ function mainStart() {
 
                     for (const i of obj.drawings) {
                         i.spots.forEach(spot => {
-                            spot[0] *= scale;
-                            spot[1] *= scale;
+                            spot[0] *= scalex;
+                            spot[1] *= scaley;
                         });
                         this.addDraw(i.spots, i.color);
                     }
 
                     if (obj.finish) {
-                        obj.finish.x1 *= scale;
-                        obj.finish.x2 *= scale;
-                        obj.finish.y1 *= scale;
-                        obj.finish.y2 *= scale;
+                        obj.finish.x1 *= scalex;
+                        obj.finish.x2 *= scalex;
+                        obj.finish.y1 *= scaley;
+                        obj.finish.y2 *= scaley;
                         this.finish = new Finish(obj.finish, this);
                     }
                 }
@@ -783,7 +806,7 @@ function mainStart() {
             const y2 = cr.y;
             const r = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
             if (cr.radius + sp.handler.radius > r) return [0, 0];
-            const G = fuck ? 10000000 : this.#G;
+            const G = fuck ? this.boomkf : this.#G;
             const m = sp.handler.mass;
             const f = G * (m * cr.mass) / (r ** 2) / cr.mass;
             const tg = Math.abs((y1 - y2) / (x1 - x2));
@@ -1828,7 +1851,6 @@ function mainStart() {
             `;
                 pitchIn.insertAdjacentHTML("beforeend", eltxt);
                 pitchIn.append(ph.elem);
-                ph.elem.style.zIndex = "1";
                 pitch = ph;
                 pitch.start();
                 pitch.specialInterval = setInterval(() => {

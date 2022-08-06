@@ -22,7 +22,7 @@ body{
         height: 100vh;
         width: calc(100vh * 5 / 6);
     }
-    .dark{
+    .dark, .fullScreen{
         top: 0;
         left: calc((100vh * 5 / 6 - 100vw)/2);
     }
@@ -43,7 +43,7 @@ body{
         top: calc(100vh * 5 / 6* 0.05 *2/5);
         left: calc(100vh * 5 / 6 * 0.05 * 2/5);
     }
-    #pitchIn > *:not(.neonBall100, .dark){
+    #pitchIn > *:not(.neonBall100, .dark, .fullScreen){
         height: 100vh;
         width: calc(100vh * 5 / 6);
     }
@@ -82,11 +82,11 @@ body{
         height: calc(100vw * 6 / 5);
         width: 100vw;
     }
-    #pitchIn > *:not(.neonBall100, .dark) {
+    #pitchIn > *:not(.neonBall100, .dark, .fullScreen) {
         height: calc(100vw * 6 / 5);
         width: 100vw;
     }
-    .dark{
+    .dark, .fullScreen{
         top: calc((100vw * 6 / 5 - 100vh)/2);
         left: 0;
     }
@@ -460,7 +460,6 @@ canvas{
     animation-duration: 7s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
-    animation-delay: 0.5s;
 }
 
 @keyframes rl1 {
@@ -525,6 +524,7 @@ canvas{
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
     opacity: 0;
+    z-index: 1;
 }
 
 @keyframes an1 {
@@ -540,6 +540,13 @@ canvas{
     to {
         opacity: 0;
     }
+}
+
+.fullScreen{
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: 0; !important;
 }
 
 /* @keyframes duration | timing-function | delay |

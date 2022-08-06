@@ -3292,6 +3292,7 @@ function getAllJSON(){
             g,
             G,
         },
+        fullScreenScale: Number(fullScreenScale),
         blur,
         lines: [],
         balls: [],
@@ -3362,6 +3363,8 @@ function createFromJSON(json) {
         pitch = document.body.firstElementChild;
         console.log(obj);
         setTimeout(()=>{
+            document.getElementById("fullScreenScale").checked = Boolean(Number(obj.fullScreenScale));
+            fullScreenScale = Boolean(Number(obj.fullScreenScale));
             for (const i in obj.inPitch) {
                 pitch[i] = Number(obj.inPitch[i]);
                 window[i] = Number(obj.inPitch[i]);
@@ -3497,6 +3500,8 @@ function createFromJSON(json) {
         console.log(e);
     }
 }
+
+let fullScreenScale = false;
 
 function readTextFile(file, callback) {
     var rawFile = new XMLHttpRequest();
