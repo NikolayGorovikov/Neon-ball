@@ -436,10 +436,10 @@ canvas{
     animation-name: opacity;
     opacity: 1;
     position: absolute;
-    top: -50vw;
-    left: -50vh;
+    top: calc(-10vh - 60vw);
+    left: calc(-10vw - 60vh);
     background-size: 100% 100%;
-    width: calc(100vh + 100vw);
+    width: calc(120vh + 120vw);
     height: calc(100vh + 100vw);
     transform: rotate(45deg);
     background-color: rgb(60, 30, 40);
@@ -467,7 +467,7 @@ canvas{
         transform: translateX(0);
     }
     100%{
-        transform: translateX(20%);
+        transform: translateX(16.666%);
     }
 }
 
@@ -476,7 +476,7 @@ canvas{
         transform: translateX(0);
     }
     100%{
-        transform: translateX(-20%);
+        transform: translateX(-16.666%);
     }
 }
 

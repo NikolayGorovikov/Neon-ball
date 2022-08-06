@@ -2072,7 +2072,7 @@ function mainStart() {
     let result = "";
     for (let i = 0; i < 25; i++) {
         let inner = "";
-        for (let j = 0; j < 5; j++) {
+        for (let j = 0; j < 6; j++) {
             inner += "<div class='rollingInner'></div>"
         }
         result = result + `<div class="rolling${i % 2}">${inner}</div>`;
