@@ -12,7 +12,6 @@ body{
 #pitchIn{
     margin: auto;
     position: relative;
-    overflow-x: hidden;
 }
 
 @media screen and (min-aspect-ratio: 5/6) {
@@ -427,7 +426,11 @@ canvas{
    iteration-count | direction | fill-mode | play-state | name */
 
 .video{
-    animation: 0.5s ease 1 forwards opacity;
+    animation-duration: 0.5s;
+    animation-timing-function: ease;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    animation-name: opacity;
     opacity: 1;
     position: absolute;
     top: -50vw;
@@ -436,9 +439,7 @@ canvas{
     width: calc(100vh + 100vw);
     height: calc(100vh + 100vw);
     transform: rotate(45deg);
-    background-color: rgb(60, 30, 40);
 }
-
 
 
 .rollingInner{

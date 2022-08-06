@@ -424,8 +424,8 @@ function mainStart() {
             this.canvasPassive.width = w;
             this.canvas.height = w * aspectRatio;
             this.canvasPassive.height = w * aspectRatio;
-            this.g *= scale ** 2;
-            this.G *= scale ** 2;
+            this.g *= scale;
+            this.G *= scale;
             window.elosLimit = Number(window.elosLimit) * scale;
             window.lineWidth *= scale;
             blur = blur * scale;
@@ -531,8 +531,8 @@ function mainStart() {
                     for (const i in obj.pitchParams) window[i] = obj.pitchParams[i];
 
                     const scale = this.canvas.width / obj.width;
-                    this.g *= scale ** 2;
-                    this.G *= scale ** 2;
+                    this.g *= scale;
+                    this.G *= scale;
                     window.elosLimit = Number(window.elosLimit) * scale;
                     window.lineWidth *= scale;
                     blur = obj.blur * scale;
@@ -1688,7 +1688,7 @@ function mainStart() {
                     const con = canvasMenu.getContext("2d");
                     con.beginPath();
                     con.strokeStyle = lineColor;
-                    con.lineWidth = lineWidth * 1.4;
+                    con.lineWidth = canvasMenu.width/10;
                     con.shadowColor = lineShadowColor;
                     con.shadowBlur = blur;
                     con.lineCap = "round";
@@ -1709,7 +1709,7 @@ function mainStart() {
                     const con = canvasRetry.getContext("2d");
                     con.beginPath();
                     con.strokeStyle = con.fillStyle = lineColor;
-                    con.lineWidth = lineWidth * 1.4;
+                    con.lineWidth = canvasRetry.width/10;
                     con.shadowColor = lineShadowColor;
                     con.shadowBlur = blur;
                     con.lineCap = "round";
@@ -1801,7 +1801,6 @@ function mainStart() {
                     const con = startCanvas.getContext("2d");
                     con.beginPath();
                     con.fillStyle = "rgb(252, 243, 211)";
-                    con.lineWidth = 5 * 1.4;
                     con.shadowColor = "rgb(175, 125, 46)";
                     con.shadowBlur = 15;
                     con.moveTo(startCanvas.width * 0.3, startCanvas.width * 0.2);
@@ -1862,6 +1861,7 @@ function mainStart() {
                 stop();
                 const can = document.querySelector(".canvasHolder");
                 window.requestAnimationFrame(()=>{
+                    canvases.delete(pitch);
                     pitch = null;
                     start = null;
                     stop = null;
@@ -1935,10 +1935,14 @@ function mainStart() {
                 if (bol) {
                     document.querySelector(".video").style.animationName = "removeCan";
                     setTimeout(() => document.querySelector(".video").remove(), 500)
-                } else setTimeout(() => {
+                } else {
+                    document.querySelector(".video").style.animationDuration = "1s";
+                    document.querySelector(".video").style.animationTimingFunction = "cubic-bezier(.71,0,.66,-0.01)";
                     document.querySelector(".video").style.animationName = "removeCan";
-                    setTimeout(() => document.querySelector(".video").remove(), 500)
-                }, 500);
+                    setTimeout(() => {
+                        setTimeout(() => document.querySelector(".video").remove(), 500);
+                    }, 500);
+                }
                 setTimeout(() => {
                     document.querySelector(".levels").remove();
                 }, 500);
