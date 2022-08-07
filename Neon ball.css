@@ -447,13 +447,19 @@ canvas{
     animation-name: opacity;
     opacity: 1;
     position: absolute;
+    background-color: rgb(60, 30, 40);
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.videoIn{
+    position: absolute;
+    transform: rotate(45deg);
     top: calc(-10vh - 60vw);
     left: calc(-10vw - 60vh);
-    background-size: 100% 100%;
     width: calc(120vh + 120vw);
     height: calc(100vh + 100vw);
-    transform: rotate(45deg);
-    background-color: rgb(60, 30, 40);
 }
 
 .rollingInner{
