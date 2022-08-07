@@ -1,6 +1,6 @@
 {
     window.added = 0;
-    window.requestedLength = 3;
+    window.requestedLength = 4;
     const canvas = document.querySelector("canvas");
     const con = canvas.getContext("2d");
     canvas.width = window.innerWidth;
@@ -86,7 +86,11 @@
         script.src = "Neon%20ball.js";
         script.onload = a;
         document.head.append(script);
-        document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css">`);
+        document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css" id="link1">`);
+        document.getElementById("link1").addEventListener("load", ()=>{a(); window.cssLoaded = true});
+        setTimeout(()=>{
+            if (window.added === 3 && !window.cssLoaded) allLoaded();
+        }, 3000);
         const img = document.createElement("img");
         img.src = "rolling.png";
         img.style.display = "none";
