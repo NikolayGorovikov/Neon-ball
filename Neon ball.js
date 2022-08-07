@@ -1633,6 +1633,8 @@ function mainStart() {
             pages.lvls.close()
             setTimeout(() => {
                 pages.home.open();
+                document.getElementById("home").style.animationDelay = "0.1s";
+                setTimeout(()=>document.getElementById("home").style.animationDelay = "", 500);
             }, 500);
         },
         pause() {

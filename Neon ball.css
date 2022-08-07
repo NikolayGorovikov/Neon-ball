@@ -549,6 +549,11 @@ canvas{
     z-index: 0; !important;
 }
 
+#home{
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */
 
