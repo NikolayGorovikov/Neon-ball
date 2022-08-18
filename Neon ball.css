@@ -484,7 +484,7 @@ canvas{
         transform: translateX(0);
     }
     100%{
-        transform: translateX(16.666%);
+        transform: translateX(-16.666667%);
     }
 }
 
@@ -493,16 +493,18 @@ canvas{
         transform: translateX(0);
     }
     100%{
-        transform: translateX(-16.666%);
+        transform: translateX(16.666667%);
     }
 }
 
 .rolling0{
     animation-name: rl1;
+    animation-direction: reverse;
 }
 
 .rolling1{
     animation-name: rl2;
+    animation-direction: reverse;
 }
 
 .arrowBack{

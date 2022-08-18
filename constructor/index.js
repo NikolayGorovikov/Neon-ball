@@ -25,6 +25,12 @@ class Circle extends HTMLElement {
     nearBalls = new Set();
     #fixedBeforeTouch = false;
     time = 0;
+    dragSpotMax = 5;
+    dragSpotMin = 4;
+    dragTime = 1000;
+    dragVMax = 1000;
+    dragRadius = 45;
+    dragMinRadius = 8;
 
     connectedCallback() {
         setTimeout(()=>{
@@ -217,7 +223,59 @@ class Circle extends HTMLElement {
             con.strokeStyle = color;
             con.shadowColor = color;
             con.lineWidth *= (1+(1-kf)/5);
-            console.log(color);
+        }
+        if (this.onDragging) {
+            const spots = [];
+            let cords = [this.x, this.y];
+            let speed = this.draggingVector.concat([]);
+
+            {
+                let done = false;
+                for (let i = 0; i < this.dragTime/100*2; i++) {
+                    for (let a = 12.5; a <= 37.5; a+=12.5) {
+                        cords = [cords[0]+speed[0]*a/1000, cords[1]+speed[1]*a/1000];
+                        let ax = 0;
+                        let ay = 0;
+                        if (this.parentElement.gravitySpots.size) {
+                            for (const k of this.parentElement.gravitySpots) {
+                                if (this.gravity === k) continue;
+                                const b = this.parentElement.getGravity(k, {x: cords[0], y: cords[1], mass: this.mass, radius: this.radius});
+                                ax += b[0];
+                                ay += b[1];
+                                console.log(b);
+                            }
+                        }
+
+                        for (let k of this.parentElement.airLines) {
+                            const a = k.countF({x: cords[0], y: cords[1], mass: this.mass, radius: this.radius}, time, true);
+                            ax+=a[0];
+                            ay+=a[1];
+                        }
+
+                        speed = [speed[0]+(this.ax+ax)*a/1000, speed[1]+(this.ay+ay+this.parentElement.g)*a/1000];
+
+                    }
+                    if (Math.sqrt(Math.pow(cords[0]-this.x, 2)+Math.pow(cords[1]-this.y, 2)) > this.radius+lineWidth || done) {
+                        spots.push(cords.concat([]));
+                        done = true;
+                    }
+                }
+
+                let counter = 0;
+                let length = spots.length;
+
+                for (let i of spots) {
+                    con.closePath();
+                    con.beginPath();
+                    con.arc(i[0], i[1], this.dragSpotMax-counter*(this.dragSpotMax-this.dragSpotMin)/length, 0, Math.PI*2);
+                    counter++;
+                    con.fill();
+                }
+                con.closePath();
+                con.beginPath();
+
+            }
+
         }
         if (this.#fixed && this.angles[0] !== this.angles[1]) con.arc(this.#x+this.#radius, this.#y+this.#radius, this.#radius ,-this.angles[1], -this.angles[0]);
         else con.arc(this.#x+this.#radius, this.#y+this.#radius, this.#radius, 0, Math.PI*2);
@@ -244,6 +302,12 @@ class Circle extends HTMLElement {
             fixedBeforeTouch: Number(this.fixedBeforeTouch),
             main: Number(Boolean(this.main)),
             touchRemove: Number(this.touchRemove),
+            dragSpotMin: this.dragSpotMin,
+            dragSpotMax: this.dragSpotMax,
+            dragTime: this.dragTime,
+            dragVMax: this.dragVMax,
+            dragRadius: this.dragRadius,
+            dragMinRadius: this.dragMinRadius,
         };
     }
 
@@ -712,6 +776,10 @@ class Physics extends HTMLElement {
     #G = 1;
     drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
 
+    get gravitySpots() {
+        return this.#gravitySpots;
+    }
+
     addDraw(spots, color) {
         this.drawings[color].add(spots);
         this.drawings.all.add(new drawObj(spots, color, this));
@@ -973,6 +1041,10 @@ class Physics extends HTMLElement {
             this.#gravitySpots.add(elem.gravity);
         }
 
+    }
+
+    get airLines() {
+        return this.#airLines;
     }
 
     addedToLinesSystem(line) {
@@ -3236,7 +3308,7 @@ class airLine extends Line {
     constructor() {
         super();
     }
-    countF(ball, time) {
+    countF(ball, time, bol) {
         const {x, y} = ball;
         const [{k: k1, b: b1}, {k: k2, b: b2}, {k: k3, b: b3}, {k: k4, b: b4}] = this.#lines;
         if ( (k1*x+b1-y)*(k2*x+b2-y)<=0 && (k3*x+b3-y)*(k4*x+b4-y)<=0 ) {
@@ -3254,9 +3326,10 @@ class airLine extends Line {
                     }
                 };
            const gr = Physics.prototype.getGravity(sp, ball, true);
-           ball.vector = [ball.vector[0] + gr[0]/ball.mass*time, ball.vector[1] +gr[1]/ball.mass*time];
-
+           if (!bol) ball.vector = [ball.vector[0] + gr[0]/ball.mass*time, ball.vector[1] +gr[1]/ball.mass*time];
+           return [gr[0]/ball.mass, gr[1]/ball.mass];
         }
+        return [0,0];
 
     }
 

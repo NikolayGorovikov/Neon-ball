@@ -30,6 +30,7 @@ function mainStart() {
             this.mass = Number(obj.m);
             this.elos = Boolean(Number(obj.elos));
             this.gravity = Boolean(Number(obj.gravity)) ? this : false;
+            ({dragSpotMin: this.dragSpotMin, dragSpotMax: this.dragSpotMax, dragTime: this.dragTime, dragMinRadius: this.dragMinRadius, dragVMax: this.dragVMax, dragRadius: this.dragRadius} = obj);
             this.fixedBeforeTouch = Boolean(Number(obj.fixedBeforeTouch));
             if (this.fixedBeforeTouch) {
                 this.angles = [0, 0];
@@ -128,6 +129,50 @@ function mainStart() {
                 con.shadowColor = color;
                 con.lineWidth *= (1 + (1 - kf) / 5);
 
+            }
+            if (this.onDragging) {
+                const spots = [];
+                let cords = [this.x, this.y];
+                let speed = this.draggingVector.concat([]);
+                {
+                    let done = false;
+                    for (let i = 0; i < 13; i++) {
+                        for (let a = this.dragTime/13/10; a <= this.dragTime/13; a+=this.dragTime/13/10) {
+                            cords = [cords[0]+speed[0]*this.dragTime/13/10/1000, cords[1]+speed[1]*this.dragTime/13/10/1000];
+                            let ax = 0;
+                            let ay = 0;
+                            if (this.parentElement.gravitySpots.size) {
+                                for (const k of this.parentElement.gravitySpots) {
+                                    if (this.gravity === k) continue;
+                                    const b = this.parentElement.getGravity(k, {x: cords[0], y: cords[1], mass: this.mass, radius: this.radius});
+                                    ax += b[0];
+                                    ay += b[1];
+                                }
+                            }
+                            for (let k of this.parentElement.airLines) {
+                                const a = k.countF({x: cords[0], y: cords[1], mass: this.mass, radius: this.radius}, time, true);
+                                ax+=a[0];
+                                ay+=a[1];
+                            }
+                            speed = [speed[0]+(this.ax+ax)*this.dragTime/13/10/1000, speed[1]+(this.ay+ay+this.parentElement.g)*this.dragTime/13/10/1000];
+                        }
+                        if (Math.sqrt(Math.pow(cords[0]-this.x, 2)+Math.pow(cords[1]-this.y, 2)) > this.radius+lineWidth || done) {
+                            spots.push(cords.concat([]));
+                            done = true;
+                        }
+                    }
+                    let counter = 0;
+                    let length = spots.length;
+                    for (let i of spots) {
+                        con.closePath();
+                        con.beginPath();
+                        con.arc(i[0], i[1], this.dragSpotMax-counter*(this.dragSpotMax-this.dragSpotMin)/length, 0, Math.PI*2);
+                        counter++;
+                        con.fill();
+                    }
+                    con.closePath();
+                    con.beginPath();
+                }
             }
             if (this.fixed && (this.angles[0] !== this.angles[1])) con.arc(this.#x + this.radius, this.#y + this.radius, this.radius, -this.angles[1], -this.angles[0]);
             else con.arc(this.#x + this.radius, this.#y + this.radius, this.radius, 0, Math.PI * 2);
@@ -316,6 +361,14 @@ function mainStart() {
 
     let start, stop, pitch, blur;
 
+    document.addEventListener("pointermove", (e) =>{
+        if (pitch) pitch.dragChange(e.pointerId, e.pageX, e.pageY);
+    });
+
+    document.addEventListener("pointerup", (e)=>{
+        if (pitch) pitch.dragShoot(e.pointerId);
+    })
+
     class Physics {
         #elemsInSystem = [];
         #linesInSystem = [];
@@ -331,6 +384,50 @@ function mainStart() {
         #G = 1;
         clickable = new Set();
         drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
+        drags = new Map();
+
+        startDragging(elem, x, y, id) {
+            this.drags.set(id, elem);
+            elem.onDragging = true;
+            this.dragChange(id, x, y);
+            console.log(this.drags);
+        }
+
+        dragChange(id, x, y){
+            const elem = this.drags.get(id);
+            if (!elem) return;
+            x -= this.elem.getBoundingClientRect().left;
+            y -= this.elem.getBoundingClientRect().top;
+            const length = Math.sqrt(Math.pow(elem.x - x, 2) + Math.pow(elem.y - y, 2));
+            console.log(length, elem.dragMinRadius);
+            if (length > elem.dragMinRadius) {
+                elem.onDragging = true;
+                const v = Math.min(elem.dragVMax, (length-elem.dragMinRadius)/(elem.dragRadius - elem.dragMinRadius)*elem.dragVMax);
+                const tan = Math.abs((y - elem.y)/(x - elem.x));
+                const xsing = -(x - elem.x)/Math.abs(x - elem.x);
+                const ysing = -(y - elem.y)/Math.abs(y - elem.y);
+                const vx = v/Math.sqrt(tan**2+1)*xsing;
+                const vy = Math.sqrt(v**2-vx**2)*ysing;
+                elem.draggingVector = [vx, vy];
+            }
+            else elem.onDragging = false;
+        }
+
+        dragShoot(id) {
+            const elem = this.drags.get(id);
+            if (!elem) return;
+            console.log("shoot");
+            elem.fixed = false;
+            elem.fixedBeforeTouch = false;
+            elem.vector = elem.draggingVector.concat([]);
+            this.dragCancel(id);
+        }
+
+        dragCancel(id, elem = this.drags.get(id)) {
+            elem.draggingVector = [0,0];
+            elem.onDragging = false;
+            this.drags.delete(id);
+        }
 
         addDraw(spots, color) {
             this.drawings[color].add(spots);
@@ -576,6 +673,11 @@ function mainStart() {
                         i.ax *= scalex;
                         i.ax *= scaley;
                         i.m *= scale;
+                        i.dragSpotMin *= scale;
+                        i.dragSpotMax *= scale;
+                        i.dragMinRadius *= scale;
+                        i.dragVMax *= scale;
+                        i.dragRadius *= scale;
                         this.addedToSystem(new Circle(i, this));
                     }
 
@@ -600,6 +702,11 @@ function mainStart() {
                         i.rboom *= scale;
                         i.f *= scale;
                         i.m *= scale;
+                        i.dragSpotMin *= scale;
+                        i.dragSpotMax *= scale;
+                        i.dragMinRadius *= scale;
+                        i.dragVMax *= scale;
+                        i.dragRadius *= scale;
                         this.addedToSystem(new tnt(i, this));
                     }
 
@@ -1257,6 +1364,14 @@ function mainStart() {
             const k2 = -1 / k1;
             this.createLineCircleVector(cr, {k: k2});
         }
+
+        get airLines() {
+            return this.#airLines;
+        }
+
+        get gravitySpots() {
+            return this.#gravitySpots;
+        }
     }
 
     class tnt extends Circle {
@@ -1460,7 +1575,7 @@ function mainStart() {
             this.main();
         }
 
-        countF(ball, time) {
+        countF(ball, time, bol) {
             const {x, y} = ball;
             const [{k: k1, b: b1}, {k: k2, b: b2}, {k: k3, b: b3}, {k: k4, b: b4}] = this.lines;
             if ((k1 * x + b1 - y) * (k2 * x + b2 - y) <= 0 && (k3 * x + b3 - y) * (k4 * x + b4 - y) <= 0) {
@@ -1479,9 +1594,11 @@ function mainStart() {
                         }
                 };
                 const gr = Physics.prototype.getGravity(sp, ball, true);
-                ball.vector = [ball.vector[0] + gr[0] / ball.mass * time, ball.vector[1] + gr[1] / ball.mass * time];
+                if (!bol) ball.vector = [ball.vector[0] + gr[0]/ball.mass*time, ball.vector[1] +gr[1]/ball.mass*time];
+                return [gr[0]/ball.mass, gr[1]/ball.mass];
 
             }
+            return [0,0];
 
         }
 
@@ -1537,6 +1654,10 @@ function mainStart() {
         createFromJson(text);
     }
 
+    function countDraggingVector(x, y) {
+
+    }
+
     const pitchIn = document.getElementById("pitchIn");
     pitchIn.addEventListener("pointerdown", (event) => {
         if (!pitch) {
@@ -1549,10 +1670,9 @@ function mainStart() {
             if (Math.sqrt(Math.pow(i.x - x1, 2) + Math.pow(i.y - y1, 2)) <= i.radius+lineWidth) {
                 if (i.touchRemove) i.remove();
                 else if (i.fixedBeforeTouch) {
-                    i.fixed = false;
-                    i.fixedBeforeTouch = false;
-                    pitch.clickable.delete(i);
-                } else if (i.boombastick) i.explodeStart();
+                    pitch.startDragging(i, event.pageX, event.pageY, event.pointerId);
+                }
+                else if (i.boombastick) i.explodeStart();
             }
         }
     });
