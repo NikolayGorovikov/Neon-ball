@@ -144,9 +144,9 @@ function mainStart() {
                 {
                     let done = false;
                     for (let i = 0; i < 13; i++) {
-                        const time3 = 1000/60/10;
-                        for (let a = time3; a <= this.dragTime/13; a+=time3) {
-                            cords = [cords[0]+speed[0]*time3/1000, cords[1]+speed[1]*time3/1000];
+                        let time3 = 0.001666;
+                        for (var a = time3; a <= this.dragTime/13/1000; a+=time3) {
+                            cords = [cords[0]+speed[0]*time3, cords[1]+speed[1]*time3];
                             let ax = 0;
                             let ay = 0;
                             if (this.parentElement.gravitySpots.size) {
@@ -162,8 +162,26 @@ function mainStart() {
                                 ax+=a[0];
                                 ay+=a[1];
                             }
-                            speed = [speed[0]+(this.ax+ax)*time3/1000, speed[1]+(this.ay+ay+this.parentElement.g)*time3/1000];
+                            speed = [speed[0]+(this.ax+ax)*time3, speed[1]+(this.ay+ay+this.parentElement.g)*time3];
                         }
+                        time3 = this.dragTime/13/1000 - a;
+                        cords = [cords[0]+speed[0]*time3/1000, cords[1]+speed[1]*time3/1000];
+                        let ax = 0;
+                        let ay = 0;
+                        if (this.parentElement.gravitySpots.size) {
+                            for (const k of this.parentElement.gravitySpots) {
+                                if (this.gravity === k) continue;
+                                const b = this.parentElement.getGravity(k, {x: cords[0], y: cords[1], mass: this.mass, radius: this.radius});
+                                ax += b[0];
+                                ay += b[1];
+                            }
+                        }
+                        for (let k of this.parentElement.airLines) {
+                            const a = k.countF({x: cords[0], y: cords[1], mass: this.mass, radius: this.radius}, time, true);
+                            ax+=a[0];
+                            ay+=a[1];
+                        }
+                        speed = [speed[0]+(this.ax+ax)*time3/1000, speed[1]+(this.ay+ay+this.parentElement.g)*time3/1000];
                         if (Math.sqrt(Math.pow(cords[0]-this.x, 2)+Math.pow(cords[1]-this.y, 2)) > this.radius+lineWidth || done) {
                             spots.push(cords.concat([]));
                             done = true;
@@ -836,6 +854,8 @@ function mainStart() {
 
         main(time , fullTime) {
             let chvTime = fullTime / 10;
+            const normalized = normalize(chvTime);
+            let chva = 0;
             time = normalize(time);
             main: while (time > 0) {
                 let timeIn = this.findSmallestTime(fullTime- time, 0.003, fullTime);
@@ -844,19 +864,21 @@ function mainStart() {
                     if (timeIn.type === true && timeIn.t === 0) break main;
                     timeIn = this.findSmallestTime(fullTime - time, 0.003, fullTime);
                 }
-                const time2 = timeIn.t;
-                if (time2 > fullTime / 10) {
-                    this.drawFrame(fullTime / 10);
-                    this.changeVectors(fullTime / 10);
-                    time = normalize(time - fullTime / 10);
+                let time2 = timeIn.t;
+                if (time2 >= normalized) {
+                    this.drawFrame(normalized);
+                    this.changeVectors(normalized);
+                    time = normalize(time - normalized);
+                    chva++;
                     continue;
                 }
                 chvTime = normalize(chvTime - time2);
                 if (chvTime <= 0) {
                     this.drawFrame(chvTime + time2);
-                    this.changeVectors(fullTime / 10);
+                    this.changeVectors(normalized);
                     time = normalize(time - (chvTime + time2));
-                    chvTime = fullTime / 10;
+                    chvTime = normalized;
+                    chva++;
                     continue;
                 }
                 this.drawFrame(time2);
@@ -870,6 +892,7 @@ function mainStart() {
                 time = normalize(time - time2);
             }
             this.renderCanvas(fullTime);
+            if (chva === 9) this.changeVectors(normalized);
         }
 
         start() {
@@ -1110,8 +1133,6 @@ function mainStart() {
                     {
                         time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
                     }
-
-
                 }
                 if (amount === 6) {
                     continue;
