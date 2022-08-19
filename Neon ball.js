@@ -117,28 +117,36 @@ function mainStart() {
 
         renderCanvas(con, can, time) {
             con.beginPath();
-            con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor : this.fixed ? lineColor : ballColor;
+            let col;
+            col = con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor : this.fixed ? lineColor : ballColor;
             con.lineWidth = lineWidth;
             con.shadowBlur = blur;
             con.shadowColor = this.main ? mainBallColorShadowColor : this.fixedBeforeTouch ? ballShadowColor : this.fixed ? lineShadowColor : ballShadowColor;
-            if (this.fixedBeforeTouch && time) {
-                const kf = Math.abs(Math.sin(2 * (this.time + time)));
+            if (this.fixedBeforeTouch && time && !this.onDragging) {
+                // const kf = Math.abs(Math.sin(2 * (this.time + time)));
                 this.time += time;
-                const color = `rgb(${Math.round(this.fl0 + (this.bl0 - this.fl0) * kf)}, ${Math.round(this.fl1 + (this.bl1 - this.fl1) * kf)}, ${Math.round(this.fl2 + (this.bl2 - this.fl2) * kf)})`;
-                con.strokeStyle = color;
-                con.shadowColor = color;
-                con.lineWidth *= (1 + (1 - kf) / 5);
+                // const color = `rgb(${Math.round(this.fl0 + (this.bl0 - this.fl0) * kf)}, ${Math.round(this.fl1 + (this.bl1 - this.fl1) * kf)}, ${Math.round(this.fl2 + (this.bl2 - this.fl2) * kf)})`;
+                // con.strokeStyle = color;
+                // con.shadowColor = color;
+                // con.lineWidth *= (1 + (1 - kf) / 5);
+                const arr = col.split(")");
+                arr[0] = arr[0].replace("rgb", "rgba");
+                arr[1] = ","+(Math.cos(this.time*3-3)/2+0.5);
+                arr[2] = ")"
+                con.fillStyle = arr.join("");
 
             }
             if (this.onDragging) {
+                this.time = 0;
                 const spots = [];
                 let cords = [this.x, this.y];
                 let speed = this.draggingVector.concat([]);
                 {
                     let done = false;
                     for (let i = 0; i < 13; i++) {
-                        for (let a = this.dragTime/13/10; a <= this.dragTime/13; a+=this.dragTime/13/10) {
-                            cords = [cords[0]+speed[0]*this.dragTime/13/10/1000, cords[1]+speed[1]*this.dragTime/13/10/1000];
+                        const time3 = 1000/60/10;
+                        for (let a = time3; a <= this.dragTime/13; a+=time3) {
+                            cords = [cords[0]+speed[0]*time3/1000, cords[1]+speed[1]*time3/1000];
                             let ax = 0;
                             let ay = 0;
                             if (this.parentElement.gravitySpots.size) {
@@ -154,7 +162,7 @@ function mainStart() {
                                 ax+=a[0];
                                 ay+=a[1];
                             }
-                            speed = [speed[0]+(this.ax+ax)*this.dragTime/13/10/1000, speed[1]+(this.ay+ay+this.parentElement.g)*this.dragTime/13/10/1000];
+                            speed = [speed[0]+(this.ax+ax)*time3/1000, speed[1]+(this.ay+ay+this.parentElement.g)*time3/1000];
                         }
                         if (Math.sqrt(Math.pow(cords[0]-this.x, 2)+Math.pow(cords[1]-this.y, 2)) > this.radius+lineWidth || done) {
                             spots.push(cords.concat([]));
@@ -163,6 +171,8 @@ function mainStart() {
                     }
                     let counter = 0;
                     let length = spots.length;
+                    const shc = con.shadowColor;
+                    con.shadowColor = "transparent";
                     for (let i of spots) {
                         con.closePath();
                         con.beginPath();
@@ -172,11 +182,12 @@ function mainStart() {
                     }
                     con.closePath();
                     con.beginPath();
+                    con.shadowColor = shc;
                 }
             }
             if (this.fixed && (this.angles[0] !== this.angles[1])) con.arc(this.#x + this.radius, this.#y + this.radius, this.radius, -this.angles[1], -this.angles[0]);
             else con.arc(this.#x + this.radius, this.#y + this.radius, this.radius, 0, Math.PI * 2);
-            this.boombastick ? con.fill() : 0;
+            this.boombastick || (this.fixedBeforeTouch && !this.onDragging) ? con.fill() : 0;
             con.stroke();
             con.closePath();
         }
@@ -296,6 +307,8 @@ function mainStart() {
         renderCanvas(con) {
             con.moveTo(this.spots[0][0], this.spots[0][1]);
             for (let i = 1; i < this.spots.length; i++) con.lineTo(this.spots[i][0], this.spots[i][1]);
+            // con.moveTo(this.lines[0].x1, this.lines[1].y1);
+            // for (let i = 0; i < this.lines.length; i++) con.lineTo(this.lines[i].x2, this.lines[i].y2);
         }
 
     }
@@ -366,7 +379,7 @@ function mainStart() {
     });
 
     document.addEventListener("pointerup", (e)=>{
-        if (pitch) pitch.dragShoot(e.pointerId);
+        if (pitch) pitch.dragShoot(e.pointerId, e.pageX, e.pageY);
     })
 
     class Physics {
@@ -387,10 +400,10 @@ function mainStart() {
         drags = new Map();
 
         startDragging(elem, x, y, id) {
+            if (!this.play) return;
             this.drags.set(id, elem);
             elem.onDragging = true;
             this.dragChange(id, x, y);
-            console.log(this.drags);
         }
 
         dragChange(id, x, y){
@@ -399,7 +412,6 @@ function mainStart() {
             x -= this.elem.getBoundingClientRect().left;
             y -= this.elem.getBoundingClientRect().top;
             const length = Math.sqrt(Math.pow(elem.x - x, 2) + Math.pow(elem.y - y, 2));
-            console.log(length, elem.dragMinRadius);
             if (length > elem.dragMinRadius) {
                 elem.onDragging = true;
                 const v = Math.min(elem.dragVMax, (length-elem.dragMinRadius)/(elem.dragRadius - elem.dragMinRadius)*elem.dragVMax);
@@ -413,14 +425,20 @@ function mainStart() {
             else elem.onDragging = false;
         }
 
-        dragShoot(id) {
+        dragShoot(id, x, y) {
             const elem = this.drags.get(id);
             if (!elem) return;
-            console.log("shoot");
-            elem.fixed = false;
-            elem.fixedBeforeTouch = false;
-            elem.vector = elem.draggingVector.concat([]);
-            this.dragCancel(id);
+            x -= this.elem.getBoundingClientRect().left;
+            y -= this.elem.getBoundingClientRect().top;
+            const length = Math.sqrt(Math.pow(elem.x - x, 2) + Math.pow(elem.y - y, 2));
+            if (length > elem.dragMinRadius) {
+                elem.fixed = false;
+                elem.fixedBeforeTouch = false;
+                elem.vector = elem.draggingVector.concat([]);
+                elem.parentElement.clickable.delete(elem);
+                this.dragCancel(id);
+            }
+            else this.dragCancel(id);
         }
 
         dragCancel(id, elem = this.drags.get(id)) {
@@ -560,6 +578,11 @@ function mainStart() {
                 i.m *= scale;
                 i.rboom *= scale;
                 i.f *= scale;
+                i.dragSpotMin *= scale;
+                i.dragSpotMax *= scale;
+                i.dragMinRadius *= scale;
+                i.dragVMax *= scale;
+                i.dragRadius *= scale;
             }
 
             for (const i of this.#airLines) {
@@ -867,6 +890,7 @@ function mainStart() {
                 }
                 this.main((time-this.time)/1000, (time-this.time)/1000);
                 this.inMain();
+                this.actualFPS = 1000/(time-this.time);
                 this.time = time;
             });
         }
@@ -874,6 +898,7 @@ function mainStart() {
         stop() {
             window.cancelAnimationFrame(this.#movie);
             this.play = false;
+            for (const [i] of this.drags) this.dragCancel(i);
         }
 
         addedToSystem(elem) {

@@ -27,9 +27,9 @@ class Circle extends HTMLElement {
     time = 0;
     dragSpotMax = 5;
     dragSpotMin = 4;
-    dragTime = 1000;
-    dragVMax = 1000;
-    dragRadius = 45;
+    dragTime = 800;
+    dragVMax = 750;
+    dragRadius = 60;
     dragMinRadius = 8;
 
     connectedCallback() {
@@ -3445,8 +3445,9 @@ function createFromJSON(json) {
             for (const i in obj.pitchParams) window[i] = obj.pitchParams[i];
             const scale = pitch.canvas.width/obj.width;
 
-            this.g *= scale**2;
-            this.G *= scale**2;
+            this.g *= scale;
+            this.G *= scale;
+            this.boomkf *= scale;
             window.elosLimit = Number(window.elosLimit)*scale;
 
             document.getElementById("gHolder").value = this.g;
