@@ -35,12 +35,6 @@ function mainStart() {
             if (this.fixedBeforeTouch) {
                 this.angles = [0, 0];
                 this.time = 0;
-                this.fl0 = Number(fixedBallColor.split(",")[0]);
-                this.fl1 = Number(fixedBallColor.split(",")[1]);
-                this.fl2 = Number(fixedBallColor.split(",")[2]);
-                this.bl0 = Number(ballColor2.split(",")[0]);
-                this.bl1 = Number(ballColor2.split(",")[1]);
-                this.bl2 = Number(ballColor2.split(",")[2]);
             }
             this.touchRemove = Boolean(Number(obj.touchRemove));
             this.main = Boolean(Number(obj.main));
@@ -1110,7 +1104,6 @@ function mainStart() {
                 let amount = 0;
                 for (let k of j.nearBalls) {
                     let time2 = this.findSmallestCircleTime(j, k);
-
                     if (time2.t < smallest && !reverse) {
                         time = new Shoot(0, "o");
                         const cords = [[j.x, j.y], [k.x, k.y]];
@@ -1125,7 +1118,7 @@ function mainStart() {
                         k.x = cords[1][0];
                         k.y = cords[1][1];
                     }
-                    if (time2.data.l < 2.1 * k.radius) amount++;
+                    if (time2.data.l < 2.1 * k.radius && time2.type === "b") amount++;
                     else setTimeout(() => {
                         j.nearBalls.delete(k);
                         k.nearBalls.delete(j)
@@ -1140,7 +1133,6 @@ function mainStart() {
                 for (let n = i + 1, k = this.#elemsInSystem[n]; n < this.#elemsInSystem.length; n++, k = this.#elemsInSystem[n]) {
                     if (j.nearBalls.has(k)) continue;
                     let time2 = this.findSmallestCircleTime(j, k);
-
                     if (time2.t < smallest && !reverse) {
                         time = new Shoot(0, "o");
                         const cords = [[j.x, j.y], [k.x, k.y]];
@@ -1170,7 +1162,6 @@ function mainStart() {
                 for (let n = 0, k = this.#linesInSystem[n]; n < this.#linesInSystem.length; n++, k = this.#linesInSystem[n]) {
 
                     let time2 = this.findSmallestLineCircleTime(j, k);
-
                     if (time2.t < smallest && !reverse) {
                         time = new Shoot(0, "o");
                         const cords = [j.x, j.y];
@@ -1186,15 +1177,29 @@ function mainStart() {
                 }
 
                 for (let r of this.#flexLinesInSystem) {
+                    if (r.lines[0]) {
+                        const sps = [[r.lines[0].x1, r.lines[0].y1], [r.lines[r.lines.length-1].x2, r.lines[r.lines.length-1].y2]];
+                        for (const w of sps) {
+                            const t = this.findSmallestCircleSpotTime(j, {x:w[0], y:w[1]});
+                            if (t.t < smallest) {
+                                this.createBallPointVector(j, t.data.sp);
+                            }
+                            time = (t.t < time.t) ? t : time;
+                        }
+                    }
+
                     let time3 = this.findSmallestFlexLinesCircleTime(j, r);
 
                     if (time3 <= time.t) {
-
+                        const points = new Set();
                         for (let n = 0, k = r.lines[n]; n < r.lines.length; n++, k = r.lines[n]) {
 
                             let time2 = this.findSmallestLineCircleTime(j, k);
-
-                            if (time2.t < smallest && !reverse) {
+                            if (time2.type === "bp") {
+                                points.add({point: time2.data.sp, num: n, time: time2.t});
+                                continue;
+                            }
+                            else if (time2.t < smallest && !reverse && time2.type === "bl") {
                                 time = new Shoot(0, "o");
                                 const cords = [j.x, j.y];
                                 j.move(time2.t);
@@ -1203,11 +1208,27 @@ function mainStart() {
                                 } else this.createBallPointVector(j, time2.data.sp);
                                 [j.x, j.y] = cords;
                             }
-
-
                             time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
                         }
-
+                        let i;
+                        let min = Infinity;
+                        for (let j of points) {
+                            if (min >= j.time) {
+                                min = j.time;
+                                i = j;
+                            }
+                        }
+                        if (min < time.t) {
+                            const line = r.lines[i.num];
+                            if (line.x1 === i.point.x && line.y1 === i.point.y) {
+                                if (i.num === 0) this.createBallPointVector(j, i.point);
+                                else this.createLineCircleVector(j, new Line({x1: r.lines[i.num - 1].x1, y1: r.lines[i.num - 1].y1, x2: r.lines[i.num].x2, y2: r.lines[i.num].y2}));
+                            }
+                            else {
+                                if (i.num === r.lines.length-1) this.createBallPointVector(j, i.point);
+                                else this.createLineCircleVector(j, new Line({x1: r.lines[i.num].x1, y1: r.lines[i.num].y1, x2: r.lines[i.num+1].x2, y2: r.lines[i.num+1].y2}));
+                            }
+                        }
                     }
                 }
             }

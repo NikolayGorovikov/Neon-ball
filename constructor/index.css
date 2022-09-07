@@ -151,7 +151,7 @@ body{
     right: 0;
 }
 
-.moveSpot{
+.moveSpot, .moveSpot2{
     width: 20px;
     height: 20px;
     background-color: white;
@@ -161,4 +161,8 @@ body{
     border-radius: 50%;
     z-index: 100;
     opacity: 0.6;
+}
+
+.COGAdd{
+    display: none;
 }

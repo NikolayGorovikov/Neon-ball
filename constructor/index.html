@@ -11,13 +11,13 @@
 <div class="popup passive" id="popup">
 </div>
 <div id="time" style="position: fixed; top: -1500px; left: -1600px; transform: scale(5);"></div>
-    <physics-area elos="1" id="main" >
+    <physics-area elos="1" id="main" class="delete1">
     <div style="display: none;">Не убирать для совместимости</div>
     </physics-area>
     <div id="menu">
         <div>Колличество шаров: <div id="objamount"></div></div>
         <div>Колличество линий: <div id="lineamount"></div></div>
-        <div>Полноэкранное масштабирование <input type="checkbox" name="initial1" oninput="fullScreenScale = this.checked" id="fullScreenScale"></div>
+        <div class="delete1">Полноэкранное масштабирование <input type="checkbox" name="initial1" oninput="fullScreenScale = this.checked" id="fullScreenScale"></div>
         <div id="drawMenu" class="passive">
             <select name="type" id="colorSelect" oninput="changeColor(event)">
                 <option value="background">Фон</option>
@@ -39,30 +39,37 @@
             <div class="bt" id="finishCancel">Cancel</div>
         </div>
         <div class="mainMenu active" id="mainMenu">
-            <div class="bt" onclick="copy(getAllJSON())">Получить JSON</div>
-            <div class="bt" onclick="(async () => {const text = await navigator.clipboard.readText(); createFromJSON(text);})()">Вставить JSON</div>
-            <div class="bt start" id="stb">Старт</div>
-            <div>fps: <input type="text" name="initial1" value="60" oninput="inputFps(event)" id="fpsHolder"></div>
-            <div>Скорость (от 0 до ∞, нужно для отладки, в игре скорость всегда 1): <input type="text" name="initial2" value="1" oninput="inputSpeed(event)"></div>
-            <div>Установить g: <input type="text" name="initial3" value="1000" oninput="inputg(event)" id="gHolder"></div>
-            <div>Установить elos: <input type="text" name="initial3" value="20" oninput="inputelos(event)" id="elosLimitHolder"></div>
-            <div>Установить G (чем больше значение тем интенсивнее притягиваются друг к другу объекты): <input type="text" name="initial4" value="1" oninput="inputG(event)" id="gbHolder"></div>
+            <div class="bt delete1" onclick="copy(getAllJSON())">Получить JSON</div>
+            <div class="bt delete1" onclick="(async () => {const text = await navigator.clipboard.readText(); createFromJSON(text);})()">Вставить JSON</div>
+            <div class="bt start delete1" id="stb">Старт</div>
+            <div class="delete1">fps: <input type="text" name="initial1" value="60" oninput="inputFps(event)" id="fpsHolder" ></div>
+            <div class="delete1">Скорость (от 0 до ∞, нужно для отладки, в игре скорость всегда 1): <input type="text" name="initial2" value="1" oninput="inputSpeed(event)"></div>
+            <div class="delete1">Установить g: <input type="text" name="initial3" value="1000" oninput="inputg(event)" id="gHolder"></div>
+            <div class="delete1">Установить elos: <input type="text" name="initial3" value="20" oninput="inputelos(event)" id="elosLimitHolder"></div>
+            <div class="delete1">Установить G (чем больше значение тем интенсивнее притягиваются друг к другу объекты): <input type="text" name="initial4" value="1" oninput="inputG(event)" id="gbHolder"></div>
             <div class="content">
                 <select name="type" id="itemSelect" oninput="document.getElementById('doneBt').dispatchEvent(new PointerEvent('pointerdown')); console.log(1)">
-                    <option value="ball">Шар</option>
-                    <option value="bombBall">Взрываюшийся шар</option>
+                    <option value="ball" class="delete1">Шар</option>
+                    <option value="bombBall" class="delete1">Взрываюшийся шар</option>
                     <option value="fixedBall">Фиксированный шар</option>
                     <option value="line">Линия</option>
                     <option value="line2">Линия-перо</option>
-                    <option value="lineAir">Линия-вентилятор</option>
+                    <option value="lineAir" class="delete1">Линия-вентилятор</option>
                     <option value="area">Перенести элементы</option>
-                    <option value="finish">Добавитб финищ</option>
-                    <option value="draw">Нарисовать контур</option>
-                    <option value="draw2">Нарисовать плавный контур</option>
+                    <option value="finish" class="delete1">Добавитб финищ</option>
+                    <option value="draw" class="delete1">Нарисовать контур</option>
+                    <option value="draw2" class="delete1">Нарисовать плавный контур</option>
+                    <option value="createContour" class="delete1">Создать новый обьект с цт</option>
+                    <option value="scaleContour" class="delete1">Редактировать обьект с цт</option>
+                    <option value="addContour" class="delete1">Добавить обьект с цт (JSON)</option>
 <!--                    <option value="gravitySpot">Точка гравитации (Они приняли ислам мне лень)</option>-->
                 </select>
                 <div class="bt done" id="doneBt">Добавить</div>
             </div>
+            <div class="COGAdd">Координата X: <input type="text" name="initial1" value="" oninput="inputXCOG(event)" id="COGXCord"></div>
+            <div class="COGAdd">Координата Y: <input type="text" name="initial1" value="" oninput="inputYCOG(event)" id="COGYCord"></div>
+            <div class="bt COGAdd" id="autoCOG">Установить автоматически центр тяжести</div>
+            <div id="addContour" style="display: none;" class="bt">Добавить контур</div>
         </div>
 
         <div class="ballMenu passive" id="ballMenu">

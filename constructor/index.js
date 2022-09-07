@@ -29,8 +29,8 @@ class Circle extends HTMLElement {
     dragSpotMin = 4;
     dragTime = 800;
     dragVMax = 750;
-    dragRadius = 60;
-    dragMinRadius = 8;
+    dragRadius = 110;
+    dragMinRadius = 13;
 
     connectedCallback() {
         setTimeout(()=>{
@@ -468,6 +468,314 @@ class Shoot {
     }
 }
 
+class COGObject {
+    gravity = false;
+    #vector;
+
+    set vector(v) {
+        if (this.fixed) return;
+        if (v[0] === 0) v[0] = 0.0000001;
+        if (v[1] === 0) v[1] = 0.0000001;
+        this.#vector = v;
+    }
+
+    get vector(){
+        return this.#vector;
+    }
+
+    remove(){
+        this.parentElement.removeFromCOGSystem(this);
+    }
+
+    constructor(parent, obj) {
+        let {x, y, contours, rx = 0, ry = 0, vx = 0, vy = 0, ax = 0, ay = 0, mass = 1, fixed = false, elos = true, gravity = true, touchRemove, fixedBeforeTouch, angle = 0, angleSpeed = 0.5, main, scale = 1} = obj;
+        this.parentElement = parent;
+
+        this.contours = contours;
+        this.x = rx;
+        this.y = ry;
+        this.#vector = [vx, vy];
+        this.ax = ax;
+        this.ay = ay;
+        this.mass = mass;
+        this.elos = elos;
+        this.gravity = gravity;
+        this.touchRemove = touchRemove;
+        this.fixedBeforeTouch = fixedBeforeTouch;
+        this.fixed = fixed;
+        this.angle = angle;
+        this.angleSpeed = angleSpeed;
+        this.main = main;
+        ({dragSpotMin: this.dragSpotMin, dragSpotMax: this.dragSpotMax, dragTime: this.dragTime, dragMinRadius: this.dragMinRadius, dragVMax: this.dragVMax, dragRadius: this.dragRadius} = obj);
+
+        let max = -Infinity;
+        for (const i of contours) {
+            switch (i.contourType){
+                case "circle":{
+                    this.setCircle(x, y, i, scale);
+                    max = Math.max(max, (i.x**2+i.y**2)**0.5+i.radius);
+                    break;
+                }
+                case "line":{
+                    this.setLine(x, y, i, scale);
+                    max = Math.max(max, (i.x1**2+i.y1**2)**0.5, (i.x2**2+i.y2**2)**0.5);
+                    break;
+                }
+                case "flexLine":{
+                    this.setFlexLine(x, y, i, scale);
+                    for (const j of i.lines) max = Math.max(max, (j.x1**2+j.y1**2)**0.5, (j.x2**2+j.y2**2)**0.5);
+                    break;
+                }
+            }
+            i.parentCOG = this;
+        }
+
+        this.handler = this;
+        if (this.gravity) this.gravity = this;
+
+        if (this.touchRemove || this.fixedBeforeTouch) this.parentElement.clickable.add(this);
+
+        this.parentElement.addToGravitySystem(this);
+
+        this.radius = max;
+        this.rotateIn(this.angle);
+        console.log(this.angle);
+
+        this.parentElement.addToCOGSystem(this);
+    }
+
+    setCircle(x, y, cr, scale){
+        cr.x -= x;
+        cr.y -= y;
+        cr.x *= scale;
+        cr.y *= scale;
+        cr.angle = cr.x >= 0 ? Math.atan(cr.x/cr.y) : Math.atan(cr.x/cr.y)+Math.PI;
+        cr.length = (cr.x**2+cr.y**2)**0.5;
+    }
+
+    setLine(x, y, line, scale) {
+        line.x1 -= x;
+        line.x2 -= x;
+        line.y1 -= y;
+        line.y2 -= y;
+        line.x1 *= scale;
+        line.x2 *= scale;
+        line.y1 *= scale;
+        line.y2 *= scale;
+        line.angle1 = line.x1 >= 0 ? Math.atan(line.y1/line.x1) : Math.atan(line.y1/line.x1)+Math.PI;
+        line.angle2 = line.x2 >= 0 ? Math.atan(line.y2/line.x2) : Math.atan(line.y2/line.x2)+Math.PI;
+        line.length1 = (line.x1**2+line.y1**2)**0.5;
+        line.length2 = (line.x2**2+line.y2**2)**0.5;
+    }
+
+    setFlexLine(x, y, fl, scale) {
+        for (const i of fl.lines) {
+            this.setLine(x, y, i, scale);
+        }
+    }
+
+    move(t) {
+        if (this.fixed) return;
+        this.x += this.vector[0]*t;
+        this.y += this.vector[1]*t;
+    }
+
+    rotateIn(an) {
+        if (this.fixed) return;
+        for (const i of this.contours) {
+            i.rotate(an);
+        }
+    }
+
+    rotate(t) {
+        this.rotateIn(t*this.angleSpeed*Math.PI*2);
+    }
+
+    renderCanvas(con, can, time) {
+        con.beginPath();
+        let col = con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor: this.fixed ? lineColor : ballColor;
+        if (this.fixedBeforeTouch && time && !this.onDragging) {
+            this.time += time;
+            const arr = col.split(")");
+            arr[0] = arr[0].replace("rgb", "rgba");
+            arr[1] = ","+(Math.cos(this.time*3-3)/2+0.5);
+            arr[2] = ")"
+            con.fillStyle = arr.join("");
+        }
+        con.lineWidth = lineWidth;
+        con.shadowBlur = blur;
+        con.shadowColor = this.main ? mainBallColorShadowColor : this.fixedBeforeTouch ? ballShadowColor: this.fixed ? lineShadowColor : ballShadowColor;
+        con.lineCap = "round";
+        for (const i of this.contours) i.renderCanvas(con);
+        (this.fixedBeforeTouch && !this.onDragging) ? con.fill() : 0;
+        con.stroke();
+        con.closePath();
+
+        if (this.onDragging) {
+            con.beginPath();
+            this.time = 0;
+            const spots = [];
+            let cords = [this.x, this.y];
+            let speed = this.draggingVector.concat([]);
+            {
+                let done = false;
+                for (let i = 0; i < 13; i++) {
+                    let time3 = 0.001666;
+                    for (var a = time3; a <= this.dragTime/13/1000; a+=time3) {
+                        cords = [cords[0]+speed[0]*time3, cords[1]+speed[1]*time3];
+                        let ax = 0;
+                        let ay = 0;
+                        if (this.parentElement.gravitySpots.size) {
+                            for (const k of this.parentElement.gravitySpots) {
+                                if (this.gravity === k) continue;
+                                const b = this.parentElement.getGravity(k, {x: cords[0], y: cords[1], mass: this.mass, radius: -Infinity});
+                                ax += b[0];
+                                ay += b[1];
+                            }
+                        }
+                        for (let k of this.parentElement.airLines) {
+                            const a = k.countF({x: cords[0], y: cords[1], mass: this.mass, radius: this.radius}, time, true);
+                            ax+=a[0];
+                            ay+=a[1];
+                        }
+                        speed = [speed[0]+(this.ax+ax)*time3, speed[1]+(this.ay+ay+this.parentElement.g)*time3];
+                    }
+                    time3 = this.dragTime/13/1000 - a;
+                    cords = [cords[0]+speed[0]*time3/1000, cords[1]+speed[1]*time3/1000];
+                    let ax = 0;
+                    let ay = 0;
+                    if (this.parentElement.gravitySpots.size) {
+                        for (const k of this.parentElement.gravitySpots) {
+                            if (this.gravity === k) continue;
+                            const b = this.parentElement.getGravity(k, {x: cords[0], y: cords[1], mass: this.mass, radius: this.radius});
+                            ax += b[0];
+                            ay += b[1];
+                        }
+                    }
+                    for (let k of this.parentElement.airLines) {
+                        const a = k.countF({x: cords[0], y: cords[1], mass: this.mass, radius: this.radius}, time, true);
+                        ax+=a[0];
+                        ay+=a[1];
+                    }
+                    speed = [speed[0]+(this.ax+ax)*time3/1000, speed[1]+(this.ay+ay+this.parentElement.g)*time3/1000];
+                    if (Math.sqrt(Math.pow(cords[0]-this.x, 2)+Math.pow(cords[1]-this.y, 2)) > this.radius+lineWidth || done) {
+                        spots.push(cords.concat([]));
+                        done = true;
+                    }
+                }
+                let counter = 0;
+                let length = spots.length;
+                con.shadowColor = "transparent";
+                for (let i of spots) {
+                    con.arc(i[0], i[1], this.dragSpotMax-counter*(this.dragSpotMax-this.dragSpotMin)/length, 0, Math.PI*2);
+                    counter++;
+
+                }
+                con.fill();
+                con.closePath();
+            }
+        }
+    }
+
+    resize(scale, scalex, scaley) {
+        this.radius *= scale;
+        this.vector = [this.vector[0]*scalex, this.vector[1]*scaley];
+        this.x *= scalex;
+        this.y *= scaley;
+        this.mass *= scale;
+
+        for (const i of this.contours) {
+            i.resize(scale, scalex, scaley);
+        }
+    }
+}
+
+class COGCircle {
+    contourType = "circle";
+    constructor({x, y, radius, an1 = false, an2 = false}) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.an1 = an1;
+        this.an2 = an2;
+        if (this.an1 * 2) this.isAn = true;
+    }
+
+    rotate(an) {
+        this.angle += an;
+        this.x = Math.sin(this.angle)*this.length;
+        this.y = Math.cos(this.angle)*this.length;
+        if (this.isAn) {
+            this.an1 += an;
+            this.an2 += an;
+        }
+    }
+
+    renderCanvas(con) {
+        if (this.isAn) con.arc(this.x+this.parentCOG.x, this.y+this.parentCOG.y, this.radius ,-this.an1, -this.an2);
+        else con.arc(this.x+this.parentCOG.x, this.y+this.parentCOG.y, this.radius, 0, Math.PI*2);
+    }
+
+    resize(scale, scalex, scaley) {
+        this.x *= scalex;
+        this.y *= scaley;
+        this.radius *= scale;
+    }
+}
+
+class COGLine {
+    contourType = "line";
+    constructor({x1, y1, x2, y2}) {
+        this.x1 = x1;
+        this.x2 = x2;
+        this.y1 = y1;
+        this.y2 = y2;
+    }
+
+    rotate(an) {
+        this.angle1 += an;
+        this.angle2 += an;
+        this.x1 = Math.sin(this.angle1)*this.length1;
+        this.y1 = Math.cos(this.angle1)*this.length1;
+        this.x2 = Math.sin(this.angle2)*this.length2;
+        this.y2 = Math.cos(this.angle2)*this.length2;
+    }
+
+    renderCanvas(con){
+        con.moveTo(this.x1+this.parentCOG.x, this.y1+this.parentCOG.y);
+        con.lineTo(this.x2+this.parentCOG.x, this.y2+this.parentCOG.y);
+    }
+
+    resize(scale, scalex, scaley) {
+        this.x1 *= scalex;
+        this.x2 *= scalex;
+        this.y1 *= scaley;
+        this.y2 *= scaley;
+    }
+}
+
+class COGFlexLine {
+    contourType = "flexLine";
+    constructor({lines, spots}) {
+        this.lines = lines;
+        this.spots = spots;
+    }
+
+    rotate(an) {
+        for (const i of this.lines) i.rotate(an);
+    }
+
+    renderCanvas(con) {
+        con.moveTo(this.lines[0].x1+this.parentCOG.x, this.lines[1].y1+this.parentCOG.y);
+        for (const i of this.lines) con.lineTo(i.x2+this.parentCOG.x, i.y2+this.parentCOG.y);
+    }
+
+    resize(scale, scalex, scaley) {
+        for (const i of this.lines) i.resize(scale, scalex, scaley);
+    }
+
+}
+
 function createLine(x1, y1, x2, y2) {
     const val = document.createElement("physics-line");
     [val.x1, val.y1, val.x2, val.y2] = [x1, y1, x2, y2];
@@ -775,6 +1083,15 @@ class Physics extends HTMLElement {
     #g = 1000;
     #G = 1;
     drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
+    COG = new Set();
+
+    addToCOGSystem(elem) {
+        this.COG.add(elem);
+    }
+
+    removeFromCOGSystem(elem) {
+        this.COG.delete(elem);
+    }
 
     get gravitySpots() {
         return this.#gravitySpots;
@@ -864,8 +1181,8 @@ class Physics extends HTMLElement {
         this.context.closePath();
 
         for (let i of this.#airLines) i.renderCanvas(this.context);
-
         for (let i of this.#elemsInSystem) i.renderCanvas(this.context, this.canvas, time);
+        for (let i of this.COG) i.renderCanvas(this.context, this.canvas, time);
         if (this.finish) this.finish.renderCanvas(this.context, time);
     }
 
@@ -961,7 +1278,6 @@ class Physics extends HTMLElement {
             i = 0;
             if (timeIn.t === 0 && timeIn.type === true) break;
             while (timeIn.t === 0) {
-                console.log(timeIn);
                 if (timeIn.t === 0 && timeIn.type === true) break main;
                 timeIn = this.findSmallestTime(1/fps-time, 0.003, fps);
                 i++
@@ -983,29 +1299,17 @@ class Physics extends HTMLElement {
             }
 
             this.drawFrame(time2);
-
-
-
-            if (timeIn.type === "rw" || timeIn.type === "lw") {
-                timeIn.tar.vector[0] = -1*timeIn.tar.vector[0]*(this.elos ? timeIn.tar.elos : 1);
-                //console.log("lp");
-            }
-            else if (timeIn.type === "tw" || timeIn.type === "bw") {
-                timeIn.tar.vector[1] = -1*timeIn.tar.vector[1]*(this.elos ? timeIn.tar.elos : 1);
-                // console.log("dp");
-            }
             // console.warn(Math.sqrt(Math.pow(this.#elemsInSystem[0].x-this.#elemsInSystem[1].x, 2)+Math.pow(this.#elemsInSystem[0].y-this.#elemsInSystem[1].y, 2)))
-            else if (timeIn.type === "b") {
+            if (timeIn.type === "b") {
                 this.createCircleVector(timeIn.data.main, timeIn.data.nomain);
             }
             else if (timeIn.type === "bl") {
-
                 this.createLineCircleVector(timeIn.data.cr, timeIn.data.ln);
             }
             else if (timeIn.type === "bp") {
-
                 this.createBallPointVector(timeIn.data.cr, timeIn.data.sp);
             }
+            else if (timeIn.type === "bcogl") this.createCOGLineCircleVector(timeIn.data.ln, time.data.cr);
             time = normalize(time - time2);
 
         }
@@ -1068,6 +1372,9 @@ class Physics extends HTMLElement {
     drawFrame(time = 1/this.#fps) {
         for (const i of this.#elemsInSystem) {
             i.move(time);
+        }
+        for (const i of this.COG) {
+            i.move(time);
             i.rotate(time);
         }
     }
@@ -1094,13 +1401,7 @@ class Physics extends HTMLElement {
 
         const alpha = Math.atan(main.vector[1]/main.vector[0]);
 
-        // const b2 = -1/line.k*main.x+main.y;
-        // const x = (b2-line.b)/(line.k+1/line.k);
-        // const y = line.k*x+line.b;
-
         const linesK = -1/line.k;
-
-
 
         if (!isFinite(linesK)) {
             main.vector[1] = -main.vector[1]*main.elos;
@@ -1113,7 +1414,7 @@ class Physics extends HTMLElement {
         const kfx1 = ((angleK >= 0 && (fullAngle % 180 <= 90) && (fullAngle+angleK) % 180 >= 90) || (angleK <= 0 && (fullAngle % 180 >= 90) && (((fullAngle+angleK+360)%360) % 180 <= 90))) ? (-1) : 1;
         const kfy1 = ((angleK >= 0 && (fullAngle % 180 >= 90) && (fullAngle+angleK) % 180 <= 90) || (angleK <= 0 && (fullAngle % 180 <= 90) && (((fullAngle+angleK+360)%360) % 180 >= 90))) ? (-1) : 1;
         const v1 = Math.sqrt(Math.pow(main.vector[0], 2)+Math.pow(main.vector[1], 2));
-        let x1 = -v1/Math.sqrt(1+Math.pow(newAlpha, 2))*(kfx1)*main.vector[0]/Math.abs(main.vector[0]); //
+        let x1 = -v1/Math.sqrt(1+Math.pow(newAlpha, 2))*(kfx1)*main.vector[0]/Math.abs(main.vector[0]);
         let y1 = Math.sqrt(Math.pow(v1, 2)-Math.pow(x1, 2))*(kfy1)*main.vector[1]/Math.abs(main.vector[1]);
         if (isNaN(y1)) {
             y1 = 0.0000000001*(kfy1)*main.vector[1]/Math.abs(main.vector[1]);
@@ -1122,47 +1423,6 @@ class Physics extends HTMLElement {
 
         const elos1 = Math.pow(elosLimit/(Math.max(Math.abs(x1), elosLimit)), 1/3);
         x1 = x1*(main.elos ? elos1 : 1);
-
-        // trenie
-        // const xx1 = x1;
-        // const kf1 = Math.abs(xx1)/xx1;
-        // {
-        //     let n = 1;
-        //     let nomain = {mass: Infinity};
-        //     const x1 = y1;
-        //     const rs1 = main.rs;
-        //
-        //     let x1Save = 0;
-        //
-        //     let rs1Save = n * 1 * rs1 * (1-n);
-        //
-        //     let x1Give = x1 * (1-n) - x1Save;
-        //
-        //     let rs1Give = rs1 * (1-n) - rs1Save;
-        //
-        //     // const sumMain = main1(x1Give+rs1Give*Math.PI*main.radius*kf1, x2Give+rs2Give*Math.PI*nomain.radius*kf2);
-        //     // const sumNomain = nomain1(x1Give+rs1Give*Math.PI*main.radius*kf1, x2Give+rs2Give*Math.PI*nomain.radius*kf2);
-        //
-        //     let self1 = (x1Give + rs1Give * Math.PI * main.radius) * main.mass * kf1;
-        //
-        //     let selfGive1 = self1*main.mass/(main.mass+nomain.mass);
-        //     let selfSave1 = self1;
-        //
-        //
-        //     y1 = y1*n+x1Save + n*(selfSave1)/main.mass;
-        //     main.rs = rs1*n+rs1Save + (1-n)*(selfSave1)/(main.mass*Math.PI*main.radius);
-        //
-        // }
-        // const n = 0.6;
-        // const rs = main.rs;
-        // // main.rs = n*main.rs + (1-n)*y1/Math.PI/main.radius*x1/Math.abs(x1);
-        // // y1 = y1*n+Math.PI*main.radius*rs*(1-n)*x1/Math.abs(x1);
-        //
-        //
-        // console.log(main.rs);
-
-
-        // trenie
 
         const newYK = 1/linesK*(-1);
         const xv1x = x1/Math.sqrt(1+Math.pow(linesK, 2));
@@ -1230,57 +1490,6 @@ class Physics extends HTMLElement {
         const elos1 = Math.pow(elosLimit/(Math.max(Math.abs(x1-x2), elosLimit)), 1/3);
 
 
-        // // trenie
-        // const xx1 = x1;
-        // const xx2 = x2;
-        // const kf1 = Math.abs(xx1)/xx1*((Math.abs(x1) < Math.abs(x2) && x1*x2 > 0) ? (-1) : 1);
-        // const kf2 = Math.abs(xx2)/xx2*((Math.abs(x2) < Math.abs(x1) && x1*x2 > 0) ? (-1) : 1);
-        // {
-        //     const x1 = y1;
-        //     const x2 = y2;
-        //     const n = 1;
-        //     const rs1 = main.rs;
-        //     const rs2 = nomain.rs;
-        //
-        //     function main1(m, n){
-        //         return ((main.mass-nomain.mass)*m+2*nomain.mass*n)/(main.mass+nomain.mass);
-        //     }
-        //
-        //     function nomain1(m, n){
-        //         return (2*main.mass*m+(nomain.mass-main.mass)*n)/(main.mass+nomain.mass);
-        //     }
-        //
-        //     let x1Save = n*main.mass/(main.mass+nomain.mass)*x1*(1-n);
-        //     let x2Save = n*nomain.mass/(main.mass+nomain.mass)*x2*(1-n);
-        //     let rs1Save = n*main.mass/(main.mass+nomain.mass)*rs1*(1-n);
-        //     let rs2Save = n*nomain.mass/(main.mass+nomain.mass)*rs2*(1-n);
-        //     let x1Give = (n-1)*x1-x1Save;
-        //     let x2Give = (n-1)*x2-x2Save;
-        //     let rs1Give = (n-1)*rs1 - rs1Save;
-        //     let rs2Give = (n-1)*rs2 - rs2Save;
-        //     // const sumMain = main1(x1Give+rs1Give*Math.PI*main.radius*kf1, x2Give+rs2Give*Math.PI*nomain.radius*kf2);
-        //     // const sumNomain = nomain1(x1Give+rs1Give*Math.PI*main.radius*kf1, x2Give+rs2Give*Math.PI*nomain.radius*kf2);
-        //
-        //     let self1 = (x1Give+rs1Give*Math.PI*main.radius)*main.mass*kf1;
-        //     let self2 = (x2Give+rs2Give*Math.PI*nomain.radius)*nomain.mass*kf2;
-        //
-        //     let selfGive1 = self1*main.mass/(main.mass+nomain.mass);
-        //     let selfSave1 = self1*nomain.mass/(main.mass+nomain.mass);
-        //     let selfGive2 = self2*nomain.mass/(main.mass+nomain.mass);
-        //     let selfSave2 = self2*main.mass/(main.mass+nomain.mass);
-        //
-        //     y1 = y1*n+x1Save + n*(selfSave1 + selfGive2)/main.mass;
-        //     y2 = y2*n+x2Save + n*(selfSave2 + selfGive1)/nomain.mass;
-        //     main.rs = rs1*n+rs1Save + (1-n)*(selfSave1 + selfGive2)/(main.mass*Math.PI*main.radius);
-        //     nomain.rs = rs2*n+rs2Save + (1-n)*(selfSave2 + selfGive1)/(nomain.mass*Math.PI*nomain.radius);
-        //
-        //     console.log(kf1, kf2);
-        //
-        // }
-        //
-        //
-        // // trenie
-
         let a = x1;
         let b = x2;
         if (main.fixed) {
@@ -1303,25 +1512,6 @@ class Physics extends HTMLElement {
             x1 = a+diff1*(main.elos ? elos1 : 1);
             x2 = b+diff2*(nomain.elos ? elos1 : 1);
         }
-
-
-        // if (main.mass > nomain.mass) {
-        //     let elos2 = 1-(1-elos1)*(nomain.mass/main.mass);
-        // }
-        // else {
-        //     let elos2 = 1-(1-elos1)*(main.mass/nomain.mass);
-        //     x1 = a+diff1*(this.elos ? elos1 : 1);
-        //     x2 = b+diff2*(this.elos ? elos2 : 1);
-        // }
-        // var elos1 = 1-(1-elos)*Math.sqrt(main.mass/nomain.mass);
-        // const elos2 = 1-(1-elos)*Math.sqrt(nomain.mass/main.mass);
-
-
-        // console.log(elos1, elos2);
-        // x1 = x2;
-        // x2 = a;
-        // Changed x speeds
-        // Remove into regular system
         const newYK = 1/linesK*(-1);
         const xv1x = x1/Math.sqrt(1+Math.pow(linesK, 2));
         const xv1y = xv1x*linesK;
@@ -1335,16 +1525,26 @@ class Physics extends HTMLElement {
         const resultNotMain = [(xv2x+yv2x), (xv2y+yv2y)];
         main.vector = resultMain;
         nomain.vector = resultNotMain;
-
-
-
-        // main.vectorSum = [main.vectorSum[0]-main.vector[0]+resultMain[0], main.vectorSum[1]-main.vector[1]+resultMain[1]];
-        // nomain.vectorSum = [nomain.vectorSum[0]-nomain.vector[0]+resultNotMain[0], nomain.vectorSum[1]-nomain.vector[1]+resultNotMain[1]];
-        // if (main.destroyer) nomain.width = 0;
-        // else if (nomain.destroyer) main.width = 0;
     }
     changeVectors(time) {
         for (let i = 0, j = this.#elemsInSystem[i]; i < this.#elemsInSystem.length; i++, j = this.#elemsInSystem[i]) {
+            if (j.fixed || !j.gravity) {
+                continue;
+            }
+            let ax = 0;
+            let ay = 0;
+            if (this.#gravitySpots.size) {
+                for (const k of this.#gravitySpots) {
+                    if (j.gravity === k) continue;
+                    const a = this.getGravity(k, j);
+                    ax += a[0];
+                    ay += a[1];
+                }
+            }
+            j.vector = [j.vector[0]+(j.ax+ax)*time, j.vector[1]+this.#g*time+(j.ay+ay)*time];
+
+        }
+        for (const j of this.COG) {
             if (j.fixed || !j.gravity) {
                 continue;
             }
@@ -1365,6 +1565,9 @@ class Physics extends HTMLElement {
             for (let i = 0, j = this.#elemsInSystem[i]; i < this.#elemsInSystem.length; i++, j = this.#elemsInSystem[i]) {
                 k.countF(j, time);
             }
+            for (let j of this.COG) {
+                k.countF(j, time);
+            }
         }
     }
 
@@ -1379,17 +1582,10 @@ class Physics extends HTMLElement {
 
                 if (time2.t < smallest && !reverse) {
                     time = new Shoot(0, "o");
-                    const cords = [[j.x, j.y], [k.x, k.y]];
-                    j.move(time2.t);
-                    k.move(time2.t);
                     if (time2.type === "b") this.createCircleVector(j, k);
                     else if (time2.type === "bp") {
                         this.createBallPointVector(time2.data.cr, time2.data.sp);
                     }
-                    j.x = cords[0][0];
-                    j.y = cords[0][1];
-                    k.x = cords[1][0];
-                    k.y = cords[1][1];
                 }
                 if (time2.data.l < 2.1*k.radius) amount++;
                 else setTimeout(()=>{j.nearBalls.delete(k); k.nearBalls.delete(j)});
@@ -1410,17 +1606,10 @@ class Physics extends HTMLElement {
 
                 if (time2.t < smallest && !reverse) {
                     time = new Shoot(0, "o");
-                    const cords = [[j.x, j.y], [k.x, k.y]];
-                    j.move(time2.t);
-                    k.move(time2.t);
                     if (time2.type === "b") this.createCircleVector(j, k);
                     else if (time2.type === "bp") {
                         this.createBallPointVector(time2.data.cr, time2.data.sp);
                     }
-                    j.x = cords[0][0];
-                    j.y = cords[0][1];
-                    k.x = cords[1][0];
-                    k.y = cords[1][1];
 
                     if (time2.data.l < 2.1*k.radius) {
                         amount++
@@ -1440,13 +1629,10 @@ class Physics extends HTMLElement {
 
                 if (time2.t < smallest && !reverse) {
                     time = new Shoot(0, "o");
-                    const cords = [j.x, j.y];
-                    j.move(time2.t);
                     if (time2.type === "bl") {
                         this.createLineCircleVector(j, k);
                     }
                     else this.createBallPointVector(j, time2.data.sp);
-                    [j.x, j.y] = cords;
                 }
 
 
@@ -1464,13 +1650,10 @@ class Physics extends HTMLElement {
 
                         if (time2.t < smallest && !reverse) {
                             time = new Shoot(0, "o");
-                            const cords = [j.x, j.y];
-                            j.move(time2.t);
                             if (time2.type === "bl") {
                                 this.createLineCircleVector(j, k);
                             }
                             else this.createBallPointVector(j, time2.data.sp);
-                            [j.x, j.y] = cords;
                         }
 
 
@@ -1480,12 +1663,271 @@ class Physics extends HTMLElement {
                 }
             }
 
+            for (let r of this.COG) {
+                for (let k of this.COG) {
+                    if (k === r) continue;
+
+                }
+
+                for (let c of this.#elemsInSystem) {
+
+                    let time2 = this.findSmallestCOGCircleTime(r, c, Math.max(time.t, smallest))
+                    if (time2.t <= time.t) {
+                        if (time2.t < smallest) {
+                            time = new Shoot(0, "o");
+                            if (time2.type === "bcogl") this.createCOGLineCircleVector(time2.data.ln, time2.data.cr);
+                        }
+                        else time = time2;
+                        // if (time2.t < smallest && !reverse) {
+                        //     time = new Shoot(0, "o");
+                        //     const cords = [j.x, j.y];
+                        //     j.move(time2.t);
+                        //     if (time2.type === "bl") {
+                        //         this.createLineCircleVector(j, k);
+                        //     }
+                        //     else this.createBallPointVector(j, time2.data.sp);
+                        //     [j.x, j.y] = cords;
+                        // }
+                        //
+                        //
+                        // time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
+
+
+                    }
+
+                }
+
+            }
+
             //
             // j.vector = [j.vector[0]+j.vectorSum[0], j.vector[1]+j.vectorSum[1]];
             // j.vectorSum = [0,0];
         }
         time.t = normalize(time.t);
         return time;
+    }
+
+    createCOGLineCircleVector(line, main) {
+        const alpha = Math.atan(main.vector[1]/main.vector[0]);
+
+        const linesK = -1/((line.y1-line.y2)/(line.x1-line.x2));
+
+        const nomain = line.parentCOG;
+
+        {
+            const k1 = (line.y1-line.y2)/(line.x1-line.x2);
+            const b1 = line.y1+line.parentCOG.y-k1*(line.x1+line.parentCOG.x);
+
+            const k2 = linesK;
+            const b2 = main.y-k2*main.x;
+
+            const x1 = (b2-b1)/(k1-k2);
+            const y1 = k1*x1+b1;
+
+            const k3 = k1;
+            const b3 = line.parentCOG.y-k1*line.parentCOG.x;
+
+            const x2 = (b3-b2)/(k2-k3);
+            const y2 = k1*x2+b1;
+
+            var tan = Math.sqrt( (x2-line.parentCOG.x)**2 + (y2-line.parentCOG.y)**2 )/(Math.sqrt( (x1-x2)**2 + (y1-y2)**2 )+lineWidth);
+            var sin = tan/Math.sqrt(tan**2+1);
+            var r = Math.sqrt( (x1-line.parentCOG.x)**2 + (y1-line.parentCOG.y)**2 );
+
+            {
+                const b = (main.y - line.parentCOG.y)-k2*(main.x - line.parentCOG.x);
+
+                var kfr = ((b >= 0 && main.x <= x1) || (b <=0 && main.x >= x1)) ? (1):(-1);
+            }
+
+
+        }
+
+        if (!isFinite(linesK)) {
+            main.vector[1] = -main.vector[1]*main.elos;
+            return;
+        }
+
+        const newAlpha = Math.tan(alpha - Math.atan(linesK));
+        let fullAngle = ((main.vector[0] >= 0) && (main.vector[1] >= 0) ? alpha*180/Math.PI : (main.vector[0] <= 0) && (main.vector[1] >= 0) ? (alpha+Math.PI)*180/Math.PI : (main.vector[0] <= 0) && (main.vector[1] <= 0) ? (alpha+Math.PI)*180/Math.PI : (alpha+Math.PI*2)*180/Math.PI)%360;
+        const angleK = -(Math.atan(linesK)*180/Math.PI);
+        const kfx1 = ((angleK >= 0 && (fullAngle % 180 <= 90) && (fullAngle+angleK) % 180 >= 90) || (angleK <= 0 && (fullAngle % 180 >= 90) && (((fullAngle+angleK+360)%360) % 180 <= 90))) ? (-1) : 1;
+        const kfy1 = ((angleK >= 0 && (fullAngle % 180 >= 90) && (fullAngle+angleK) % 180 <= 90) || (angleK <= 0 && (fullAngle % 180 <= 90) && (((fullAngle+angleK+360)%360) % 180 >= 90))) ? (-1) : 1;
+        const v1 = Math.sqrt(Math.pow(main.vector[0], 2)+Math.pow(main.vector[1], 2));
+        let x1 = v1/Math.sqrt(1+Math.pow(newAlpha, 2))*(kfx1)*main.vector[0]/Math.abs(main.vector[0]);
+        let y1 = Math.sqrt(Math.pow(v1, 2)-Math.pow(x1, 2))*(kfy1)*main.vector[1]/Math.abs(main.vector[1]);
+        const alpha2 = Math.atan(nomain.vector[1]/nomain.vector[0]);
+        fullAngle = ((nomain.vector[0] >= 0) && (nomain.vector[1] >= 0) ? alpha2*180/Math.PI : (nomain.vector[0] <= 0) && (nomain.vector[1] >= 0) ? (alpha2+Math.PI)*180/Math.PI : (nomain.vector[0] <= 0) && (nomain.vector[1] <= 0) ? (alpha2+Math.PI)*180/Math.PI : (alpha2+Math.PI*2)*180/Math.PI)%360;
+        const kfx2 = ((angleK >= 0 && (fullAngle % 180 <= 90) && (fullAngle+angleK) % 180 >= 90) || (angleK <= 0 && (fullAngle % 180 >= 90) && (((fullAngle+angleK+360)%360) % 180 <= 90))) ? (-1) : 1;
+        const kfy2 = ((angleK >= 0 && (fullAngle % 180 >= 90) && (fullAngle+angleK) % 180 <= 90) || (angleK <= 0 && (fullAngle % 180 <= 90) && (((fullAngle+angleK+360)%360) % 180 >= 90))) ? (-1) : 1;
+        const newAlpha2 = Math.tan(alpha2 - Math.atan(linesK));
+
+        const v2 = Math.sqrt(Math.pow(nomain.vector[0], 2)+Math.pow(nomain.vector[1], 2));
+        let x2 = v2/Math.sqrt(1+Math.pow(newAlpha2, 2))*(kfx2)*nomain.vector[0]/Math.abs(nomain.vector[0]); //
+
+        let y2 = Math.sqrt(Math.pow(v2, 2)-Math.pow(x2, 2))*(kfy2)*nomain.vector[1]/Math.abs(nomain.vector[1]);
+        const elos1 = Math.pow(elosLimit/(Math.max(Math.abs(x1-x2), elosLimit)), 1/3);
+        x2 += nomain.angleSpeed*2*Math.PI*r*x1/Math.abs(x1)*sin;
+        console.log(sin);
+        let a = x1;
+        let b = x2;
+
+        if (main.fixed) {
+            x2 = -x2;
+
+            x2 = x2*(nomain.elos ? elos1 : 1);
+        }
+        else if (nomain.fixed) {
+            x1 = -x1;
+
+            x1 = x1*(main.elos ? elos1 : 1);
+        }
+        else {
+            x1 = ((main.mass-nomain.mass)*x1+2*nomain.mass*x2)/(main.mass+nomain.mass);
+
+            x2 = (2*main.mass*a+(nomain.mass-main.mass)*x2)/(main.mass+nomain.mass);
+            const diff1 = x1 - a;
+            const diff2 = x2 - b;
+
+            x1 = a+diff1*(main.elos ? elos1 : 1);
+            x2 = b+diff2*(nomain.elos ? elos1 : 1);
+        }
+        console.log(x2, tan);
+        x2 = x2/(Math.sqrt(tan**2+1));
+        let rs = Math.abs(x2*tan)*kfr;
+        if (b*x2 > 0) rs*=-1;
+
+
+        const newYK = 1/linesK*(-1);
+        const xv1x = x1/Math.sqrt(1+Math.pow(linesK, 2));
+        const xv1y = xv1x*linesK;
+        const yv1y = y1/Math.sqrt(1+Math.pow(1/newYK, 2));
+        const yv1x = yv1y/newYK;
+        const xv2x = x2/Math.sqrt(1+Math.pow(linesK, 2));
+        const xv2y = xv2x*linesK;
+        const yv2y = y2/Math.sqrt(1+Math.pow(1/newYK, 2));
+        const yv2x = yv2y/newYK;
+        const resultMain = [(xv1x+yv1x),xv1y+yv1y];
+        const resultNotMain = [(xv2x+yv2x), (xv2y+yv2y)];
+        nomain.angleSpeed = rs/(r*Math.PI*2);
+        main.vector = resultMain;
+        nomain.vector = resultNotMain;
+    }
+
+    findSmallestCOGCircleTime(cog, cr, max) {
+        const main = cog;
+        const nomain = cr;
+        if (main.fixed && nomain.fixed) return new Shoot(Infinity, "b", null, {main, nomain});
+        const v1 = main.vector;
+        const v2 = nomain.vector;
+        const x1 = main.x;
+        const x2 = nomain.x;
+        const y1 = main.y;
+        const y2 = nomain.y;
+        const a = Math.pow(v1[0]-v2[0],2)+Math.pow(v1[1]-v2[1],2);
+        const b = 2*((x1-x2)*(v1[0]-v2[0])+(y1-y2)*(v1[1]-v2[1]));
+        let l = Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2));
+        let t = Infinity;
+        if (l > main.radius+nomain.radius) {
+            l = l - lineWidth;
+            var c = l*l-Math.pow(main.radius+nomain.radius, 2);
+            var d = Math.pow(b, 2)-4*a*c;
+            if (d > 0) {
+                const t1 = (-b+Math.sqrt(d))/2/a;
+                const t2 = (-b-Math.sqrt(d))/2/a;
+                if (t1*t2<0) {
+                    t = -Infinity;
+                }
+                if (t1 >= 0 && t2 >= 0) {
+                    t = Math.min(t1, t2);
+                }
+            }
+        }
+        else t = -Infinity;
+        if (t < max) {
+            max = max - Math.max(0, t);
+            t = new Shoot(Infinity, true);
+            for (let i of cog.contours) {
+                switch (i.contourType){
+                    case "circle":{
+
+                        break;
+                    }
+                    case "line":{
+                        const time = this.findSmallestCOGLineCircleTime(i, cr, max);
+                        if (time.t < t.t) t = time
+                        break;
+                    }
+                    case "flexLine":{
+
+                        break;
+                    }
+                }
+            }
+            return t;
+        }
+        else return new Shoot(Infinity, true);
+    }
+
+    findSmallestCOGLineCircleTime(ln, cr, max) {
+        const k1 = (ln.y1-ln.y2)/(ln.x1-ln.x2);
+        let x1 = ln.x1+ln.parentCOG.x;
+        let y1 = ln.y1+ln.parentCOG.y;
+        const x11 = ln.x2+ln.parentCOG.x;
+        const y11 = ln.y2+ln.parentCOG.y;
+        const a1 = ln.angle1;
+        const a2 = ln.angle2;
+        const xx1 = ln.x1;
+        const xx2 = ln.x2;
+        const yy1 = ln.y1;
+        const yy2 = ln.y2
+        ln.rotate(ln.parentCOG.angleSpeed*Math.PI*2*max);
+        const k2 = (ln.y1-ln.y2)/(ln.x1-ln.x2);
+        let x2 = ln.x1+ln.parentCOG.x+ln.parentCOG.vector[0]*max;
+        let y2 = ln.y1+ln.parentCOG.y+ln.parentCOG.vector[1]*max;
+        const x22 = ln.x2+ln.parentCOG.x+ln.parentCOG.vector[0]*max;
+        const y22 = ln.y2+ln.parentCOG.y+ln.parentCOG.vector[1]*max;
+        ln.angle1 = a1;
+        ln.angle2 = a2;
+        ln.x1 = xx1;
+        ln.x2 = xx2;
+        ln.y1 = yy1;
+        ln.y2 = yy2;
+        const k = Math.tan((Math.atan(k1)+Math.atan(k2))/2);
+        let vx2 = (x2-x1)/max;
+        let vy2 = (y2-y1)/max;
+        let x02 = x1;
+        let y02 = y1;
+        const vx1 = cr.vector[0];
+        const vy1 =  cr.vector[1];
+        const x01 = cr.x;
+        const y01 = cr.y;
+        const r = cr.radius+lineWidth;
+        const a = 2*(k**2)*vx1*vx2+2*k*vx1*vy1+2*vy1*vy2-2*k*vx1*vy2-vy2**2+2*k*vx2*vy2-(k**2)*(vx2**2)-2*k*vx2*vy1-vy1**2-(k**2)*(vx1**2);
+        const b = 2*vx1*x02*(k**2)+2*vx2*x01*(k**2)+2*vx1*y01*k+2*k*vy1*x01+2*vy1*y01+2*vy2*y01-2*k*vx1*y02
+        -2*k*vy2*x01-2*vy2*y02+2*vx2*y02*k+2*k*vy2*x02-2*(k**2)*vx2*x02-2*k*vx2*y01-2*k*vy1*x02-2*vy1*y01-2*(k**2)*vx1*x01;
+        const c = 2*(k**2)*x01*x02+2*k*x01*y01+2*y01*y02-2*k*x01*y02-y02**2+2*k*x02*y02-(k*x02)**2-2*k*x02*y01-y01**2+r**2-(k**2)*(x01**2)+(k**2)*(r**2);
+        const [t1, t2] = qdr(a, b, c);
+        const time = (t1 >= 0 && t2 >= 0) ? Math.min(t1, t2) : (t2 >= 0) ? t2 : (t1 > 0) ? t1 : Infinity;
+
+        x1 = x11;
+        y1 = y11;
+        x2 = x22;
+        y2 = y22;
+        vx2 = (x2-x1)/max;
+        vy2 = (y2-y1)/max;
+        x02 = x1;
+        y02 = y1;
+
+        const a12 = 2*(k**2)*vx1*vx2+2*k*vx1*vy1+2*vy1*vy2-2*k*vx1*vy2-vy2**2+2*k*vx2*vy2-(k**2)*(vx2**2)-2*k*vx2*vy1-vy1**2-(k**2)*(vx1**2);
+        const b2 = 2*vx1*x02*(k**2)+2*vx2*x01*(k**2)+2*vx1*y01*k+2*k*vy1*x01+2*vy1*y01+2*vy2*y01-2*k*vx1*y02
+            -2*k*vy2*x01-2*vy2*y02+2*vx2*y02*k+2*k*vy2*x02-2*(k**2)*vx2*x02-2*k*vx2*y01-2*k*vy1*x02-2*vy1*y01-2*(k**2)*vx1*x01;
+        const c2 = 2*(k**2)*x01*x02+2*k*x01*y01+2*y01*y02-2*k*x01*y02-y02**2+2*k*x02*y02-(k*x02)**2-2*k*x02*y01-y01**2+r**2-(k**2)*(x01**2)+(k**2)*(r**2);
+        const [tt1, tt2] = qdr(a12, b2, c2);
+        const time2 = (tt1 >= 0 && tt2 >= 0) ? Math.min(tt1, tt2) : (tt2 >= 0) ? tt2 : (tt1 > 0) ? tt1 : Infinity;
+
+
+        return new Shoot(Math.min(time, time2), "bcogl", cr, {ln, cr});
     }
 
     findSmallestFlexLinesCircleTime(ball, fl) {
@@ -1526,7 +1968,7 @@ class Physics extends HTMLElement {
         return result < 0 ? result + 2*Math.PI:result;
     }
 
-    findSmallestCircleTime(main, nomain, move){
+    findSmallestCircleTime(main, nomain){
         if (main.fixed && nomain.fixed) return new Shoot(Infinity, "b", null, {main, nomain});
         const v1 = main.vector;
         const v2 = nomain.vector;
@@ -2294,6 +2736,24 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
         lineRow = null;
         lineWidth = realLineWidth;
     }
+    else if (event.target.id === "addContour") {
+        document.querySelectorAll(".delete1").forEach(i=>i.style.display = "block");
+        document.getElementById("addContour").style.display = "none";
+        const list = [...[...pitch.elemsInSystem].map(i=>new COGCircle(i)), ...[...pitch.linesInSystem].map(i=>new COGLine(i)), ...[...pitch.flexLinesInSystem].map(i=>new COGFlexLine({lines: i.lines.map(i=>new COGLine(i)), spots: i.spots}))];
+        const x = window.COGX;
+        const y = window.COGY;
+        pitch.remove();
+        pitch = window.oldPitch;
+        new COGObject(pitch, {contours: list, x, y, rx: 300, ry: 300});
+        document.getElementById("menu").before(pitch);
+        document.querySelectorAll(".COGAdd").forEach(i=>i.style.display = "none");
+        pitch.renderCanvas();
+        start = ()=>pitch.start();
+        stop = ()=>pitch.stop();
+    }
+    else if (event.target.id === "autoCOG") {
+        setAutoCOG();
+    }
 
     pitch.renderCanvas();
 
@@ -2554,8 +3014,9 @@ function onAngleResize(event) {
 function addBallToSystem(settings = true) {
     if (pitch.children[0].classList.contains("lowVisible")) pitch.children[0].remove();
     const name = newBall.boom ? "tnt-physics" : "physics-circle";
-    document.getElementById("main").insertAdjacentHTML('afterbegin', `<${name} class="managing" mass="${newBall.m}" ${newBall.elos ? 'elos' : ""} rs="0" width="${newBall.r*2}" x="${newBall.x}" y="${newBall.y}" vector="${newBall.vx},${newBall.vy}" ax="${newBall.ax}" ay="${newBall.ay}" ${newBall.gravity ? "gravity":""} ${newBall.fixed ? "fixed":""}>${!newBall.fixed && settings ? `<div id="sameMovingBall"></div>` : ""}${settings ? `<div id="moveSpot"></div> <div class="resizer" id="resizer"></div>` : ""}${newBall.fixed ? `<div class="angles" id="angle1"><div></div></div><div class="angles" id="angle2"><div></div></div>`: ""}</${name}>`);
+    pitch.insertAdjacentHTML('afterbegin', `<${name} class="managing" mass="${newBall.m}" ${newBall.elos ? 'elos' : ""} rs="0" width="${newBall.r*2}" x="${newBall.x}" y="${newBall.y}" vector="${newBall.vx},${newBall.vy}" ax="${newBall.ax}" ay="${newBall.ay}" ${newBall.gravity ? "gravity":""} ${newBall.fixed ? "fixed":""}>${!newBall.fixed && settings ? `<div id="sameMovingBall"></div>` : ""}${settings ? `<div id="moveSpot"></div> <div class="resizer" id="resizer"></div>` : ""}${newBall.fixed ? `<div class="angles" id="angle1"><div></div></div><div class="angles" id="angle2"><div></div></div>`: ""}</${name}>`);
     newBall.ball = pitch.children[0];
+    console.log(pitch.children);
     if (!newBall.fixed && settings) {
         newBall.ball.addEventListener("pointerdown", changeBallSpeeds);
     }
@@ -2740,7 +3201,82 @@ const adding = {
         this.line2();
         lineMenu.classList.replace("active", "passive");
         document.getElementById("drawMenu").classList.replace("passive", "active");
+    },
+    createContour(){
+        document.querySelectorAll(".delete1").forEach(i=>i.style.display = "none");
+        document.getElementById("addContour").style.display = "block";
+        window.oldPitch = pitch;
+        document.getElementById("menu").before(document.createElement("physics-area"));
+        const COG = document.createElement("div");
+        COG.classList.add("moveSpot2");
+        COG.style.left = pitch.getBoundingClientRect().width/2-10+"px";
+        COG.style.top = pitch.getBoundingClientRect().height/2-10+"px";
+        window.COGX =  pitch.getBoundingClientRect().width/2;
+        window.COGY =  pitch.getBoundingClientRect().height/2;
+        COG.dataset.dnd = true;
+        COG.dataset.dndDobegin = COG.dataset.dndOnmove = "setXYCOG(event)";
+        window.COG = COG;
+        pitch.append(COG);
+        document.querySelectorAll(".COGAdd").forEach(i=>i.style.display = "block");
     }
+}
+
+function setAutoCOG(){
+    let l = 0, sumx = 0, sumy = 0;
+    for (const i of pitch.linesInSystem) {
+        const ln = Math.sqrt((i.x1-i.x2)**2+(i.y1-i.y2)**2);
+        sumx += ln*(i.x1+i.x2)/2;
+        sumy += ln*(i.y1+i.y2)/2;
+        l += ln;
+    }
+    for (const j of pitch.flexLinesInSystem) {
+        for (const i of j.lines) {
+            const ln = Math.sqrt((i.x1-i.x2)**2+(i.y1-i.y2)**2);
+            sumx += ln*(i.x1+i.x2)/2;
+            sumy += ln*(i.y1+i.y2)/2;
+            l += ln;
+        }
+    }
+    for (const main of pitch.elemsInSystem) {
+        const x1 = Math.cos(main.angles[0]) * main.radius + main.x;
+        const y1 = -Math.sin(main.angles[0]) * main.radius + main.y;
+        const x2 = Math.cos(main.angles[1]) * main.radius + main.x;
+        const y2 = -Math.sin(main.angles[1]) * main.radius + main.y;
+        let a = (main.angles[0]+main.angles[1])/2, s = false;
+        if (!((a > main.angles[0] && a < main.angles[1] && main.angles[0] < main.angles[1]) || (main.angles[0] >= main.angles[1] && (a > main.angles[0] || a < main.angles[1])))) {
+            a+=Math.PI;
+            s = true;
+        }
+        const x3 = Math.cos(a) * main.radius + main.x;
+        const y3 = -Math.sin(a) * main.radius + main.y;
+        const ln = main.radius*(s ? 2*Math.PI-Math.abs(main.angles[1]-main.angles[0]) : (main.angles[1]-main.angles[0]));
+        l += ln;
+        sumx += ln*((x1+x3)/2+(x2+x3)/2)/2;
+        sumy += ln*((y1+y3)/2+(y2+y3)/2)/2;
+    }
+    inputXCOG({target: {value: sumx/l}});
+    inputYCOG({target: {value: sumy/l}});
+    setXYCOG();
+
+}
+
+function setXYCOG(event) {
+    window.COGX = document.getElementById("COGXCord").value = COG.getBoundingClientRect().left - pitch.getBoundingClientRect().left+10;
+    window.COGY = document.getElementById("COGYCord").value = COG.getBoundingClientRect().top - pitch.getBoundingClientRect().top+10;
+}
+
+function inputXCOG(event) {
+    COG.style.left = event.target.value-10+"px";
+    window.COGX = event.target.value-10;
+}
+
+function inputYCOG(event) {
+    COG.style.top = event.target.value-10+"px";
+    window.COGY = event.target.value-10;
+}
+
+function moveCOG(x, y){
+
 }
 
 let realLineWidth;
@@ -2818,7 +3354,7 @@ function inAddsp1(event, a = true) {
     line[lines].y2 = line[lines].y1;
     pitch.append(line[lines]);
     line[lines].classList.add("linelw");
-    if (a) pitch.insertAdjacentHTML("afterbegin",`<div class='moveSpot' style="left: ${line[lines].x1-10}px; top: ${line[lines].y1-10}px;" id='msp${lines+1}' data-dnd='' data-dnd-Onmove='movesp1.call(null, [line[${lines}], ${lines > 0 ? `line[${lines-1}]`: ""}], ${lines+1})'></div><div class='moveSpot' style="left: ${line[lines].x1-10}px; top: ${line[lines].y1-10}px;" id='msp${lines+2}'></div>`);
+    if (a) pitch.insertAdjacentHTML("afterbegin",`<div class='moveSpot' style="left: ${line[lines].x1-10}px; top: ${line[lines].y1-10}px;" id='msp${lines+1}' data-dnd='' data-dnd-Onmove='movesp1.call(null, [line[${lines}], ${lines > 0 ? `line[${lines-1}]`: ""}], ${lines+1})' data-dnd-doBegin='movesp1.call(null, [line[${lines}], ${lines > 0 ? `line[${lines-1}]`: ""}], ${lines+1})'></div><div class='moveSpot' style="left: ${line[lines].x1-10}px; top: ${line[lines].y1-10}px;" id='msp${lines+2}'></div>`);
     lines++;
 }
 
@@ -2961,6 +3497,9 @@ function getAreaContainment() {
     for (const i of pitch.elemsInSystem) {
         if (i.x > Math.min(areaCords.x1, areaCords.x2) && i.x < Math.max(areaCords.x1, areaCords.x2) && i.y > Math.min(areaCords.y1, areaCords.y2) && i.y < Math.max(areaCords.y1, areaCords.y2)) containment.add(i);
     }
+    for (const i of pitch.COG) {
+        if (i.x > Math.min(areaCords.x1, areaCords.x2) && i.x < Math.max(areaCords.x1, areaCords.x2) && i.y > Math.min(areaCords.y1, areaCords.y2) && i.y < Math.max(areaCords.y1, areaCords.y2)) containment.add(i);
+    }
     for (const i of pitch.linesInSystem) {
         if ((i.x1 > Math.min(areaCords.x1, areaCords.x2) && i.x1 < Math.max(areaCords.x1, areaCords.x2) && i.y1 > Math.min(areaCords.y1, areaCords.y2) && i.y1 < Math.max(areaCords.y1, areaCords.y2)) || (i.x2 > Math.min(areaCords.x1, areaCords.x2) && i.x2 < Math.max(areaCords.x1, areaCords.x2) && i.y2 > Math.min(areaCords.y1, areaCords.y2) && i.y2 < Math.max(areaCords.y1, areaCords.y2))) containment.add(i);
     }
@@ -3015,6 +3554,10 @@ function moveArea(x, y) {
                 i.y1 = i.y1+ym;
                 i.x2 = i.x2+xm;
                 i.y2 = i.y2+ym;
+            }
+            if (i instanceof COGObject) {
+                i.x += xm;
+                i.y += ym;
             }
 
         }
@@ -3470,7 +4013,8 @@ function createFromJSON(json) {
                 const j = document.createElement("physics-circle");
                 pitch.append(j);
                 j.fixed = Number(i.fixed)-1;
-                j.angles = [Number(i.angle1), Number(i.angle2)];
+                j.angles = [Number(i.angle1)*180/Math.PI, Number(i.angle2)*180/Math.PI];
+                console.log(i.angle1);
                 j.radius = Number(i.radius)*scale;
                 j.width = j.radius*2;
                 j.x = i.x*scale;
@@ -3599,7 +4143,7 @@ readTextFile("../main.json", function(text){
     for (const i in levels) arr.push(i);
     const fr = document.createElement("div");
     fr.insertAdjacentHTML("afterbegin", `
-<div>
+<div class="delete1">
     <select id="levelSelect" name="type" oninput="createFromJSON(JSON.stringify(levels[event.target.value]))">
                     ${arr.map((i, j)=>`<option value="${i}" ${j+1 === arr.length ? "selected" : ""}>${i}</option>`).join("")}
                     
