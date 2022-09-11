@@ -1268,55 +1268,49 @@ class Physics extends HTMLElement {
         this.#realFPS = a;
         this.#fps = this.#realFPS/this.#speed;
     }
-    main(time = 1/this.#fps) {
-        let i = 0;
-        const fps = this.#fps;
-        let chvTime = 1/this.#fps/10;
+    main(time = 1/this.#fps , fullTime = time) {
+        let chvTime = fullTime / 10;
+        const normalized = normalize(chvTime);
+        let chva = 0;
         time = normalize(time);
         main: while (time > 0) {
-            let timeIn = this.findSmallestTime(1/fps-time, 0.003, fps);
-            i = 0;
-            if (timeIn.t === 0 && timeIn.type === true) break;
+            let timeIn = this.findSmallestTime(fullTime- time, 0.003, fullTime);
+            if (timeIn.type === true && timeIn.t === 0) break;
             while (timeIn.t === 0) {
-                if (timeIn.t === 0 && timeIn.type === true) break main;
-                timeIn = this.findSmallestTime(1/fps-time, 0.003, fps);
-                i++
+                if (timeIn.type === true && timeIn.t === 0) break main;
+                timeIn = this.findSmallestTime(fullTime - time, 0.003, fullTime);
             }
-            const time2 = timeIn.t;
-            if (time2 > 1/this.#fps/10) {
-                this.drawFrame(1/this.#fps/10);
-                this.changeVectors(1/this.#fps/10);
-                time = normalize(time - 1/this.#fps/10);
+            let time2 = timeIn.t;
+            if (time2 >= normalized) {
+                this.drawFrame(normalized);
+                this.changeVectors(normalized);
+                time = normalize(time - normalized);
+                chva++;
                 continue;
             }
-            const a= chvTime;
-            chvTime = chvTime - time2;
+            chvTime = normalize(chvTime - time2);
             if (chvTime <= 0) {
-                this.drawFrame(a);
-                this.changeVectors(1/this.#fps/10);
-                time = normalize(time - a);
-                chvTime = 1/this.#fps/10;
+                this.drawFrame(chvTime + time2);
+                this.changeVectors(normalized);
+                time = normalize(time - (chvTime + time2));
+                chvTime = normalized;
+                chva++;
                 continue;
             }
-
             this.drawFrame(time2);
-            // console.warn(Math.sqrt(Math.pow(this.#elemsInSystem[0].x-this.#elemsInSystem[1].x, 2)+Math.pow(this.#elemsInSystem[0].y-this.#elemsInSystem[1].y, 2)))
             if (timeIn.type === "b") {
                 this.createCircleVector(timeIn.data.main, timeIn.data.nomain);
-            }
-            else if (timeIn.type === "bl") {
+            } else if (timeIn.type === "bl") {
                 this.createLineCircleVector(timeIn.data.cr, timeIn.data.ln);
-            }
-            else if (timeIn.type === "bp") {
+            } else if (timeIn.type === "bp") {
                 this.createBallPointVector(timeIn.data.cr, timeIn.data.sp);
             }
-            else if (timeIn.type === "bcogl") this.createCOGLineCircleVector(timeIn.data.ln, time.data.cr);
             time = normalize(time - time2);
-
         }
-        this.renderCanvas(1/this.#fps);
-
+        this.renderCanvas(fullTime);
+        if (chva === 9) this.changeVectors(normalized);
     }
+
     start() {
 
     this.inMain();

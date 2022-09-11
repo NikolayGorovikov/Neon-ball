@@ -350,6 +350,7 @@ canvas{
 .startBt{
     width: 25%;
     height: 83.333%;
+    display: flex;
     position: absolute;
     top: 8.333%;
     left: 37.5%;
@@ -367,7 +368,7 @@ canvas{
     width: 5%;
     height: 16.666%;
     border-radius: 50%;
-    border: rgb(252, 243, 211) 0.1em solid;
+    border: rgb(252, 243, 211) 0.3vmin solid;
     box-sizing: border-box;
     transition-property: transform;
     transition-duration: 0.2s;
@@ -376,6 +377,15 @@ canvas{
     font-family: "Ubuntu Condensed";
     color: rgb(252, 243, 211);
     text-shadow: 0 0 0.3em rgb(175, 125, 46), 0 0 0.2em rgb(175, 125, 46);
+}
+
+[data-link] canvas{
+    display: flex;
+}
+
+[data-link]:not(.info, .levelBt) {
+    border-width: 0.85vmin;
+    display: flex;
 }
 
 .dark{
@@ -525,7 +535,7 @@ canvas{
     flex-basis: 11%;
     flex-shrink: 0;
     margin: 2.833%;
-    border: rgb(252, 243, 211) 0.1em solid;
+    border: rgb(252, 243, 211) 0.55vmin solid;
     box-sizing: border-box;
     box-shadow: 0 0 0.3em 0 rgb(175, 125, 46) inset, 0 0 0.3em 0 rgb(175, 125, 46);
     text-align: center;

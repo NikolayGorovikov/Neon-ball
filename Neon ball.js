@@ -1866,7 +1866,7 @@ function mainStart() {
             open(name = "1", pause) {
                 const canvasMenu = document.createElement("canvas");
                 canvasMenu.resize = () => {
-                    canvasMenu.width = pitchIn.getBoundingClientRect().width * 0.16 - 10;
+                    canvasMenu.width = pitchIn.getBoundingClientRect().width * 0.16 - Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
                     canvasMenu.height = canvasMenu.width;
                     const con = canvasMenu.getContext("2d");
                     con.beginPath();
@@ -1887,7 +1887,7 @@ function mainStart() {
                 canvasMenu.resize();
                 const canvasRetry = document.createElement("canvas");
                 canvasRetry.resize = () => {
-                    canvasRetry.width = pitchIn.getBoundingClientRect().width * 0.16 - 10;
+                    canvasRetry.width = pitchIn.getBoundingClientRect().width * 0.16 - Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
                     canvasRetry.height = canvasRetry.width;
                     const con = canvasRetry.getContext("2d");
                     con.beginPath();
@@ -1917,7 +1917,7 @@ function mainStart() {
                 canvasRetry.resize();
                 const canvasNext = document.createElement("canvas");
                 canvasNext.resize = () => {
-                    canvasNext.width = pitchIn.getBoundingClientRect().width * 0.20 - 10;
+                    canvasNext.width = pitchIn.getBoundingClientRect().width * 0.20 -Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
                     canvasNext.height = canvasNext.width;
                     const con = canvasNext.getContext("2d");
                     con.beginPath();
@@ -1978,7 +1978,7 @@ function mainStart() {
                 const startCanvas = document.createElement("canvas");
 
                 startCanvas.resize = () => {
-                    startCanvas.width = pitchIn.getBoundingClientRect().width * 0.25 - 10;
+                    startCanvas.width = pitchIn.getBoundingClientRect().width * 0.25 - Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
                     startCanvas.height = startCanvas.width;
 
                     const con = startCanvas.getContext("2d");
