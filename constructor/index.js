@@ -1289,11 +1289,12 @@ class Physics extends HTMLElement {
                 time = normalize(time - 1/this.#fps/10);
                 continue;
             }
-            chvTime = normalize(chvTime - time2);
+            const a= chvTime;
+            chvTime = chvTime - time2;
             if (chvTime <= 0) {
-                this.drawFrame(chvTime + time2);
+                this.drawFrame(a);
                 this.changeVectors(1/this.#fps/10);
-                time = normalize(time - (chvTime + time2));
+                time = normalize(time - a);
                 chvTime = 1/this.#fps/10;
                 continue;
             }
@@ -1449,12 +1450,13 @@ class Physics extends HTMLElement {
         // nomain.y = nomain.y-nomain.vector[1]*needTime;
         // main.style.backgroundColor = randomColor();
         // nomain.style.backgroundColor = randomColor();
+        console.log("shoot");
         if (main.fixed) {
-            this.createBallPointVector(nomain, main, main.radius);
+            this.createBallPointVector(nomain, main, main.radius+lineWidth/2);
             return;
         }
         else if (nomain.fixed) {
-            this.createBallPointVector(main, nomain, nomain.radius);
+            this.createBallPointVector(main, nomain, nomain.radius+lineWidth/2);
             return;
         }
         const alpha = Math.atan(main.vector[1]/main.vector[0]);
@@ -1603,6 +1605,7 @@ class Physics extends HTMLElement {
             for (let n = i+1, k = this.#elemsInSystem[n]; n < this.#elemsInSystem.length; n++, k = this.#elemsInSystem[n]) {
                 if (j.nearBalls.has(k)) continue;
                 let time2 = this.findSmallestCircleTime(j, k);
+                console.log(time2.t, time.t);
 
                 if (time2.t < smallest && !reverse) {
                     time = new Shoot(0, "o");
@@ -1618,9 +1621,7 @@ class Physics extends HTMLElement {
                         }
                     }
                 }
-                     {
-                         time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
-                    }
+                time2.t < time.t ? time = time2: 0;
             }
 
             for (let n = 0, k = this.#linesInSystem[n]; n < this.#linesInSystem.length; n++, k = this.#linesInSystem[n]) {
@@ -1704,6 +1705,7 @@ class Physics extends HTMLElement {
             // j.vectorSum = [0,0];
         }
         time.t = normalize(time.t);
+        console.log(time);
         return time;
     }
 
@@ -1829,7 +1831,6 @@ class Physics extends HTMLElement {
         let l = Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2));
         let t = Infinity;
         if (l > main.radius+nomain.radius) {
-            l = l - lineWidth;
             var c = l*l-Math.pow(main.radius+nomain.radius, 2);
             var d = Math.pow(b, 2)-4*a*c;
             if (d > 0) {
@@ -1981,8 +1982,7 @@ class Physics extends HTMLElement {
         let l = Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2));
         let t = Infinity;
         if (l > main.radius+nomain.radius) {
-            l = l - lineWidth;
-            var c = l*l-Math.pow((main.width+nomain.width)/2, 2);
+            var c = l*l-Math.pow((main.width+nomain.width)/2+lineWidth, 2);
             var d = Math.pow(b, 2)-4*a*c;
             if (d > 0) {
                 const t1 = (-b+Math.sqrt(d))/2/a;
@@ -2004,8 +2004,7 @@ class Physics extends HTMLElement {
             }
         }
         else if (l < Math.abs((main.width - nomain.width)/2)) {
-            l = l + lineWidth;
-            c = l*l-Math.pow((main.width - nomain.width)/2, 2);
+            c = l*l-Math.pow(Math.abs((main.width - nomain.width)/2)-lineWidth, 2);
             d = Math.pow(b, 2)-4*a*c;
             if (d > 0) {
                 const t1 = (-b+Math.sqrt(d))/2/a;
@@ -2108,13 +2107,13 @@ class Physics extends HTMLElement {
                 const a = vy*vy+vx*vx;
                 const b = 2*( (x1-x2) * vx + (y1-y2) * vy);
                 const l = Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2))-lineWidth;
-                const c = l*l-Math.pow((cr.width)/2, 2);
+                const c = l*l-Math.pow(r, 2);
                 const [time1, time2] = qdr(a,b,c);
                 if (time1 >= 0 && time2 >= 0) return new Shoot(normalize(Math.min(time1, time2)), "bp", null, {cr, sp});
                 else return new Shoot(Infinity, "bp", null, {cr, sp});
     }
 
-    createBallPointVector(cr, sp){
+    createBallPointVector(cr, sp, r){
         const x1 = cr.x;
         const x2 = sp.x;
         const y1 = cr.y;

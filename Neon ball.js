@@ -115,6 +115,7 @@ function mainStart() {
             col = con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor : this.fixed ? lineColor : ballColor;
             con.lineWidth = lineWidth;
             con.shadowBlur = blur;
+            con.lineCap = 'round';
             con.shadowColor = this.main ? mainBallColorShadowColor : this.fixedBeforeTouch ? ballShadowColor : this.fixed ? lineShadowColor : ballShadowColor;
             if (this.fixedBeforeTouch && time && !this.onDragging) {
                 // const kf = Math.abs(Math.sin(2 * (this.time + time)));
@@ -1138,9 +1139,13 @@ function mainStart() {
                         const cords = [[j.x, j.y], [k.x, k.y]];
                         j.move(time2.t);
                         k.move(time2.t);
-                        if (time2.type === "b") this.createCircleVector(j, k);
+                        if (time2.type === "b") {
+                            this.createCircleVector(j, k);
+                            if (k.fixed || j.fixed)console.log("bll");
+                        }
                         else if (time2.type === "bp") {
                             this.createBallPointVector(time2.data.cr, time2.data.sp);
+                            console.log(123);
                         }
                         j.x = cords[0][0];
                         j.y = cords[0][1];
@@ -1177,29 +1182,14 @@ function mainStart() {
                 }
 
                 for (let r of this.#flexLinesInSystem) {
-                    if (r.lines[0]) {
-                        const sps = [[r.lines[0].x1, r.lines[0].y1], [r.lines[r.lines.length-1].x2, r.lines[r.lines.length-1].y2]];
-                        for (const w of sps) {
-                            const t = this.findSmallestCircleSpotTime(j, {x:w[0], y:w[1]});
-                            if (t.t < smallest) {
-                                this.createBallPointVector(j, t.data.sp);
-                            }
-                            time = (t.t < time.t) ? t : time;
-                        }
-                    }
 
                     let time3 = this.findSmallestFlexLinesCircleTime(j, r);
 
                     if (time3 <= time.t) {
-                        const points = new Set();
                         for (let n = 0, k = r.lines[n]; n < r.lines.length; n++, k = r.lines[n]) {
 
                             let time2 = this.findSmallestLineCircleTime(j, k);
-                            if (time2.type === "bp") {
-                                points.add({point: time2.data.sp, num: n, time: time2.t});
-                                continue;
-                            }
-                            else if (time2.t < smallest && !reverse && time2.type === "bl") {
+                            if (time2.t < smallest) {
                                 time = new Shoot(0, "o");
                                 const cords = [j.x, j.y];
                                 j.move(time2.t);
@@ -1209,25 +1199,6 @@ function mainStart() {
                                 [j.x, j.y] = cords;
                             }
                             time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
-                        }
-                        let i;
-                        let min = Infinity;
-                        for (let j of points) {
-                            if (min >= j.time) {
-                                min = j.time;
-                                i = j;
-                            }
-                        }
-                        if (min < time.t) {
-                            const line = r.lines[i.num];
-                            if (line.x1 === i.point.x && line.y1 === i.point.y) {
-                                if (i.num === 0) this.createBallPointVector(j, i.point);
-                                else this.createLineCircleVector(j, new Line({x1: r.lines[i.num - 1].x1, y1: r.lines[i.num - 1].y1, x2: r.lines[i.num].x2, y2: r.lines[i.num].y2}));
-                            }
-                            else {
-                                if (i.num === r.lines.length-1) this.createBallPointVector(j, i.point);
-                                else this.createLineCircleVector(j, new Line({x1: r.lines[i.num].x1, y1: r.lines[i.num].y1, x2: r.lines[i.num+1].x2, y2: r.lines[i.num+1].y2}));
-                            }
                         }
                     }
                 }
@@ -1308,8 +1279,7 @@ function mainStart() {
                     }
                 }
             } else if (l < Math.abs((main.width - nomain.width) / 2)) {
-                l = l + lineWidth;
-                c = l * l - Math.pow((main.width - nomain.width) / 2, 2);
+                c = l*l-Math.pow(Math.abs((main.width - nomain.width)/2)-lineWidth, 2);
                 d = Math.pow(b, 2) - 4 * a * c;
                 if (d > 0) {
                     const t1 = (-b + Math.sqrt(d)) / 2 / a;
@@ -1374,21 +1344,21 @@ function mainStart() {
             const y1 = cr.y;
             const vx = cr.vector[0];
             const vy = cr.vector[1];
-            const r = cr.radius + lineWidth;
-            const a = (vx * k - vy) / (k + 1 / k);
-            const c = (vy / k - vx) / (k + 1 / k);
-            const d = (y1 / k - x1 - b / k) / (k + 1 / k);
-            b = (k * x1 - y1 + b) / (k + 1 / k);
-            const time1 = (-2 * a * b - 2 * c * d - Math.sqrt(Math.pow(-2 * a * b - 2 * c * d, 2) - 4 * (a * a + c * c) * (b * b + d * d - r * r))) / (2 * (a * a + c * c));
-            const time2 = (-2 * a * b - 2 * c * d + Math.sqrt(Math.pow(-2 * a * b - 2 * c * d, 2) - 4 * (a * a + c * c) * (b * b + d * d - r * r))) / (2 * (a * a + c * c));
+            const r = cr.radius+lineWidth;
+            const a = (vx*k-vy)/(k+1/k);
+            const c = (vy/k-vx)/(k+1/k);
+            const d = (y1/k-x1-b/k)/(k+1/k);
+            b = (k*x1-y1+b)/(k+1/k);
+            const time1 = (-2*a*b-2*c*d-Math.sqrt(Math.pow(-2*a*b-2*c*d, 2)-4*(a*a+c*c)*(b*b+d*d-r*r)))/(2*(a*a+c*c));
+            const time2 = (-2*a*b-2*c*d+Math.sqrt(Math.pow(-2*a*b-2*c*d, 2)-4*(a*a+c*c)*(b*b+d*d-r*r)))/(2*(a*a+c*c));
             if (time1 >= 0 && time2 >= 0) {
                 const t = normalize(Math.min(time1, time2));
                 b = ln.b;
-                let x3 = x1 + vx * t;
-                let y3 = y1 + vy * t;
-                let k2 = -1 / k;
-                let b2 = y3 - k2 * x3;
-                let x = (b - b2) / (k2 - k);
+                let x3 = x1+vx*t;
+                let y3 = y1+vy*t;
+                let k2 = -1/k;
+                let b2 = y3-k2*x3;
+                let x = (b-b2)/(k2-k);
                 if (ln.isInRange(x)) return new Shoot(t, "bl", null, {cr, ln});
                 {
                     const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1});
@@ -1396,7 +1366,8 @@ function mainStart() {
 
                     return time1.t < time2.t ? time1 : time2;
                 }
-            } else {
+            }
+            else {
                 const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1});
                 const time2 = this.findSmallestCircleSpotTime(cr, {x: ln.x2, y: ln.y2});
 
