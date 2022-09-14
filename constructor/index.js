@@ -394,8 +394,8 @@ class Finish {
     }
 
     remove(){
-        this.pitch.finish = null;
-        this.pitch.renderCanvas();
+        pitch.finish = null;
+        pitch.renderCanvas();
     }
 
     fn(x) {
@@ -2631,7 +2631,7 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
         mainMenu.classList.replace("passive", "active");
         document.getElementById("areaMenu").classList.replace( "active", "passive");
         for (let i of containment) {
-            if (((i instanceof flexLine || i instanceof Line || i instanceof Circle) && moveEl) || (moveDr && i instanceof drawObj))i.remove();
+            if (((i instanceof flexLine || i instanceof Line || i instanceof Circle || i instanceof Finish) && moveEl) || (moveDr && i instanceof drawObj)) i.remove();
         }
     }
     else if (event.target.id === "finishDone" || event.target.id === "finishCancel") {
