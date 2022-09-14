@@ -381,6 +381,7 @@ canvas{
 
 [data-link] canvas{
     display: flex;
+    margin: auto;
 }
 
 [data-link]:not(.info, .levelBt) {
