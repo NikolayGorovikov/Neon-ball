@@ -1034,19 +1034,64 @@ class Line extends HTMLElement {
 }
 
 class drawObj {
+    #x1;
+    #x2;
+    #y1;
+    #y2;
+
+    setCords() {
+        const spotsX = [];
+        const spotsY = [];
+        this.spots.forEach(i=>{spotsX.push(i[0]); spotsY.push(i[1])});
+        this.#x1 = Math.min(...spotsX);
+        this.#x2 = Math.max(...spotsX);
+        this.#y1 = Math.min(...spotsY);
+        this.#y2 = Math.max(...spotsY);
+    }
+
     constructor(spots, color, pitch) {
         this.color = color;
         this.spots = spots;
 
-        const spotsX = [];
-        const spotsY = [];
-        spots.forEach(i=>{spotsX.push(i[0]); spotsY.push(i[1])});
-        this.x1 = Math.min(...spotsX);
-        this.x2 = Math.max(...spotsX);
-        this.y1 = Math.min(...spotsY);
-        this.y2 = Math.max(...spotsY);
+        this.setCords();
 
         this.pitch = pitch;
+    }
+
+    get x1(){
+        this.setCords();
+        return this.#x1;
+    }
+
+    get x2(){
+        this.setCords();
+        return this.#x2;
+    }
+
+    get y1(){
+        this.setCords();
+        return this.#y1;
+    }
+
+    get y2(){
+        this.setCords();
+        return this.#y2;
+    }
+
+    set x1(a) {
+        this.#x1 = a;
+    }
+
+    set x2(a) {
+        this.#x2 = a;
+    }
+
+    set y1(a) {
+        this.#y1 = a;
+    }
+
+    set y2(a) {
+        this.#y2 = a;
     }
 
     remove() {
