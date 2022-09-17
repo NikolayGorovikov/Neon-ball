@@ -20,7 +20,7 @@ url('fonts/logo/fckbeans-wjox-webfont.ttf') format('truetype');
     font-style: normal;
 }
 
-*:not(.infoTextIn){
+*:not(.mail){
     touch-action: none;
     user-select: none;
     -moz-user-select: none;
