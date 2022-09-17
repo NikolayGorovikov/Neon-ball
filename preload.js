@@ -130,36 +130,36 @@
         if (added === requestedLength) allLoaded();
     }
 
-    window.onresize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        width = document.querySelector("div div").getBoundingClientRect().width;
-        height = document.querySelector("div div").getBoundingClientRect().height;
-        x1 = document.querySelector("div div").getBoundingClientRect().left;
-        y1 = document.querySelector("div div").getBoundingClientRect().top;
-        con.lineWidth = height * 0.9;
-        con.strokeStyle = "rgb(252, 243, 211)";
-        con.lineCap = "round";
-        con.moveTo(arr[0][0] * width + x1, arr[0][1] * height + y1);
-        for (let i = 1; i < Math.min(newSpots, arr.length); i++) draw(i);
-        if (newSpots <= arr.length) {
-            con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
-            for (let j = newSpots+1; j < arr.length; j++) {
-                if (!arr[j]) {
-                    con.closePath();
-                    continue;
-                }
-                if (j > 0 && !arr[j-1]) {
-                    con.beginPath();
-                    con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
-                    continue;
-                }
-                con.lineTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
-                con.stroke();
-                con.closePath();
-                con.beginPath();
-                con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
-            }
-        }
-    }
+    // window.onresize = () => {
+    //     canvas.width = window.innerWidth;
+    //     canvas.height = window.innerHeight;
+    //     width = document.querySelector("div div").getBoundingClientRect().width;
+    //     height = document.querySelector("div div").getBoundingClientRect().height;
+    //     x1 = document.querySelector("div div").getBoundingClientRect().left;
+    //     y1 = document.querySelector("div div").getBoundingClientRect().top;
+    //     con.lineWidth = height * 0.9;
+    //     con.strokeStyle = "rgb(252, 243, 211)";
+    //     con.lineCap = "round";
+    //     con.moveTo(arr[0][0] * width + x1, arr[0][1] * height + y1);
+    //     for (let i = 1; i < Math.min(newSpots, arr.length); i++) draw(i);
+    //     if (newSpots <= arr.length) {
+    //         con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
+    //         for (let j = newSpots+1; j < arr.length; j++) {
+    //             if (!arr[j]) {
+    //                 con.closePath();
+    //                 continue;
+    //             }
+    //             if (j > 0 && !arr[j-1]) {
+    //                 con.beginPath();
+    //                 con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+    //                 continue;
+    //             }
+    //             con.lineTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+    //             con.stroke();
+    //             con.closePath();
+    //             con.beginPath();
+    //             con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+    //         }
+    //     }
+    // }
 }
