@@ -15,7 +15,7 @@
             con.closePath();
             con.beginPath();
             con.moveTo(e.pageX, e.pageY);
-            arr.push([e.pageX, e.pageY]);
+            arr.push([e.pageX/window.innerWidth, e.pageY/window.innerHeight]);
         }
     };
 
@@ -24,7 +24,7 @@
             isDrawing = true;
             con.beginPath();
             con.moveTo(e.pageX, e.pageY);
-            arr.push([e.pageX, e.pageY]);
+            arr.push([e.pageX/window.innerWidth, e.pageY/window.innerHeight]);
         }
     };
 
@@ -32,6 +32,7 @@
         if (e.isPrimary) {
             isDrawing = false;
             con.closePath();
+            arr.push(null);
         }
     };
 
@@ -39,22 +40,28 @@
 
     let width = document.querySelector("div div").getBoundingClientRect().width;
     let height = document.querySelector("div div").getBoundingClientRect().height;
-    x1 = document.querySelector("div div").getBoundingClientRect().left;
-    y1 = document.querySelector("div div").getBoundingClientRect().top;
+    let x1 = document.querySelector("div div").getBoundingClientRect().left;
+    let y1 = document.querySelector("div div").getBoundingClientRect().top;
 
 
     con.lineWidth = height * 0.9;
     let prev = 0;
     con.moveTo(arr[0][0] * width + x1, arr[0][1] * height + y1);
+    let newSpots = 1;
     for (let i = 1; i < arr.length; i++) {
         setTimeout(() => {
-            con.lineTo(arr[i][0] * width + x1, arr[i][1] * height + y1);
-            con.stroke();
-            con.closePath();
-            con.beginPath();
-            con.moveTo(arr[i][0] * width + x1, arr[i][1] * height + y1);
+            draw(i);
+            newSpots++;
         }, prev + Math.sqrt(i * 4 + 30));
         prev = prev + Math.sqrt(i * 4 + 30);
+    }
+    arr.push(null);
+    function draw(i) {
+        con.lineTo(arr[i][0] * width + x1, arr[i][1] * height + y1);
+        con.stroke();
+        con.closePath();
+        con.beginPath();
+        con.moveTo(arr[i][0] * width + x1, arr[i][1] * height + y1);
     }
     setTimeout(() => {
         con.closePath();
@@ -72,6 +79,7 @@
             document.body.innerHTML = "";
             document.body.style.cssText = "";
             document.body.insertAdjacentHTML("beforeend", ` <div id="pitchIn"></div>`);
+            window.onresize = null;
             mainStart();
         }, 1000);
         document.querySelector(".downloading").innerHTML = "Done!";
@@ -119,6 +127,39 @@
     }
     function a(){
         added++;
-        if (added === requestedLength) allLoaded();
+        // if (added === requestedLength) allLoaded();
+    }
+
+    window.onresize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        width = document.querySelector("div div").getBoundingClientRect().width;
+        height = document.querySelector("div div").getBoundingClientRect().height;
+        x1 = document.querySelector("div div").getBoundingClientRect().left;
+        y1 = document.querySelector("div div").getBoundingClientRect().top;
+        con.lineWidth = height * 0.9;
+        con.strokeStyle = "rgb(252, 243, 211)";
+        con.lineCap = "round";
+        con.moveTo(arr[0][0] * width + x1, arr[0][1] * height + y1);
+        for (let i = 1; i < Math.min(newSpots, arr.length); i++) draw(i);
+        if (newSpots <= arr.length) {
+            con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
+            for (let j = newSpots+1; j < arr.length; j++) {
+                if (!arr[j]) {
+                    con.closePath();
+                    continue;
+                }
+                if (j > 0 && !arr[j-1]) {
+                    con.beginPath();
+                    con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+                    continue;
+                }
+                con.lineTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+                con.stroke();
+                con.closePath();
+                con.beginPath();
+                con.moveTo(arr[j][0] * window.innerWidth, arr[j][1] * window.innerHeight);
+            }
+        }
     }
 }
