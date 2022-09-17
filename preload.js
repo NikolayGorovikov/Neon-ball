@@ -127,7 +127,7 @@
     }
     function a(){
         added++;
-        // if (added === requestedLength) allLoaded();
+        if (added === requestedLength) allLoaded();
     }
 
     window.onresize = () => {
