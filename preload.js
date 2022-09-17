@@ -55,7 +55,6 @@
         }, prev + Math.sqrt(i * 4 + 30));
         prev = prev + Math.sqrt(i * 4 + 30);
     }
-    arr.push(null);
     function draw(i) {
         con.lineTo(arr[i][0] * width + x1, arr[i][1] * height + y1);
         con.stroke();
@@ -67,6 +66,7 @@
         con.closePath();
         con.beginPath();
         con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
+        arr.push(null);
         document.addEventListener("pointermove", fn1);
         document.addEventListener("pointerdown", fn2);
         document.addEventListener("pointerup", fn3);
