@@ -32,7 +32,7 @@
         if (e.isPrimary) {
             isDrawing = false;
             con.closePath();
-            arr.push(null);
+            // arr.push(null);
         }
     };
 
@@ -66,7 +66,7 @@
         con.closePath();
         con.beginPath();
         con.lineWidth = Math.sqrt(canvas.width * canvas.height) / 50;
-        arr.push(null);
+        // arr.push(null);
         document.addEventListener("pointermove", fn1);
         document.addEventListener("pointerdown", fn2);
         document.addEventListener("pointerup", fn3);
