@@ -1127,7 +1127,7 @@ class Physics extends HTMLElement {
     #movie;
     #g = 1000;
     #G = 1;
-    drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
+    drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set()};
     COG = new Set();
 
     addToCOGSystem(elem) {
@@ -1212,17 +1212,35 @@ class Physics extends HTMLElement {
         this.context.closePath();
 
         this.context.beginPath();
-        this.context.strokeStyle = lineColor;
+        this.context.fillStyle = this.context.strokeStyle = lineColor;
         this.context.lineWidth = lineWidth;
-        this.context.shadowBlur = blur;
         this.context.shadowColor = lineShadowColor;
+        this.context.shadowBlur = blur;
         this.context.lineCap = "round";
+
+
 
         for (let i of this.#linesInSystem) if (!(i instanceof airLine)) i.renderCanvas(this.context, this.canvas);
         for (let i of this.#flexLinesInSystem) i.renderCanvas(this.context, this.canvas);
         for (const i of this.drawings.contour) this.drawBySpots(i, this.context);
 
         this.context.stroke();
+
+        this.context.closePath();
+        this.context.beginPath();
+        for (const i of this.drawings.linefill) this.drawBySpots(i, this.context);
+
+        this.context.shadowBlur = 0;
+        this.context.fill();
+
+        this.context.closePath();
+        this.context.beginPath();
+        this.context.shadowBlur = blur;
+
+        for (const i of this.drawings.linefillShadow) this.drawBySpots(i, this.context);
+        this.context.fill();
+
+
         this.context.closePath();
 
         for (let i of this.#airLines) i.renderCanvas(this.context);

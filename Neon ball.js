@@ -409,7 +409,7 @@ function mainStart() {
         boomkf = 10000000;
         #G = 1;
         clickable = new Set();
-        drawings = {background: new Set(), rocks: new Set(), contour: new Set(), all: new Set()};
+        drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set()};
         drags = new Map();
 
         startDragging(elem, x, y, id) {
@@ -532,17 +532,38 @@ function mainStart() {
             this.contextPassive.closePath();
 
             this.contextPassive.beginPath();
-            this.contextPassive.strokeStyle = lineColor;
+            this.contextPassive.fillStyle = this.contextPassive.strokeStyle = lineColor;
             this.contextPassive.lineWidth = lineWidth;
-            this.contextPassive.shadowBlur = blur;
             this.contextPassive.shadowColor = lineShadowColor;
+            this.contextPassive.shadowBlur = blur;
             this.contextPassive.lineCap = "round";
+
+
 
             for (let i of this.#linesInSystem) i.renderCanvas(this.contextPassive, this.canvas);
             for (let i of this.#flexLinesInSystem) i.renderCanvas(this.contextPassive, this.canvasPassive);
             for (const i of this.drawings.contour) this.drawBySpots(i, this.contextPassive);
 
             this.contextPassive.stroke();
+
+
+            this.contextPassive.closePath();
+            this.contextPassive.beginPath();
+            for (const i of this.drawings.linefill) this.drawBySpots(i, this.contextPassive);
+
+            this.contextPassive.shadowBlur = 0;
+            this.contextPassive.fill();
+
+            this.contextPassive.closePath();
+            this.contextPassive.beginPath();
+            this.contextPassive.shadowBlur = blur;
+
+            for (const i of this.drawings.linefillShadow) this.drawBySpots(i, this.contextPassive);
+            this.contextPassive.fill();
+
+
+
+
             this.contextPassive.closePath();
         }
 
