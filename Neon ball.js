@@ -18,6 +18,7 @@ function mainStart() {
         #fixedBeforeTouch = false;
 
         constructor(obj, pitch) {
+            this.num = Math.random();
             this.parentElement = pitch;
             this.fixed = Boolean(Number(obj.fixed));
             this.angles = [Number(obj.angle1), Number(obj.angle2)];
@@ -76,7 +77,7 @@ function mainStart() {
             return this.#y + this.width / 2;
         }
 
-        move(time, arr) {
+        move(time, arr, a) {
             if (this.fixed) return;
             this.x = this.x + this.vector[0] * time;
             this.y = this.y + this.vector[1] * time;
@@ -85,10 +86,17 @@ function mainStart() {
                 this.ax = this.ax + ax;
                 this.ay = this.ay + ay;
             }
-            if (this.main && this.parentElement.finish) {
-                const goal = this.parentElement.findSmallestFlexLinesCircleTime(this, this.parentElement.finish);
-                if (goal === -Infinity) this.parentElement.win(this);
+            if (this.main && this.parentElement.finish && a) {
+                const f = this.parentElement.finish;
+                let goal;
+                console.log(this.x, this.num);
+                if (this.getL(this.x, this.y, f.x1, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x1, f.y2) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y2) <= this.radius+lineWidth || (this.x >= f.x1-this.radius-lineWidth && this.x <= f.x2+this.radius+lineWidth && this.y >= f.y1-this.radius-lineWidth && this.y <= f.y2+this.radius+lineWidth)) goal = true;
+                if (goal) this.parentElement.win(this);
             }
+        }
+
+        getL(x1, y1, x2, y2) {
+            return Math.sqrt((x1-x2)**2+(y1-y2)**2);
         }
 
         get vector() {
@@ -237,10 +245,11 @@ function mainStart() {
         constructor(obj, pitch) {
             this.pitch = pitch;
             pitch.finish = this;
-            this.x1 = obj.x1;
-            this.x2 = obj.x2;
-            this.y1 = obj.y1;
-            this.y2 = obj.y2;
+            this.x1 = Math.min(obj.x1, obj.x2);
+            this.x2 = Math.max(obj.x1, obj.x2);
+            this.y1 = Math.min(obj.y1, obj.y2);
+            this.y2 = Math.max(obj.y1, obj.y2);
+            console.log(this.x1, this.y1, this.x2, this.y2);
             this.main();
         }
 
@@ -966,7 +975,7 @@ function mainStart() {
 
         drawFrame(time = 1 / this.#fps) {
             for (const i of this.#elemsInSystem) {
-                i.move(time);
+                i.move(time, 0, 1);
             }
         }
 
