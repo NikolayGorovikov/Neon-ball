@@ -18,7 +18,6 @@ function mainStart() {
         #fixedBeforeTouch = false;
 
         constructor(obj, pitch) {
-            this.num = Math.random();
             this.parentElement = pitch;
             this.fixed = Boolean(Number(obj.fixed));
             this.angles = [Number(obj.angle1), Number(obj.angle2)];
@@ -89,7 +88,6 @@ function mainStart() {
             if (this.main && this.parentElement.finish && a) {
                 const f = this.parentElement.finish;
                 let goal;
-                console.log(this.x, this.num);
                 if (this.getL(this.x, this.y, f.x1, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x1, f.y2) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y2) <= this.radius+lineWidth || (this.x >= f.x1-this.radius-lineWidth && this.x <= f.x2+this.radius+lineWidth && this.y >= f.y1-this.radius-lineWidth && this.y <= f.y2+this.radius+lineWidth)) goal = true;
                 if (goal) this.parentElement.win(this);
             }
