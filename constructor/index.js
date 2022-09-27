@@ -1049,13 +1049,14 @@ class drawObj {
         this.#y2 = Math.max(...spotsY);
     }
 
-    constructor(spots, color, pitch) {
+    constructor(spots, color, pitch, zIndex) {
         this.color = color;
         this.spots = spots;
 
         this.setCords();
 
         this.pitch = pitch;
+        this.zIndex = zIndex;
     }
 
     get x1(){
@@ -1102,7 +1103,8 @@ class drawObj {
     getInfo() {
         return {
             color: this.color,
-            spots: this.spots
+            spots: this.spots,
+            zIndex: this.zIndex,
         };
     }
 }
@@ -1127,7 +1129,7 @@ class Physics extends HTMLElement {
     #movie;
     #g = 1000;
     #G = 1;
-    drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set()};
+    drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set(), backgroundZ: {}, rocksZ: {}, contourZ: {}, linefillZ: {}, linefillShadowZ: {}};
     COG = new Set();
 
     addToCOGSystem(elem) {
@@ -1144,7 +1146,8 @@ class Physics extends HTMLElement {
 
     addDraw(spots, color) {
         this.drawings[color].add(spots);
-        this.drawings.all.add(new drawObj(spots, color, this));
+        spots.zIndex = zIndex;
+        this.drawings.all.add(new drawObj(spots, color, this, zIndex));
     }
 
     drawBySpots(spots, con) {
@@ -1194,20 +1197,21 @@ class Physics extends HTMLElement {
     }
 
     renderCanvas(time){
+        this.ziNormalize();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;
         this.context.shadowBlur = 0;
-        for (const i of this.drawings.rocks) this.drawBySpots(i, this.context);
+        for (const i of this.drawings.rocks) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
         this.context.fill();
         this.context.closePath();
 
         this.context.beginPath();
         this.context.fillStyle = this.backgroundGr;
         this.context.shadowBlur = 0;
-        for (const i of this.drawings.background) this.drawBySpots(i, this.context);
+        for (const i of this.drawings.background) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
         this.context.fill();
         this.context.closePath();
 
@@ -1222,13 +1226,13 @@ class Physics extends HTMLElement {
 
         for (let i of this.#linesInSystem) if (!(i instanceof airLine)) i.renderCanvas(this.context, this.canvas);
         for (let i of this.#flexLinesInSystem) i.renderCanvas(this.context, this.canvas);
-        for (const i of this.drawings.contour) this.drawBySpots(i, this.context);
+        for (const i of this.drawings.contour) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
 
         this.context.stroke();
 
         this.context.closePath();
         this.context.beginPath();
-        for (const i of this.drawings.linefill) this.drawBySpots(i, this.context);
+        for (const i of this.drawings.linefill) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
 
         this.context.shadowBlur = 0;
         this.context.fill();
@@ -1237,16 +1241,110 @@ class Physics extends HTMLElement {
         this.context.beginPath();
         this.context.shadowBlur = blur;
 
-        for (const i of this.drawings.linefillShadow) this.drawBySpots(i, this.context);
+        for (const i of this.drawings.linefillShadow) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
         this.context.fill();
 
 
         this.context.closePath();
 
+
+
+        for (const j of this.drawings.zi) {
+            this.context.beginPath();
+            this.context.fillStyle = this.rocksGr;
+            this.context.shadowBlur = 0;
+            if (this.drawings.rocksZ[j]) for (const i of this.drawings.rocksZ[j]) this.drawBySpots(i, this.context);
+            this.context.fill();
+            this.context.closePath();
+
+            this.context.beginPath();
+            this.context.fillStyle = this.backgroundGr;
+            this.context.shadowBlur = 0;
+            if (this.drawings.backgroundZ[j]) for (const i of this.drawings.backgroundZ[j]) this.drawBySpots(i, this.context);
+            this.context.fill();
+            this.context.closePath();
+
+            this.context.beginPath();
+            this.context.fillStyle = this.context.strokeStyle = lineColor;
+            this.context.lineWidth = lineWidth;
+            this.context.shadowColor = lineShadowColor;
+            this.context.shadowBlur = blur;
+            this.context.lineCap = "round";
+            if (this.drawings.contourZ[j]) for (const i of this.drawings.contourZ[j]) this.drawBySpots(i, this.context);
+
+            this.context.stroke();
+
+            this.context.closePath();
+
+
+            this.context.beginPath();
+            if (this.drawings.linefillZ[j]) for (const i of this.drawings.linefillZ[j]) this.drawBySpots(i, this.context);
+
+            this.context.shadowBlur = 0;
+            this.context.fill();
+
+            this.context.closePath();
+            this.context.beginPath();
+            this.context.shadowBlur = blur;
+
+            if (this.drawings.linefillShadowZ[j]) for (const i of this.drawings.linefillShadowZ[j]) this.drawBySpots(i, this.context);
+            this.context.fill();
+
+
+            this.context.closePath();
+        }
+
         for (let i of this.#airLines) i.renderCanvas(this.context);
         for (let i of this.#elemsInSystem) i.renderCanvas(this.context, this.canvas, time);
         for (let i of this.COG) i.renderCanvas(this.context, this.canvas, time);
         if (this.finish) this.finish.renderCanvas(this.context, time);
+    }
+
+    ziNormalize(){
+        const numbers = new Set();
+        this.drawings.contourZ = {};
+        this.drawings.backgroundZ = {};
+        this.drawings.linefillZ = {};
+        this.drawings.linefillShadowZ = {};
+        this.drawings.rocksZ = {};
+
+        for (const i of this.drawings.contour) {
+            if (i.zIndex > 1) {
+                if (!this.drawings.contourZ[i.zIndex]) this.drawings.contourZ[i.zIndex] = [];
+                this.drawings.contourZ[i.zIndex].push(i);
+                numbers.add(i.zIndex);
+            }
+        }
+        for (const i of this.drawings.linefill) {
+            if (i.zIndex > 1) {
+                if (!this.drawings.linefillZ[i.zIndex]) this.drawings.linefillZ[i.zIndex] = [];
+                this.drawings.linefillZ[i.zIndex].push(i);
+                numbers.add(i.zIndex);
+            }
+        }
+        for (const i of this.drawings.rocks) {
+            if (i.zIndex > 1) {
+                if (!this.drawings.rocksZ[i.zIndex]) this.drawings.rocksZ[i.zIndex] = [];
+                this.drawings.rocksZ[i.zIndex].push(i);
+                numbers.add(i.zIndex);
+            }
+        }
+        for (const i of this.drawings.background) {
+            if (i.zIndex > 1) {
+                if (!this.drawings.backgroundZ[i.zIndex]) this.drawings.backgroundZ[i.zIndex] = [];
+                this.drawings.backgroundZ[i.zIndex].push(i);
+                numbers.add(i.zIndex);
+            }
+        }
+        for (const i of this.drawings.linefillShadow) {
+            if (i.zIndex > 1) {
+                if (!this.drawings.linefillShadowZ[i.zIndex]) this.drawings.linefillShadowZ[i.zIndex] = [];
+                this.drawings.linefillShadowZ[i.zIndex].push(i);
+                numbers.add(i.zIndex);
+            }
+        }
+
+        this.drawings.zi = [...numbers].sort();
     }
 
     constructor() {
@@ -2522,6 +2620,13 @@ function closePopup() {
     popup.classList.replace("active", "passive");
 }
 
+function zIndexChange(event) {
+    const num = Number(event.target.value);
+    if (!isNaN(num)) zIndex = num;
+}
+
+let zIndex = 1;
+
 document.getElementById("menu").addEventListener("pointerdown", (event) => {
     let fn;
     if (event.target.classList.contains("start")) {
@@ -2774,8 +2879,8 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
 
             pitch.addDraw(spots, actualColor);
         }
-
-
+        zIndex = 1;
+        document.getElementById("zindexer").value = "1";
     }
     else if (event.target.id === 'drawDelete') {
         document.getElementById("drawMenu").classList.replace("active", "passive");
@@ -2791,6 +2896,8 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
         line = null;
         lineRow = null;
         lineWidth = realLineWidth;
+        zIndex = 1;
+        document.getElementById("zindexer").value = "1";
     }
     else if (event.target.id === "addContour") {
         document.querySelectorAll(".delete1").forEach(i=>i.style.display = "block");
@@ -2806,6 +2913,8 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
         pitch.renderCanvas();
         start = ()=>pitch.start();
         stop = ()=>pitch.stop();
+        zIndex = 1;
+        document.getElementById("zindexer").value = "1";
     }
     else if (event.target.id === "autoCOG") {
         setAutoCOG();
@@ -4150,6 +4259,7 @@ function createFromJSON(json) {
                     spot[0] *= scale;
                     spot[1] *= scale;
                 });
+                zIndex = i.zIndex ? Number(i.zIndex): 1;
                 pitch.addDraw(i.spots, i.color);
             }
 

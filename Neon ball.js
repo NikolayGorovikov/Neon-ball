@@ -88,7 +88,7 @@ function mainStart() {
             if (this.main && this.parentElement.finish && a) {
                 const f = this.parentElement.finish;
                 let goal;
-                if (this.getL(this.x, this.y, f.x1, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y1) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x1, f.y2) <= this.radius+lineWidth || this.getL(this.x, this.y, f.x2, f.y2) <= this.radius+lineWidth || (this.x >= f.x1-this.radius-lineWidth && this.x <= f.x2+this.radius+lineWidth && this.y >= f.y1-this.radius-lineWidth && this.y <= f.y2+this.radius+lineWidth)) goal = true;
+                if (this.getL(this.x, this.y, f.x1, f.y1) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x2, f.y1) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x1, f.y2) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x2, f.y2) <= this.radius+lineWidth/2 || (this.x >= f.x1-this.radius-lineWidth/2 && this.x <= f.x2+this.radius+lineWidth/2 && this.y >= f.y1-this.radius-lineWidth/2 && this.y <= f.y2+this.radius+lineWidth/2)) goal = true;
                 if (goal) this.parentElement.win(this);
             }
         }
@@ -368,9 +368,10 @@ function mainStart() {
     }
 
     class drawObj {
-        constructor(spots, color, pitch) {
+        constructor(spots, color, pitch, zIndex) {
             this.color = color;
             this.spots = spots;
+            this.zIndex = zIndex;
 
             const spotsX = [];
             const spotsY = [];
@@ -416,7 +417,7 @@ function mainStart() {
         boomkf = 10000000;
         #G = 1;
         clickable = new Set();
-        drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set()};
+        drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set(), backgroundZ: {}, rocksZ: {}, contourZ: {}, linefillZ: {}, linefillShadowZ: {}};
         drags = new Map();
 
         startDragging(elem, x, y, id) {
@@ -467,9 +468,53 @@ function mainStart() {
             this.drags.delete(id);
         }
 
-        addDraw(spots, color) {
+        addDraw(spots, color, zIndex) {
             this.drawings[color].add(spots);
-            this.drawings.all.add(new drawObj(spots, color, this));
+            spots.zIndex = zIndex;
+            this.drawings.all.add(new drawObj(spots, color, this, zIndex));
+        }
+
+        ziNormalize(){
+            const numbers = new Set();
+            this.drawings.contourZ = {};
+            this.drawings.backgroundZ = {};
+            this.drawings.linefillZ = {};
+            this.drawings.linefillShadowZ = {};
+            this.drawings.rocksZ = {};
+
+            for (const i of this.drawings.contour) {
+                if (i.zIndex > 1) {
+                    if (!this.drawings.contourZ[i.zIndex]) this.drawings.contourZ[i.zIndex] = [];
+                    this.drawings.contourZ[i.zIndex].push(i);
+                    numbers.add(i.zIndex);
+                }
+            }
+            for (const i of this.drawings.linefill) {
+                    if (!this.drawings.linefillZ[i.zIndex]) this.drawings.linefillZ[i.zIndex] = [];
+                    this.drawings.linefillZ[i.zIndex].push(i);
+                    numbers.add(i.zIndex);
+            }
+            for (const i of this.drawings.rocks) {
+                if (i.zIndex > 1) {
+                    if (!this.drawings.rocksZ[i.zIndex]) this.drawings.rocksZ[i.zIndex] = [];
+                    this.drawings.rocksZ[i.zIndex].push(i);
+                    numbers.add(i.zIndex);
+                }
+            }
+            for (const i of this.drawings.background) {
+                if (i.zIndex > 1) {
+                    if (!this.drawings.backgroundZ[i.zIndex]) this.drawings.backgroundZ[i.zIndex] = [];
+                    this.drawings.backgroundZ[i.zIndex].push(i);
+                    numbers.add(i.zIndex);
+                }
+            }
+            for (const i of this.drawings.linefillShadow) {
+                    if (!this.drawings.linefillShadowZ[i.zIndex]) this.drawings.linefillShadowZ[i.zIndex] = [];
+                    this.drawings.linefillShadowZ[i.zIndex].push(i);
+                    numbers.add(i.zIndex);
+            }
+
+            this.drawings.zi = [...numbers].sort();
         }
 
         drawBySpots(spots, con) {
@@ -527,14 +572,14 @@ function mainStart() {
             this.contextPassive.beginPath();
             this.contextPassive.fillStyle = this.rocksGr;
             this.contextPassive.shadowBlur = 0;
-            for (const i of this.drawings.rocks) this.drawBySpots(i, this.contextPassive);
+            for (const i of this.drawings.rocks) if (i.zIndex===1)this.drawBySpots(i, this.contextPassive);
             this.contextPassive.fill();
             this.contextPassive.closePath();
 
             this.contextPassive.beginPath();
             this.contextPassive.fillStyle = this.backgroundGr;
             this.contextPassive.shadowBlur = 0;
-            for (const i of this.drawings.background) this.drawBySpots(i, this.contextPassive);
+            for (const i of this.drawings.background) if (i.zIndex===1)this.drawBySpots(i, this.contextPassive);
             this.contextPassive.fill();
             this.contextPassive.closePath();
 
@@ -549,29 +594,57 @@ function mainStart() {
 
             for (let i of this.#linesInSystem) i.renderCanvas(this.contextPassive, this.canvas);
             for (let i of this.#flexLinesInSystem) i.renderCanvas(this.contextPassive, this.canvasPassive);
-            for (const i of this.drawings.contour) this.drawBySpots(i, this.contextPassive);
+            for (const i of this.drawings.contour) if (i.zIndex === 1) this.drawBySpots(i, this.contextPassive);
 
             this.contextPassive.stroke();
 
 
             this.contextPassive.closePath();
-            this.contextPassive.beginPath();
-            for (const i of this.drawings.linefill) this.drawBySpots(i, this.contextPassive);
 
-            this.contextPassive.shadowBlur = 0;
-            this.contextPassive.fill();
+            for (const j of this.drawings.zi) {
+                this.contextPassive.beginPath();
+                this.contextPassive.fillStyle = this.rocksGr;
+                this.contextPassive.shadowBlur = 0;
+                if (this.drawings.rocksZ[j]) for (const i of this.drawings.rocksZ[j]) this.drawBySpots(i, this.contextPassive);
+                this.contextPassive.fill();
+                this.contextPassive.closePath();
 
-            this.contextPassive.closePath();
-            this.contextPassive.beginPath();
-            this.contextPassive.shadowBlur = blur;
+                this.contextPassive.beginPath();
+                this.contextPassive.fillStyle = this.backgroundGr;
+                this.contextPassive.shadowBlur = 0;
+                if (this.drawings.backgroundZ[j]) for (const i of this.drawings.backgroundZ[j]) this.drawBySpots(i, this.contextPassive);
+                this.contextPassive.fill();
+                this.contextPassive.closePath();
 
-            for (const i of this.drawings.linefillShadow) this.drawBySpots(i, this.contextPassive);
-            this.contextPassive.fill();
+                this.contextPassive.beginPath();
+                this.contextPassive.fillStyle = this.contextPassive.strokeStyle = lineColor;
+                this.contextPassive.lineWidth = lineWidth;
+                this.contextPassive.shadowColor = lineShadowColor;
+                this.contextPassive.shadowBlur = blur;
+                this.contextPassive.lineCap = "round";
+                if (this.drawings.contourZ[j]) for (const i of this.drawings.contourZ[j]) this.drawBySpots(i, this.contextPassive);
+
+                this.contextPassive.stroke();
+
+                this.contextPassive.closePath();
 
 
+                this.contextPassive.beginPath();
+                if (this.drawings.linefillZ[j]) for (const i of this.drawings.linefillZ[j]) this.drawBySpots(i, this.contextPassive);
+
+                this.contextPassive.shadowBlur = 0;
+                this.contextPassive.fill();
+
+                this.contextPassive.closePath();
+                this.contextPassive.beginPath();
+                this.contextPassive.shadowBlur = blur;
+
+                if (this.drawings.linefillShadowZ[j]) for (const i of this.drawings.linefillShadowZ[j]) this.drawBySpots(i, this.contextPassive);
+                this.contextPassive.fill();
 
 
-            this.contextPassive.closePath();
+                this.contextPassive.closePath();
+            }
         }
 
         resize(w, h) {
@@ -800,7 +873,7 @@ function mainStart() {
                             spot[0] *= scalex;
                             spot[1] *= scaley;
                         });
-                        this.addDraw(i.spots, i.color);
+                        this.addDraw(i.spots, i.color, i.zIndex ? Number(i.zIndex): 1);
                     }
 
                     if (obj.finish) {
@@ -822,6 +895,7 @@ function mainStart() {
                 gradient.addColorStop(1, `rgb(${startDrColor})`);
                 this.rocksGr = gradient;
                 this.renderCanvas();
+                this.ziNormalize();
                 this.renderPassiveCanvas();
                 start();
             });
