@@ -49,8 +49,8 @@ body{
         border-radius: calc(100vh * 5 / 6 * 0.8 * 0.11 / 6);
     }
     .closeBar{
-        width: calc(100vh * 5 / 6 * 0.07);
-        height: calc(100vh * 5 / 6 * 0.07);
+        width: calc(100vh * 5 / 6 * 0.1);
+        height: calc(100vh * 5 / 6 * 0.1);
         top: calc(100vh * 5 / 6* 0.05 *2/5);
         left: calc(100vh * 5 / 6 * 0.05 * 2/5);
     }
@@ -120,8 +120,8 @@ body{
         top: calc((100vw * 6 / 5 - (100vw * 6 / 5 + 100vw))/2);
     }
     .closeBar{
-        width: 7vw;
-        height: 7vw;
+        width: 10vw;
+        height: 10vw;
         top: 2vw;
         left: 2vw;
     }

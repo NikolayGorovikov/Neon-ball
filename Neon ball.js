@@ -1923,7 +1923,7 @@ function mainStart() {
             const pause = `<div class="closeBar" data-link="pause"></div>`;
             const can = document.createElement("canvas");
             can.resize = () => {
-                can.width = pitchIn.getBoundingClientRect().width * 0.07;
+                can.width = pitchIn.getBoundingClientRect().width * 0.1;
                 can.height = can.width;
                 const con = can.getContext("2d");
                 con.beginPath();
@@ -2171,7 +2171,7 @@ function mainStart() {
                 const can = document.createElement("canvas");
                 can.resize = () => {
                     const con = can.getContext("2d");
-                    can.width = pitchIn.getBoundingClientRect().width * 0.07;
+                    can.width = pitchIn.getBoundingClientRect().width * 0.1;
                     can.height = can.width;
                     con.beginPath();
                     con.lineCap = "round";
@@ -2243,7 +2243,7 @@ function mainStart() {
                 <div class="closeBar" data-link="closeInfo"></div>
                 <div class="infoTextIn">Автор и разработчик - Горовиков Николай Константинович</div>
                 <div class="infoTextIn">Версия - ${version}</div>
-                <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя</div>
+                <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность Карине, спасибо за помощь с придумыванием уровней и поддержку</div>
                 <div class="infoTextIn mail" >Контактные данные - gorovikov.work@gmail.com</div>
                 <div class="infoTextIn">&copy Горовиков Николай Константинович, 2021-2022 | Все права защищены</div>
             </div>
@@ -2253,7 +2253,7 @@ function mainStart() {
                     {
                         const can = document.createElement("canvas");
                         can.resize = () => {
-                            can.width = pitchIn.getBoundingClientRect().width * 0.07;
+                            can.width = pitchIn.getBoundingClientRect().width * 0.1;
                             can.height = can.width;
                             const con = can.getContext("2d");
                             con.beginPath();
