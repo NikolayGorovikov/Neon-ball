@@ -2352,4 +2352,5 @@ function mainStart() {
     }
 
     pages.home.open();
+    window.addEventListener("touchstart", (e)=>e.preventDefault());
 }
