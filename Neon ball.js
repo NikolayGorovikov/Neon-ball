@@ -1243,11 +1243,9 @@ function mainStart() {
                         k.move(time2.t);
                         if (time2.type === "b") {
                             this.createCircleVector(j, k);
-                            if (k.fixed || j.fixed)console.log("bll");
                         }
                         else if (time2.type === "bp") {
                             this.createBallPointVector(time2.data.cr, time2.data.sp);
-                            console.log(123);
                         }
                         j.x = cords[0][0];
                         j.y = cords[0][1];
@@ -1265,6 +1263,8 @@ function mainStart() {
                         time = ((time2.t < time.t && reverse && time2.t > smallest) || (time2.t < time.t && !reverse)) ? time2 : time;
                     }
                 }
+
+                if (j.fixed) continue;
 
                 for (let n = 0, k = this.#linesInSystem[n]; n < this.#linesInSystem.length; n++, k = this.#linesInSystem[n]) {
 
@@ -1900,7 +1900,7 @@ function mainStart() {
         pause() {
             if (this.inStart) return;
             this.inStart = true;
-            setTimeout(()=>this.inStart = false, 500);
+            setTimeout(()=>this.inStart = false, 0);
             if (pitch?.cleared) return;
             stop();
             pages.lvlPause.open(String(actualLevel));
