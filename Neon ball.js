@@ -2352,5 +2352,5 @@ function mainStart() {
     }
 
     pages.home.open();
-    window.addEventListener("touchstart", (e)=>e.preventDefault());
+    window.addEventListener("touchend", (e)=>e.preventDefault(), true);
 }
