@@ -106,13 +106,13 @@ body{
 }
 
 .resizer{
-    width: calc(min(35%, 40px)*3/4);
-    height: calc(min(35%, 40px)*3/4);
+    width: max(calc(min(35%, 40px)*3/4), 10px);
+    height: max(calc(min(35%, 40px)*3/4), 10px);
     background-color: black;
     position: absolute;
     opacity: 0.5;
-    left: calc(50% - min(35%, 40px)*3/4/2);
-    top: calc(min(35%, 40px)*3/4*(-1)*10/9);
+    left: calc(50% - max(calc(min(35%, 40px)*3/4), 10px)/2);
+    top: 0;
     border-radius: 10%;
     border: black solid thin;
     box-sizing: border-box;

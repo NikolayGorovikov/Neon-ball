@@ -3347,6 +3347,7 @@ const adding = {
         this.line(true);
     },
     area(){
+        isCopy = false;
         pitch.addEventListener("pointerdown", startArea, {once: true});
         mainMenu.classList.replace("active", "passive");
         document.getElementById("areaMenu").classList.replace( "passive", "active");
@@ -3386,6 +3387,10 @@ const adding = {
         window.COG = COG;
         pitch.append(COG);
         document.querySelectorAll(".COGAdd").forEach(i=>i.style.display = "block");
+    },
+    copy(){
+        this.area();
+        isCopy = true;
     }
 }
 
@@ -3640,8 +3645,106 @@ function setArea(x1, y1, x2, y2) {
     }
 }
 
+function resizeIn(scale, cords) {
+    for (const j of containment) {
+        if (j instanceof Circle || j instanceof tnt) {
+            j.radius *= scale;
+            j.x = beginX + (j.x - beginX)*scale;
+            j.y = beginY + (j.y - beginY)*scale;
+        }
+        else if (j instanceof Line || j instanceof airLine) {
+            j.x1 = beginX + (j.x1 - beginX)*scale;
+            j.x2 = beginX + (j.x2 - beginX)*scale;
+            j.y1 = beginY + (j.y1 - beginY)*scale;
+            j.y2 = beginY + (j.y2 - beginY)*scale;
+        }
+        else if (j instanceof flexLine) {
+            j.x1 = beginX + (j.x1 - beginX)*scale;
+            j.x2 = beginX + (j.x2 - beginX)*scale;
+            j.y1 = beginY + (j.y1 - beginY)*scale;
+            j.y2 = beginY + (j.y2 - beginY)*scale;
+            j.lines.forEach((line) => {
+                line.x1 = beginX + (line.x1 - beginX)*scale;
+                line.x2 = beginX + (line.x2 - beginX)*scale;
+                line.y1 = beginY + (line.y1 - beginY)*scale;
+                line.y2 = beginY + (line.y2 - beginY)*scale;
+            });
+            j.spots.forEach(i=>{
+                i[0] = beginX + (i[0] - beginX)*scale;
+                i[1] = beginY + (i[1] - beginY)*scale;
+            });
+        }
+        else if (j instanceof drawObj) {
+            j.spots.forEach(i=>{
+                i[0] = beginX + (i[0] - beginX)*scale;
+                i[1] = beginY + (i[1] - beginY)*scale;
+            });
+        }
+    }
+    pitch.renderCanvas();
+    return;
+    for (let i of obj.lines) {
+        const j = document.createElement("physics-line");
+        pitch.append(j);
+
+    }
+
+    for (let i of obj.balls) {
+
+    }
+
+    for (let i of obj.airLines) {
+        j.x1 = i.x1*scale;
+        j.x2 = i.x2*scale;
+        j.y1 = i.y1*scale;
+        j.y2 = i.y2*scale;
+        j.length = i.length*scale;
+        j.f = i.f*scale;
+    }
+    for (let i of obj.flexLines) {
+        j.x1 = i.x1*scale;
+        j.x2 = i.x2*scale;
+        j.y1 = i.y1*scale;
+        j.y2 = i.y2*scale;
+        j.lines = i.lines.map((line) => {
+            line.x1 *= scale;
+            line.x2 *= scale;
+            line.y1 *= scale;
+            line.y2 *= scale;
+            return createLine(line.x1, line.y1, line.x2, line.y2);
+        });
+        j.spots = i.spots.map(spot => {
+            spot[0] *= scale;
+            spot[1] *= scale;
+            return spot;
+        });
+    }
+}
+
+function resizeAreaCopy(event){
+    const l = (area.getBoundingClientRect().top + area.getBoundingClientRect().height) - event.target.getBoundingClientRect().top + event.target.getBoundingClientRect().height;
+    const scale = l/window.scaleBeginLength;
+    setArea(window.beginX - scale*window.beginLengthX/2, window.beginY - scale*window.beginLengthY/2, window.beginX + scale*window.beginLengthX/2, window.beginY + scale*window.beginLengthY/2);
+    window.scaleBeginLength = (area.getBoundingClientRect().top + area.getBoundingClientRect().height) - event.target.getBoundingClientRect().top + event.target.getBoundingClientRect().height;
+    const areaCordsWas = Object.assign({}, areaCords);
+    window.beginLengthX = areaCords.x2 - areaCords.x1;
+    window.beginLengthY = areaCords.y2 - areaCords.y1;
+    event.target.style.top = "0px";
+    resizeIn(scale, areaCordsWas);
+}
+
+function startResize(event) {
+    window.scaleBeginLength = (area.getBoundingClientRect().top + area.getBoundingClientRect().height) - event.target.getBoundingClientRect().top + event.target.getBoundingClientRect().height;
+    window.beginLengthX = areaCords.x2 - areaCords.x1;
+    window.beginLengthY = areaCords.y2 - areaCords.y1;
+    window.beginX = (areaCords.x2 + areaCords.x1)/2;
+    window.beginY = (areaCords.y2 + areaCords.y1)/2;
+}
+
+onResize = false;
 function startArea(event) {
-    const a = "<div class='area' data-dnd='' data-dnd-Dobegin='cordsAreaStart = [event.pageX, event.pageY]' data-dnd-Onmove='moveArea(event.pageX, event.pageY)'></div>";
+    const a = "<div class='area' data-dnd='' data-dnd-Dobegin='cordsAreaStart = [event.pageX, event.pageY]' data-dnd-Onmove='moveArea(event.pageX, event.pageY)'><div class='resizer' data-dnd-Dobegin='startResize(event)' data-dnd='' data-dnd-Onmove='resizeAreaCopy(event)' data-dnd-Preventxdirection='1'></div></div>";
+
     pitch.insertAdjacentHTML("afterbegin", a);
 
     area = pitch.children[0];
@@ -3654,10 +3757,37 @@ function startArea(event) {
 function resizeArea(event) {
     setArea(areaCords.x1, areaCords.y1, event.pageX - pitch.getBoundingClientRect().left, event.pageY - pitch.getBoundingClientRect().top);
 }
-
+let isCopy = true;
 function endResizeArea() {
     document.removeEventListener("pointermove", resizeArea);
     containment = getAreaContainment();
+    if (isCopy) {
+        const json = containment;
+
+        const main = {
+            tntBalls: [], balls: [], airLines: [], lines: [], flexLines: [], drawings: []
+        }
+        for (const i of json) {
+            if (i instanceof tnt) main.tntBalls.push(i.getInfo());
+            else if (i instanceof Circle) main.balls.push(i.getInfo());
+            else if (i instanceof airLine) main.airLines.push(i.getInfo());
+            else if (i instanceof Line) main.lines.push(i.getInfo());
+            else if (i instanceof flexLine) main.flexLines.push(i.getInfo());
+            else if (i instanceof drawObj) main.drawings.push(i.getInfo());
+        }
+
+        jsonMain(main, 1);
+
+        for (const i of main.drawings) {
+            console.log(i);
+            const color = i.color;
+            const spots = [];
+            for (let j of i.spots) spots.push([j[0], j[1]]);
+            pitch.addDraw(spots, color);
+        }
+    }
+
+
 }
 
 function getAreaContainment() {
@@ -4168,94 +4298,9 @@ function createFromJSON(json) {
 
             window.lineWidth *= scale;
             blur = obj.blur * scale;
-            for (let i of obj.lines) {
-                const j = document.createElement("physics-line");
-                pitch.append(j);
-                j.x1 = i.x1*scale;
-                j.x2 = i.x2*scale;
-                j.y1 = i.y1*scale;
-                j.y2 = i.y2*scale;
-            }
 
-            for (let i of obj.balls) {
-                const j = document.createElement("physics-circle");
-                pitch.append(j);
-                j.fixed = Number(i.fixed)-1;
-                j.angles = [Number(i.angle1)*180/Math.PI, Number(i.angle2)*180/Math.PI];
-                console.log(i.angle1);
-                j.radius = Number(i.radius)*scale;
-                j.width = j.radius*2;
-                j.x = i.x*scale;
-                j.y = i.y*scale;
-                j.vector = [i.vx*scale, i.vy*scale];
-                j.ax = i.ax*scale;
-                j.ay = i.ay*scale;
-                j.mass = Number(i.m)*scale;
-                j.elos = Number(i.elos)-1;
-                j.gravity = Number(i.gravity)-1;
-                j.fixedBeforeTouch = Boolean(Number(i.fixedBeforeTouch));
-                if (j.fixedBeforeTouch) {
-                    j.angles = [0,0];
-                }
-                j.touchRemove = Boolean(Number(i.touchRemove));
-                j.main = Boolean(Number(i.main));
-            }
 
-            for (let i of obj.airLines) {
-                const j = document.createElement("airline-physics");
-                pitch.append(j);
-                j.x1 = i.x1*scale;
-                j.x2 = i.x2*scale;
-                j.y1 = i.y1*scale;
-                j.y2 = i.y2*scale;
-                j.length = i.length*scale;
-                j.f = i.f*scale;
-            }
-
-            for (let i of obj.tntBalls) {
-                const j = document.createElement("tnt-physics");
-                pitch.append(j);
-                j.fixed = Number(i.fixed)-1;
-                j.angles = [Number(i.angle1), Number(i.angle2)];
-                j.radius = Number(i.radius)*scale;
-                j.width = j.radius*2;
-                j.x = i.x*scale;
-                j.y = i.y*scale;
-                j.vector = [i.vx*scale, i.vy*scale];
-                j.ax = i.ax*scale;
-                j.ay = i.ay*scale;
-                j.mass = Number(i.m)*scale;
-                j.elos = Number(i.elos)-1;
-                j.gravity = Number(i.gravity)-1;
-                j.fixedBeforeTouch = Boolean(Number(i.fixedBeforeTouch));
-                if (j.fixedBeforeTouch) {
-                    j.angles = [0,0];
-                }
-                j.touchRemove = Boolean(Number(i.touchRemove));
-                j.main = Boolean(Number(i.main));
-                j.rboom = i.rboom*scale;
-                i.f = i.f*scale;
-            }
-
-            for (let i of obj.flexLines) {
-                const j = new flexLine(pitch);
-                j.x1 = i.x1*scale;
-                j.x2 = i.x2*scale;
-                j.y1 = i.y1*scale;
-                j.y2 = i.y2*scale;
-                j.lines = i.lines.map((line) => {
-                    line.x1 *= scale;
-                    line.x2 *= scale;
-                    line.y1 *= scale;
-                    line.y2 *= scale;
-                    return createLine(line.x1, line.y1, line.x2, line.y2);
-                });
-                j.spots = i.spots.map(spot => {
-                    spot[0] *= scale;
-                    spot[1] *= scale;
-                    return spot;
-                });
-            }
+            jsonMain(obj, scale);
 
             for (const i of obj.drawings) {
                 i.spots.forEach(spot => {
@@ -4285,6 +4330,97 @@ function createFromJSON(json) {
     }
     catch (e) {
         console.log(e);
+    }
+}
+
+function jsonMain(obj, scale) {
+    for (let i of obj.lines) {
+        const j = document.createElement("physics-line");
+        pitch.append(j);
+        j.x1 = i.x1*scale;
+        j.x2 = i.x2*scale;
+        j.y1 = i.y1*scale;
+        j.y2 = i.y2*scale;
+    }
+
+    for (let i of obj.balls) {
+        const j = document.createElement("physics-circle");
+        pitch.append(j);
+        j.fixed = Number(i.fixed)-1;
+        j.angles = [Number(i.angle1)*180/Math.PI, Number(i.angle2)*180/Math.PI];
+        console.log(i.angle1);
+        j.radius = Number(i.radius)*scale;
+        j.width = j.radius*2;
+        j.x = i.x*scale;
+        j.y = i.y*scale;
+        j.vector = [i.vx*scale, i.vy*scale];
+        j.ax = i.ax*scale;
+        j.ay = i.ay*scale;
+        j.mass = Number(i.m)*scale;
+        j.elos = Number(i.elos)-1;
+        j.gravity = Number(i.gravity)-1;
+        j.fixedBeforeTouch = Boolean(Number(i.fixedBeforeTouch));
+        if (j.fixedBeforeTouch) {
+            j.angles = [0,0];
+        }
+        j.touchRemove = Boolean(Number(i.touchRemove));
+        j.main = Boolean(Number(i.main));
+    }
+
+    for (let i of obj.airLines) {
+        const j = document.createElement("airline-physics");
+        pitch.append(j);
+        j.x1 = i.x1*scale;
+        j.x2 = i.x2*scale;
+        j.y1 = i.y1*scale;
+        j.y2 = i.y2*scale;
+        j.length = i.length*scale;
+        j.f = i.f*scale;
+    }
+
+    for (let i of obj.tntBalls) {
+        const j = document.createElement("tnt-physics");
+        pitch.append(j);
+        j.fixed = Number(i.fixed)-1;
+        j.angles = [Number(i.angle1), Number(i.angle2)];
+        j.radius = Number(i.radius)*scale;
+        j.width = j.radius*2;
+        j.x = i.x*scale;
+        j.y = i.y*scale;
+        j.vector = [i.vx*scale, i.vy*scale];
+        j.ax = i.ax*scale;
+        j.ay = i.ay*scale;
+        j.mass = Number(i.m)*scale;
+        j.elos = Number(i.elos)-1;
+        j.gravity = Number(i.gravity)-1;
+        j.fixedBeforeTouch = Boolean(Number(i.fixedBeforeTouch));
+        if (j.fixedBeforeTouch) {
+            j.angles = [0,0];
+        }
+        j.touchRemove = Boolean(Number(i.touchRemove));
+        j.main = Boolean(Number(i.main));
+        j.rboom = i.rboom*scale;
+        i.f = i.f*scale;
+    }
+
+    for (let i of obj.flexLines) {
+        const j = new flexLine(pitch);
+        j.x1 = i.x1*scale;
+        j.x2 = i.x2*scale;
+        j.y1 = i.y1*scale;
+        j.y2 = i.y2*scale;
+        j.lines = i.lines.map((line) => {
+            line.x1 *= scale;
+            line.x2 *= scale;
+            line.y1 *= scale;
+            line.y2 *= scale;
+            return createLine(line.x1, line.y1, line.x2, line.y2);
+        });
+        j.spots = i.spots.map(spot => {
+            spot[0] *= scale;
+            spot[1] *= scale;
+            return spot;
+        });
     }
 }
 
