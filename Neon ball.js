@@ -1807,7 +1807,7 @@ function mainStart() {
         const x1 = event.pageX - pitch.elem.getBoundingClientRect().left;
         const y1 = event.pageY - pitch.elem.getBoundingClientRect().top;
         for (const i of pitch.clickable) {
-            if (Math.sqrt(Math.pow(i.x - x1, 2) + Math.pow(i.y - y1, 2)) <= i.radius+lineWidth) {
+            if (Math.sqrt(Math.pow(i.x - x1, 2) + Math.pow(i.y - y1, 2)) <= i.radius+2*lineWidth) {
                 if (i.touchRemove) i.remove();
                 else if (i.fixedBeforeTouch) {
                     pitch.startDragging(i, event.pageX, event.pageY, event.pointerId);
