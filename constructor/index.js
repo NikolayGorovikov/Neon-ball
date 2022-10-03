@@ -1145,10 +1145,13 @@ class Physics extends HTMLElement {
         return this.#gravitySpots;
     }
 
-    addDraw(spots, color) {
+    addDraw(spots, color, addToContainment) {
         this.drawings[color].add(spots);
         spots.zIndex = zIndex;
-        this.drawings.all.add(new drawObj(spots, color, this, zIndex));
+        const a = new drawObj(spots, color, this, zIndex)
+        this.drawings.all.add(a);
+        if (addToContainment) containment.add(a);
+
     }
 
     drawBySpots(spots, con) {
@@ -2922,6 +2925,37 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
     else if (event.target.id === "autoCOG") {
         setAutoCOG();
     }
+    else if (event.target.id === "copyToBuffer") {
+        const json = containment;
+
+        const main = {
+            tntBalls: [], balls: [], airLines: [], lines: [], flexLines: [], drawings: []
+        }
+        for (const i of json) {
+            if (i instanceof tnt) main.tntBalls.push(i.getInfo());
+            else if (i instanceof Circle) main.balls.push(i.getInfo());
+            else if (i instanceof airLine) main.airLines.push(i.getInfo());
+            else if (i instanceof Line) main.lines.push(i.getInfo());
+            else if (i instanceof flexLine) main.flexLines.push(i.getInfo());
+            else if (i instanceof drawObj) main.drawings.push(i.getInfo());
+        }
+
+        window.localBuffer = main;
+    }
+    else if (event.target.id === "pasteFromBuffer") {
+        containment.clear();
+
+        jsonMain(window.localBuffer, 1, true);
+
+        for (const i of window.localBuffer.drawings) {
+            const color = i.color;
+            const spots = [];
+            for (let j of i.spots) spots.push([j[0], j[1]]);
+            pitch.addDraw(spots, color, true);
+        }
+
+
+    }
 
     pitch.renderCanvas();
 
@@ -3391,7 +3425,7 @@ const adding = {
     copy(){
         this.area();
         isCopy = true;
-    }
+    },
 }
 
 function setAutoCOG(){
@@ -3682,43 +3716,6 @@ function resizeIn(scale, cords) {
         }
     }
     pitch.renderCanvas();
-    return;
-    for (let i of obj.lines) {
-        const j = document.createElement("physics-line");
-        pitch.append(j);
-
-    }
-
-    for (let i of obj.balls) {
-
-    }
-
-    for (let i of obj.airLines) {
-        j.x1 = i.x1*scale;
-        j.x2 = i.x2*scale;
-        j.y1 = i.y1*scale;
-        j.y2 = i.y2*scale;
-        j.length = i.length*scale;
-        j.f = i.f*scale;
-    }
-    for (let i of obj.flexLines) {
-        j.x1 = i.x1*scale;
-        j.x2 = i.x2*scale;
-        j.y1 = i.y1*scale;
-        j.y2 = i.y2*scale;
-        j.lines = i.lines.map((line) => {
-            line.x1 *= scale;
-            line.x2 *= scale;
-            line.y1 *= scale;
-            line.y2 *= scale;
-            return createLine(line.x1, line.y1, line.x2, line.y2);
-        });
-        j.spots = i.spots.map(spot => {
-            spot[0] *= scale;
-            spot[1] *= scale;
-            return spot;
-        });
-    }
 }
 
 function resizeAreaCopy(event){
@@ -4333,7 +4330,7 @@ function createFromJSON(json) {
     }
 }
 
-function jsonMain(obj, scale) {
+function jsonMain(obj, scale, addToContainment) {
     for (let i of obj.lines) {
         const j = document.createElement("physics-line");
         pitch.append(j);
@@ -4341,6 +4338,7 @@ function jsonMain(obj, scale) {
         j.x2 = i.x2*scale;
         j.y1 = i.y1*scale;
         j.y2 = i.y2*scale;
+        if (addToContainment) containment.add(j);
     }
 
     for (let i of obj.balls) {
@@ -4365,6 +4363,7 @@ function jsonMain(obj, scale) {
         }
         j.touchRemove = Boolean(Number(i.touchRemove));
         j.main = Boolean(Number(i.main));
+        if (addToContainment) containment.add(j);
     }
 
     for (let i of obj.airLines) {
@@ -4376,6 +4375,7 @@ function jsonMain(obj, scale) {
         j.y2 = i.y2*scale;
         j.length = i.length*scale;
         j.f = i.f*scale;
+        if (addToContainment) containment.add(j);
     }
 
     for (let i of obj.tntBalls) {
@@ -4401,6 +4401,7 @@ function jsonMain(obj, scale) {
         j.main = Boolean(Number(i.main));
         j.rboom = i.rboom*scale;
         i.f = i.f*scale;
+        if (addToContainment) containment.add(j);
     }
 
     for (let i of obj.flexLines) {
@@ -4421,6 +4422,7 @@ function jsonMain(obj, scale) {
             spot[1] *= scale;
             return spot;
         });
+        if (addToContainment) containment.add(j);
     }
 }
 
