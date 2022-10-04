@@ -3682,9 +3682,10 @@ function setArea(x1, y1, x2, y2) {
 function resizeIn(scale, cords) {
     for (const j of containment) {
         if (j instanceof Circle || j instanceof tnt) {
-            j.radius *= scale;
             j.x = beginX + (j.x - beginX)*scale;
             j.y = beginY + (j.y - beginY)*scale;
+            j.radius = j.radius*scale;
+            j.width *= scale;
         }
         else if (j instanceof Line || j instanceof airLine) {
             j.x1 = beginX + (j.x1 - beginX)*scale;
@@ -3720,7 +3721,7 @@ function resizeIn(scale, cords) {
 
 function resizeAreaCopy(event){
     const l = (area.getBoundingClientRect().top + area.getBoundingClientRect().height) - event.target.getBoundingClientRect().top + event.target.getBoundingClientRect().height;
-    const scale = l/window.scaleBeginLength;
+    const scale = (l/window.scaleBeginLength-1)*2+1;
     setArea(window.beginX - scale*window.beginLengthX/2, window.beginY - scale*window.beginLengthY/2, window.beginX + scale*window.beginLengthX/2, window.beginY + scale*window.beginLengthY/2);
     window.scaleBeginLength = (area.getBoundingClientRect().top + area.getBoundingClientRect().height) - event.target.getBoundingClientRect().top + event.target.getBoundingClientRect().height;
     const areaCordsWas = Object.assign({}, areaCords);

@@ -586,6 +586,13 @@ canvas{
 *{
     touch-action: none; !important;
 }
+
+.notPassed{
+    border: rgb(252, 243, 211) 0.55vmin solid;
+    box-shadow: 0 0 0.3em 0 rgb(175, 125, 46) inset, 0 0 0.3em 0 rgb(175, 125, 46);
+    color: rgb(252, 243, 211);
+    background-color: rgba(252, 243, 211, 0.4);
+}
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */
 

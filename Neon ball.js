@@ -34,7 +34,7 @@ function mainStart() {
             this.fixedBeforeTouch = Boolean(Number(obj.fixedBeforeTouch));
             if (this.fixedBeforeTouch) {
                 this.angles = [0, 0];
-                this.time = 0;
+                this.time = Math.random()*2000;
             }
             this.touchRemove = Boolean(Number(obj.touchRemove));
             this.main = Boolean(Number(obj.main));
