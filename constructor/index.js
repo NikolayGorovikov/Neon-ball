@@ -1205,7 +1205,7 @@ class Physics extends HTMLElement {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
         let scale = 1.45;
-        this.context.drawImage(image, -40, 0, 436*scale, 444*scale);
+        // this.context.drawImage(image, -40, 0, 436*scale, 444*scale);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;
