@@ -1109,7 +1109,7 @@ class drawObj {
     }
 }
 const image = new Image();
-image.src = "kolibri.jpeg";
+image.src = "pasians.jpg";
 var time;
 var prev = Date.now();
 var speed = 1;
@@ -1204,8 +1204,8 @@ class Physics extends HTMLElement {
         this.ziNormalize();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
-        let scale = 1.45;
-        // this.context.drawImage(image, -40, 0, 436*scale, 444*scale);
+        let scale = 1.6;
+        // this.context.drawImage(image, 0, 0, 800*scale, 397*scale);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;

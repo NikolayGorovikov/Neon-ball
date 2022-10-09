@@ -1828,10 +1828,28 @@ function mainStart() {
             this.inStart = true;
             setTimeout(()=>this.inStart = false, 500);
             if (!levels[lvl]) return;
+            this.lvlStatus = "main";
             actualLevel = lvl;
             pages.lvls.close(true);
             pages.openLevel(levels[lvl]);
             removeDark();
+        },
+        bonusLevel(lvl) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 500);
+            if (!levels[lvl]) return;
+            this.lvlStatus = "bonus";
+            actualLevel = lvl;
+            pages.info.close(true);
+            setTimeout(()=> {
+                pages.home.canvases.forEach(i => canvases.delete(i));
+                pages.canvasClose(true);
+                window.requestAnimationFrame(()=>{
+                    pages.openLevel(levels[lvl]);
+                    removeDark();
+                });
+            }, 500);
         },
         menu(el) {
             if (this.inStart) return;
@@ -1839,7 +1857,13 @@ function mainStart() {
             setTimeout(()=>this.inStart = false, 500);
             pages.lvlCleared.close();
             pages.canvasClose();
-            setTimeout(() => pages.lvls.open(), 500);
+            if (this.lvlStatus === "main") setTimeout(() => pages.lvls.open(), 500);
+            else if (this.lvlStatus === "bonus") setTimeout(()=>{
+                window.requestAnimationFrame(()=>{
+                    pages.home.open();
+                    pages.info.open(true);
+                });
+            }, 500);
         },
         retry(el) {
             if (this.inStart) return;
@@ -2233,9 +2257,9 @@ function mainStart() {
             }
         },
         info: {
-            open() {
+            open(bol) {
                 document.getElementById("home").style.animationName = "remove";
-                setTimeout(() => {
+                const fn = () => {
                     this.home = document.getElementById("home");
                     this.home.remove();
                     const el = `
@@ -2243,9 +2267,11 @@ function mainStart() {
                 <div class="closeBar" data-link="closeInfo"></div>
                 <div class="infoTextIn">Автор и разработчик - Горовиков Николай Константинович</div>
                 <div class="infoTextIn">Версия - ${version}</div>
-                <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность Карине, спасибо за помощь с придумыванием уровней и поддержку</div>
+                <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность <span data-link="bonusLevel.bonus 2" style="display: inline-block;transition-property: transform;transition-duration: 0.2s;">Карине</span>, спасибо за помощь с придумыванием уровней и поддержку</div>
                 <div class="infoTextIn mail" >Контактные данные - gorovikov.work@gmail.com</div>
+                <div class="infoTextIn"><video src="fish.mp4" autoplay loop preload="auto" width="300" height="150">123123</video></div>
                 <div class="infoTextIn">&copy Горовиков Николай Константинович, 2021-2022 | Все права защищены</div>
+                
             </div>
             `;
 
@@ -2280,18 +2306,20 @@ function mainStart() {
                         document.querySelector(`[data-link="closeInfo"]`).append(can);
                     }
                     document.querySelector(".infoText").addEventListener("pointerdown", (event) => {
-                        const el = event.target.closest(`[data-link="closeInfo"]`);
+                        const el = event.target.closest(`[data-link]`);
                         if (el) makeButton(el);
                     });
-                }, 500);
+                };
+                if (bol) fn();
+                else setTimeout(fn, 500);
             },
-            close() {
+            close(bol) {
                 this.canvases.forEach(i => canvases.delete(i));
                 document.querySelector(".infoText").style.animationName = "remove";
                 setTimeout(() => {
                     document.querySelector(".infoText").remove();
                     this.home.style.animationName = "";
-                    pitchIn.append(this.home);
+                    if (!bol) pitchIn.append(this.home);
                 }, 500)
             }
         }
