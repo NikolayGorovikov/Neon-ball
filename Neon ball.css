@@ -611,7 +611,7 @@ canvas{
     margin: auto;
 }
 
-.pressEnd canvas{
+.pressEnd.levelBt canvas{
     animation: 0.4s ease-out lock;
 }
 
