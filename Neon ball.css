@@ -545,6 +545,7 @@ canvas{
     text-shadow: 0 0 0.3em rgb(175, 125, 46);
     transition-property: transform;
     transition-duration: 0.2s;
+    display: flex;
 }
 
 .canvasHolder{
@@ -592,6 +593,44 @@ canvas{
     box-shadow: 0 0 0.3em 0 rgb(175, 125, 46) inset, 0 0 0.3em 0 rgb(175, 125, 46);
     color: rgb(252, 243, 211);
     background-color: rgba(252, 243, 211, 0.4);
+}
+#video{
+    width: 25%;
+    display: flex;
+    margin: auto;
+    transition-property: transform;
+    transition-duration: 0.2s;
+}
+#video img{
+    width: 100%;
+    height: 100%;
+}
+
+.levelBt *{
+    display: flex;
+    margin: auto;
+}
+
+.pressEnd canvas{
+    animation: 0.4s ease-out lock;
+}
+
+@keyframes lock {
+    0%{
+        transform: rotate(0deg);
+    }
+    16.666%{
+        transform: rotate(20deg);
+    }
+    49.998%{
+        transform: rotate(-20deg);
+    }
+    74.333%{
+        transform: rotate(20deg);
+    }
+    100%{
+        transform: rotate(0deg);
+    }
 }
 
 /* @keyframes duration | timing-function | delay |

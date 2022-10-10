@@ -116,9 +116,14 @@
             rawFile.send(null);
         }
         window.actualLevel = 1;
+        getPlayerInfo();
         readTextFile("main.json", function (text) {
             const all = JSON.parse(text);
             window.levels = all.levels;
+            window.seasons = all.seasons;
+            window.alwaysAvailable = all.alwaysAvailable;
+            if (!playerInfo.availableLevels) playerInfo.availableLevels = window.alwaysAvailable
+            window.availableLevels = window.playerInfo.availableLevels;
             for (let i in levels) levels[i] = JSON.stringify(levels[i]);
             window.version = all.version;
             a();
@@ -128,6 +133,14 @@
     function a(){
         added++;
         if (added === requestedLength) allLoaded();
+    }
+
+    function getPlayerInfo() {
+        //
+        window.playerInfo = {
+            availableLevels: undefined,
+        };
+        //
     }
 
     window.onresize = () => {

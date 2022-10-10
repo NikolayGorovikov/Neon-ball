@@ -247,7 +247,6 @@ function mainStart() {
             this.x2 = Math.max(obj.x1, obj.x2);
             this.y1 = Math.min(obj.y1, obj.y2);
             this.y2 = Math.max(obj.y1, obj.y2);
-            console.log(this.x1, this.y1, this.x2, this.y2);
             this.main();
         }
 
@@ -529,7 +528,7 @@ function mainStart() {
         win() {
             if (this.cleared) return;
             this.cleared = true;
-            // stop();();
+            if (!isNaN(Number(actualLevel))) window.availableLevels.push(String(Number(actualLevel)+1));
             pages.lvlCleared.open(actualLevel);
         }
 
@@ -1827,7 +1826,7 @@ function mainStart() {
             if (this.inStart) return;
             this.inStart = true;
             setTimeout(()=>this.inStart = false, 500);
-            if (!levels[lvl]) return;
+            if (!(new Set(availableLevels)).has(String(lvl))) return;
             this.lvlStatus = "main";
             actualLevel = lvl;
             pages.lvls.close(true);
@@ -2219,8 +2218,52 @@ function mainStart() {
 
 
                 let levelsIn = "";
+                const nums = [];
+                const nums2 = new Map();
                 for (let i = 1; i < 31; i++) {
-                    levelsIn += `<div class="levelBt" data-link="level.${i}">${i}</div>`
+                    if ((new Set(availableLevels)).has(String(i))) levelsIn += `<div class="levelBt" data-link="level.${i}"><span>${i}</span></div>`;
+                    else {
+                        const can = document.createElement("canvas");
+                        can.resize = () => {
+                            const con = can.getContext("2d");
+                            can.width = pitchIn.getBoundingClientRect().width * (0.11-0.02833) - 0.011 * Math.min(window.innerHeight, window.innerWidth);
+                            can.height = can.width;
+                            const w = can.width;
+                            con.beginPath();
+                            con.lineCap = "round";
+                            con.fillStyle = lineColor;
+                            con.shadowColor = lineShadowColor;
+                            con.shadowBlur = blur / 4;
+                            con.moveTo(w*0.13, w*0.55);
+                            con.lineTo(w*0.13,w*0.78);
+                            con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
+                            con.lineTo(w*0.74,w*0.91);
+                            con.arc(0.74*w, w*0.78, 0.13*w,-3/2*Math.PI, 0, true);
+                            con.lineTo(w*0.87, w*0.55);
+                            con.arc(0.74*w, w*0.55, 0.13*w,0, -1/2*Math.PI, true);
+                            con.lineTo(0.72*w, w*0.42);
+                            con.arc(0.5*w, w*0.31, 0.22*w, 0, Math.PI, true);
+                            con.lineTo(0.28*w, w*0.42);
+                            con.lineTo(0.37*w, w*0.42);
+                            con.arc(0.5*w, w*0.31, 0.13*w, Math.PI, 0);
+                            con.lineTo(0.63*w, w*0.42);
+                            con.lineTo(w*0.26, w*0.42);
+                            con.arc(0.26*w, w*0.55, 0.13*w,-1/2*Math.PI, Math.PI, true);
+                            con.arc(0.5*w, 0.59*w, 0.09*w, 2/3*Math.PI, 1/3*Math.PI);
+                            con.arc(0.5*w, 0.75*w, 0.09*w/2, 0, Math.PI);
+                            con.lineTo(0.5*w-0.09*w/2, 0.59*w+0.09*w/2*Math.sqrt(3));
+                            con.fill();
+                            con.closePath();
+                        }
+
+                        can.resize();
+                        canvases.add(can);
+                        this.canvases.add(can);
+                        levelsIn += `<div class="levelBt" data-link="level.null"></div>`;
+                        nums.push(i);
+                        nums2.set(i, can);
+                    }
+
                 }
                 const levels = `
             <div class="levels">
@@ -2231,6 +2274,10 @@ function mainStart() {
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
+                nums.forEach(i=>{
+                    console.log(`.levelBt:nth-of-type(${i})`);
+                    document.querySelector(`.levelBt:nth-of-type(${i})`).append(nums2.get(i));
+                });
                 document.querySelector(".levels").addEventListener("pointerdown", (event) => {
                     const el = event.target.closest(`[data-link]`);
                     if (el) makeButton(el);
@@ -2269,13 +2316,23 @@ function mainStart() {
                 <div class="infoTextIn">Версия - ${version}</div>
                 <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность <span data-link="bonusLevel.bonus 2" style="display: inline-block;transition-property: transform;transition-duration: 0.2s;">Карине</span>, спасибо за помощь с придумыванием уровней и поддержку</div>
                 <div class="infoTextIn mail" >Контактные данные - gorovikov.work@gmail.com</div>
-                <div class="infoTextIn"><video src="fish.mp4" autoplay loop preload="auto" width="300" height="150">123123</video></div>
+                <div class="infoTextIn"><div data-link="bonusLevel.bonus 3" id="video"><img id="img"></div></div>
                 <div class="infoTextIn">&copy Горовиков Николай Константинович, 2021-2022 | Все права защищены</div>
                 
             </div>
             `;
 
                     pitchIn.insertAdjacentHTML("beforeend", el);
+                    const img = document.getElementById("img");
+                    let time = Date.now();
+                    const fn2 = () => {
+                        const time2 = Date.now()-time;
+                        const iterations = Math.trunc(time2/34.324)%37+1;
+                        img.src = "fish/00" + String(iterations).padStart(2, "0") + ".jpg";
+                        if (document.body.contains(img)) requestAnimationFrame(fn2);
+                    }
+                    window.requestAnimationFrame(fn2);
+
                     {
                         const can = document.createElement("canvas");
                         can.resize = () => {
@@ -2327,6 +2384,7 @@ function mainStart() {
 
     function makeButton(el) {
         el.style.transform = "scale(0.8)";
+        el.classList.add("pressStart");
         let time = Date.now();
         const fn = () => {
             el.style.transform = "scale(1)";
@@ -2336,7 +2394,9 @@ function mainStart() {
         const fn2 = () => {
             setTimeout(() => {
                 el.style.transform = "scale(1.13)";
-                setTimeout(() => el.style.transform = 'scale(1)', 200);
+                el.classList.remove("pressStart");
+                el.classList.add("pressEnd");
+                setTimeout(() => {el.style.transform = 'scale(1)'; setTimeout(()=>el.classList.remove("pressEnd"), 200)}, 200);
             }, Date.now() - time > 200 ? 0 : 200 - (Date.now() - time));
             el.removeEventListener("pointerout", fn);
             el.removeEventListener("pointerup", fn2);
