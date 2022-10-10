@@ -1,6 +1,6 @@
 {
     window.added = 0;
-    window.requestedLength = 4;
+    window.requestedLength = 41;
     const canvas = document.querySelector("canvas");
     const con = canvas.getContext("2d");
     canvas.width = window.innerWidth;
@@ -95,7 +95,9 @@
         script.onload = a;
         document.head.append(script);
         document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="Neon%20ball.css" id="link1">`);
-        document.getElementById("link1").addEventListener("load", ()=>{a(); window.cssLoaded = true});
+        document.getElementById("link1").addEventListener("load", ()=>{a(); window.cssLoaded = true;
+            document.body.insertAdjacentHTML("afterbegin", "<div style='visibility: hidden; position: absolute;'><p style='font-family: logo'>text</p><p style='font-family: Neon'>text</p><p style='font-family: \"Ubuntu Condensed\"'>text</p></div>");
+        });
         setTimeout(()=>{
             if (window.added === 3 && !window.cssLoaded) allLoaded();
         }, 3000);
@@ -104,6 +106,13 @@
         img.style.display = "none";
         document.body.append(img);
         img.onload = a;
+        for (let i = 1; i < 38; i++) {
+            const img = document.createElement("img");
+            img.src = "fish/00"+String(i).padStart(2, "0")+".jpg";
+            img.style.display = "none";
+            document.body.append(img);
+            img.onload = a;
+        }
         function readTextFile(file, callback) {
             var rawFile = new XMLHttpRequest();
             rawFile.overrideMimeType("application/json");

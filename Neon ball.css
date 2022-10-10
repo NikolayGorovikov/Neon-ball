@@ -54,6 +54,11 @@ body{
         top: calc(100vh * 5 / 6* 0.05 *2/5);
         left: calc(100vh * 5 / 6 * 0.05 * 2/5);
     }
+    .levelsTxtTop{
+        height: calc(100vh * 5 / 6 * 0.1);
+        line-height: calc(100vh * 5 / 6 * 0.1);
+        top: calc(100vh * 5 / 6* 0.05 *2/5);
+    }
     #pitchIn > *:not(.neonBall100, .dark, .fullScreen){
         height: 100vh;
         width: calc(100vh * 5 / 6);
@@ -65,8 +70,13 @@ body{
         left: calc((100vh * 5 / 6 - (100vh + 100vh * 5 / 6))/2);
         top: calc((100vh - (100vh + 100vh * 5 / 6))/2);
     }
-    .levelText, .levelsTxt{
+    .levelText, .levelsTxtTop{
         font-size: calc(100vh/10);
+    }
+    .levelsTxt{
+        font-size: calc(100vh/14);
+        height: calc(100vh * 5 / 6 * 0.1 * 9 / 5);
+        line-height: calc(100vh * 5 / 6 * 0.1 * 9 / 5);
     }
     .welcome {
         font-size: calc(100vh/7);
@@ -125,8 +135,18 @@ body{
         top: 2vw;
         left: 2vw;
     }
-    .levelText, .levelsTxt{
+    .levelsTxtTop{
+        height: 10vw;
+        line-height: 10vw;
+        top: 2vw;
+    }
+    .levelText, .levelsTxtTop{
         font-size: calc(100vw * 6 / 5 /10);
+    }
+    .levelsTxt{
+        font-size: calc(100vw * 6 / 5 /14);
+        height: 18vw;
+        line-height: 18vw;
     }
     .welcome {
         font-size: calc(100vw * 6 / 5 /7);
@@ -231,7 +251,7 @@ canvas{
     }
 }
 
-.levelText, .welcome, .levelsTxt{
+.levelText, .welcome, .levelsTxt, .levelsTxtTop{
     color: rgb(252, 243, 211);
     text-shadow: 0 0 20px rgb(175, 125, 46), 0 0 10px rgb(175, 125, 46);
     font-family: "Ubuntu Condensed";
@@ -631,6 +651,12 @@ canvas{
     100%{
         transform: rotate(0deg);
     }
+}
+
+.levelsTxtTop{
+    position: absolute;
+    top: 0;
+    display: inline-block;
 }
 
 /* @keyframes duration | timing-function | delay |

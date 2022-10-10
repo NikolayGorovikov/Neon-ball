@@ -2233,7 +2233,7 @@ function mainStart() {
                             con.lineCap = "round";
                             con.fillStyle = lineColor;
                             con.shadowColor = lineShadowColor;
-                            con.shadowBlur = blur / 4;
+                            // con.shadowBlur = blur / 8;
                             con.moveTo(w*0.13, w*0.55);
                             con.lineTo(w*0.13,w*0.78);
                             con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
@@ -2268,14 +2268,14 @@ function mainStart() {
                 const levels = `
             <div class="levels">
                 <div class="closeBar" data-link="closeLvls"></div>
-                <div class="levelsTxt">Уровни</div>
+                <div class="levelsTxtTop">Уровни</div>
+                <div class="levelsTxt">${window.seasons[0].name}</div>
                 <div class="levelsHolder">${levelsIn}</div>
             </div>
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
                 nums.forEach(i=>{
-                    console.log(`.levelBt:nth-of-type(${i})`);
                     document.querySelector(`.levelBt:nth-of-type(${i})`).append(nums2.get(i));
                 });
                 document.querySelector(".levels").addEventListener("pointerdown", (event) => {
