@@ -308,6 +308,7 @@ class Circle extends HTMLElement {
             dragVMax: this.dragVMax,
             dragRadius: this.dragRadius,
             dragMinRadius: this.dragMinRadius,
+            id: this.ownId ? this.ownId : undefined
         };
     }
 
@@ -4365,6 +4366,7 @@ function jsonMain(obj, scale, addToContainment) {
         j.touchRemove = Boolean(Number(i.touchRemove));
         j.main = Boolean(Number(i.main));
         if (addToContainment) containment.add(j);
+        if (i.id) j.ownId = i.id;
     }
 
     for (let i of obj.airLines) {

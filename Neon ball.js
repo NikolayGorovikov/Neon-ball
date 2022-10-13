@@ -41,8 +41,15 @@ function mainStart() {
 
             this.handler = this;
 
-            if (this.touchRemove || this.fixedBeforeTouch) this.parentElement.clickable.add(this);
+            if (this.touchRemove || this.fixedBeforeTouch) {
+                this.parentElement.clickable.add(this);
+                this.parentElement.launchingAmount += 1;
+            }
 
+            if (obj.id) {
+                this.id = obj.id;
+                this.parentElement.addIdElement(this);
+            }
             this.parentElement.addToGravitySystem(this);
         }
 
@@ -418,6 +425,14 @@ function mainStart() {
         clickable = new Set();
         drawings = {background: new Set(), rocks: new Set(), contour: new Set(), linefill: new Set(), linefillShadow: new Set(), all: new Set(), backgroundZ: {}, rocksZ: {}, contourZ: {}, linefillZ: {}, linefillShadowZ: {}};
         drags = new Map();
+        launchingAmount = 0;
+        timeSinceStart = 0;
+        timeBeforeRestartConditionsCheck = 0;
+        idElements = new Map();
+
+        addIdElement(el) {
+            this.idElements.set(el.id, el);
+        }
 
         startDragging(elem, x, y, id) {
             if (!this.play) return;
@@ -457,6 +472,11 @@ function mainStart() {
                 elem.vector = elem.draggingVector.concat([]);
                 elem.parentElement.clickable.delete(elem);
                 this.dragCancel(id);
+                this.launchingAmount--;
+                if (this.launchingAmount === 0) {
+                    this.allLaunched = true;
+                    this.timeSinceAllLaunched = 0;
+                }
             }
             else this.dragCancel(id);
         }
@@ -528,6 +548,7 @@ function mainStart() {
         win() {
             if (this.cleared) return;
             this.cleared = true;
+            this.timeBeforeRestartConditionsCheck = Infinity;
             if (!isNaN(Number(actualLevel))) window.availableLevels.push(String(Number(actualLevel)+1));
             pages.lvlCleared.open(actualLevel);
         }
@@ -739,11 +760,40 @@ function mainStart() {
                 this.finish.y2 *= scaley;
                 this.finish.main();
             }
+
+            if (this.areRestartConditions) {
+                if (this.restartConditions.inZone instanceof Array) for (const i of this.restartConditions.inZone) {
+                    i.x1 *= scalex;
+                    i.x2 *= scalex;
+                    i.y1 *= scaley;
+                    i.y2 *= scaley;
+                }
+                else {
+                    const i = this.restartConditions.inZone;
+                    i.x1 *= scalex;
+                    i.x2 *= scalex;
+                    i.y1 *= scaley;
+                    i.y2 *= scaley;
+                }
+                if (this.restartConditions.outOfZone instanceof Array) for (const i of this.restartConditions.outOfZone) {
+                    i.x1 *= scalex;
+                    i.x2 *= scalex;
+                    i.y1 *= scaley;
+                    i.y2 *= scaley;
+                }
+                else {
+                    const i = this.restartConditions.outOfZone;
+                    i.x1 *= scalex;
+                    i.x2 *= scalex;
+                    i.y1 *= scaley;
+                    i.y2 *= scaley;
+                }
+            }
             this.renderCanvas(0);
             this.renderPassiveCanvas();
         }
 
-        constructor(obj) {
+        constructor(obj, bol) {
             pitch = this;
             start = () => {
                 this.start();
@@ -882,6 +932,86 @@ function mainStart() {
                         obj.finish.y2 *= scaley;
                         this.finish = new Finish(obj.finish, this);
                     }
+
+                    this.areRestartConditions = Boolean(obj.restartConditions)
+                    this.restartConditions = obj.restartConditions;
+
+                    if (this.areRestartConditions) {
+                        if (this.restartConditions.inZone && this.restartConditions.inZone instanceof Array)
+                            for (const i of this.restartConditions.inZone) {
+                                if (i.x1 === "i") i.x1 = Infinity;
+                                if (i.x2 === "i") i.x2 = Infinity;
+                                if (i.y1 === "i") i.y1 = Infinity;
+                                if (i.y2 === "i") i.y2 = Infinity;
+                                if (i.x1 === "-i") i.x1 = -Infinity;
+                                if (i.x2 === "-i") i.x2 = -Infinity;
+                                if (i.y1 === "-i") i.y1 = -Infinity;
+                                if (i.y2 === "-i") i.y2 = -Infinity;
+                                i.allLaunched = Boolean(Number(i.allLaunched));
+                                i.sinceStart = Boolean(Number(i.sinceStart));
+
+                                i.x1*=scalex;
+                                i.x2*=scalex;
+                                i.y1*=scaley;
+                                i.y2*=scaley;
+                            }
+                        else if (this.restartConditions.inZone && this.restartConditions.inZone instanceof Object) {
+                            const i = this.restartConditions.inZone;
+                            if (i.x1 === "i") i.x1 = Infinity;
+                            if (i.x2 === "i") i.x2 = Infinity;
+                            if (i.y1 === "i") i.y1 = Infinity;
+                            if (i.y2 === "i") i.y2 = Infinity;
+                            if (i.x1 === "-i") i.x1 = -Infinity;
+                            if (i.x2 === "-i") i.x2 = -Infinity;
+                            if (i.y1 === "-i") i.y1 = -Infinity;
+                            if (i.y2 === "-i") i.y2 = -Infinity;
+                            i.allLaunched = Boolean(Number(i.allLaunched));
+                            i.sinceStart = Boolean(Number(i.sinceStart));
+
+                            i.x1*=scalex;
+                            i.x2*=scalex;
+                            i.y1*=scaley;
+                            i.y2*=scaley;
+                        }
+                        else this.restartConditions.inZone = [];
+                        if (this.restartConditions.outOfZone && this.restartConditions.outOfZone instanceof Array)
+                            for (const i of this.restartConditions.outOfZone) {
+                                if (i.x1 === "i") i.x1 = Infinity;
+                                if (i.x2 === "i") i.x2 = Infinity;
+                                if (i.y1 === "i") i.y1 = Infinity;
+                                if (i.y2 === "i") i.y2 = Infinity;
+                                if (i.x1 === "-i") i.x1 = -Infinity;
+                                if (i.x2 === "-i") i.x2 = -Infinity;
+                                if (i.y1 === "-i") i.y1 = -Infinity;
+                                if (i.y2 === "-i") i.y2 = -Infinity;
+                                i.allLaunched = Boolean(Number(i.allLaunched));
+                                i.sinceStart = Boolean(Number(i.sinceStart));
+
+                                i.x1*=scalex;
+                                i.x2*=scalex;
+                                i.y1*=scaley;
+                                i.y2*=scaley;
+                            }
+                        else if (this.restartConditions.outOfZone && this.restartConditions.outOfZone instanceof Object) {
+                            const i = this.restartConditions.outOfZone;
+                            if (i.x1 === "i") i.x1 = Infinity;
+                            if (i.x2 === "i") i.x2 = Infinity;
+                            if (i.y1 === "i") i.y1 = Infinity;
+                            if (i.y2 === "i") i.y2 = Infinity;
+                            if (i.x1 === "-i") i.x1 = -Infinity;
+                            if (i.x2 === "-i") i.x2 = -Infinity;
+                            if (i.y1 === "-i") i.y1 = -Infinity;
+                            if (i.y2 === "-i") i.y2 = -Infinity;
+                            i.allLaunched = Boolean(Number(i.allLaunched));
+                            i.sinceStart = Boolean(Number(i.sinceStart));
+
+                            i.x1*=scalex;
+                            i.x2*=scalex;
+                            i.y1*=scaley;
+                            i.y2*=scaley;
+                        }
+                        else this.restartConditions.outOfZone = [];
+                    }
                 }
                 let gradient = this.context.createLinearGradient(0, 0, 0, this.canvas.height);
                 gradient.addColorStop(0, `rgb(${endBackColor})`);
@@ -893,11 +1023,48 @@ function mainStart() {
                 gradient.addColorStop(0.5, `rgb(${endDrColor})`);
                 gradient.addColorStop(1, `rgb(${startDrColor})`);
                 this.rocksGr = gradient;
-                this.renderCanvas();
+
                 this.ziNormalize();
                 this.renderPassiveCanvas();
-                start();
+                this.renderCanvas(1);
+                if (!bol) start();
             });
+        }
+
+        checkRestartConditions(){
+            if (!this.areRestartConditions) return false;
+            if (this.timeSinceStart > this.restartConditions.timeSinceStart) return true;
+            if (this.allLaunched && this.timeSinceAllLaunched > this.restartConditions.timeSinceAllLaunched) return true;
+            if (this.restartConditions.inZone instanceof Array) for (const i of this.restartConditions.inZone) {
+                if ((i.allLaunched && !this.allLaunched) || (i.allLaunched && this.allLaunched && (this.timeSinceAllLaunched <= i.time)) || (i.sinceStart && i.time >= this.timeSinceStart)) continue;
+                const target = i.id ? this.idElements.get(i.id) : this.mainBall;
+                if (target.x > i.x1 && target.x < i.x2 && target.y > i.y1 && target.y < i.y2) return true;
+                else if (i.once) i.time = Infinity;
+            }
+            else {
+                const i = this.restartConditions.inZone;
+                const target = i.id ? this.idElements.get(i.id) : this.mainBall;
+                if (!((i.allLaunched && !this.allLaunched) || (i.allLaunched && this.allLaunched && this.timeSinceAllLaunched <= i.time) || (i.sinceStart && i.time >= this.timeSinceStart))) {
+                    if ((target.x > i.x1 && target.x < i.x2 && target.y > i.y1 && target.y < i.y2)) return true;
+                    else if (i.once) i.time = Infinity;
+                }
+            }
+            if (this.restartConditions.outOfZone instanceof Array) for (const i of this.restartConditions.outOfZone) {
+                if ((i.allLaunched && !this.allLaunched) || (i.allLaunched && this.allLaunched && this.timeSinceAllLaunched <= i.time) || (i.sinceStart && i.time >= this.timeSinceStart)) continue;
+                const target = i.id ? this.idElements.get(i.id) : this.mainBall;
+                if (!(target.x > i.x1 && target.x < i.x2 && target.y > i.y1 && target.y < i.y2)) return true;
+                else if (i.once) i.time = Infinity;
+            }
+            else {
+                const i = this.restartConditions.outOfZone;
+                const target = i.id ? this.idElements.get(i.id) : this.mainBall;
+                if (!((i.allLaunched && !this.allLaunched) || (i.allLaunched && this.allLaunched && this.timeSinceAllLaunched <= i.time) || (i.sinceStart && i.time >= this.timeSinceStart))) {
+                    if (!(target.x > i.x1 && target.x < i.x2 && target.y > i.y1 && target.y < i.y2)) return true;
+                    else if (i.once) {
+                        i.time = Infinity;
+                    }
+                }
+            }
         }
 
         get g() {
@@ -1004,13 +1171,28 @@ function mainStart() {
             }
             if (!this.play) return;
             this.#movie = window.requestAnimationFrame((time) => {
-                if (time-this.time > 100) {
+                let timed = time-this.time;
+                if (timed > 100) {
                     this.time = time;
+                    timed = 0;
                 }
-                this.main((time-this.time)/1000, (time-this.time)/1000);
+                this.main((timed)/1000, (timed)/1000);
                 this.inMain();
-                this.actualFPS = 1000/(time-this.time);
+                this.actualFPS = 1000/(timed);
+                this.timeBeforeRestartConditionsCheck -= timed;
+                if (this.allLaunched) this.timeSinceAllLaunched += timed;
+                this.timeSinceStart += timed;
                 this.time = time;
+                if (this.timeBeforeRestartConditionsCheck < 0) {
+                    this.timeBeforeRestartConditionsCheck = 200;
+                    const result = this.checkRestartConditions();
+                    if (result) {
+                        this.timeBeforeRestartConditionsCheck = Infinity;
+                        restartLvl(true);
+                        generateRetryPic();
+                        setTimeout(()=>start(), 800);
+                    }
+                }
             });
         }
 
@@ -1023,6 +1205,7 @@ function mainStart() {
         addedToSystem(elem) {
             this.#elemsInSystem.push(elem);
             elem.numElem = this.#elemsInSystem.length - 1;
+            if (elem.main) this.mainBall = elem;
             this.renderCanvas();
         }
 
@@ -1793,8 +1976,53 @@ function mainStart() {
         createFromJson(text);
     }
 
-    function countDraggingVector(x, y) {
-
+    function generateRetryPic() {
+        const canvasRetry = document.createElement("canvas");
+        canvasRetry.resize = () => {
+            canvasRetry.width = pitchIn.getBoundingClientRect().width * 0.5;
+            canvasRetry.height = canvasRetry.width;
+            const con = canvasRetry.getContext("2d");
+            con.beginPath();
+            con.strokeStyle = con.fillStyle = lineColor;
+            con.lineWidth = canvasRetry.width/10;
+            con.shadowColor = lineShadowColor;
+            con.shadowBlur = blur;
+            con.lineCap = "round";
+            con.arc(canvasRetry.width / 2, canvasRetry.height / 2, canvasRetry.width / 4, 90 / 180 * Math.PI, 20 / 180 * Math.PI);
+            con.stroke();
+            con.closePath();
+            con.beginPath();
+            con.strokeStyle = con.fillStyle = lineColor;
+            con.lineWidth = lineWidth * 1.4;
+            con.shadowColor = lineShadowColor;
+            con.shadowBlur = 0;
+            con.lineCap = "square";
+            let l = canvasRetry.width / 8;
+            const xm = l * Math.cos(-20 / 180 * Math.PI);
+            const ym = -l * Math.sin(-20 / 180 * Math.PI);
+            con.moveTo(canvasRetry.width / 2 + xm, canvasRetry.width / 2 + ym);
+            con.lineTo(canvasRetry.width / 2 + 3 * xm, canvasRetry.width / 2 + 3 * ym);
+            con.lineTo(canvasRetry.width / 2 + 2 * xm - l * Math.sin(20 / 180 * Math.PI), canvasRetry.width / 2 + 2 * ym + l * Math.cos(20 / 180 * Math.PI));
+            con.fill();
+            con.closePath();
+        }
+        canvasRetry.resize();
+        canvasRetry.classList.add("restartAnimation");
+        const dark = document.createElement("div");
+        dark.classList.add("dark");
+        pitchIn.append(canvasRetry);
+        pitchIn.append(dark);
+        dark.style.animationName = "makeDarker";
+        dark.style.animationTimingFunction = "ease-out";
+        switchFns.inStart = true;
+        setTimeout(()=>{
+            dark.style.animationTimingFunction = "";
+            removeDark();
+        }, 500);
+        setTimeout(()=>{
+            switchFns.inStart = false;
+            canvasRetry.remove();
+        }, 900);
     }
 
     const pitchIn = document.getElementById("pitchIn");
@@ -1812,6 +2040,7 @@ function mainStart() {
                     pitch.startDragging(i, event.pageX, event.pageY, event.pointerId);
                 }
                 else if (i.boombastick) i.explodeStart();
+                return;
             }
         }
     });
@@ -1819,6 +2048,11 @@ function mainStart() {
     function removeDark() {
         document.querySelector(".dark").style.animationName = "removeCan";
         setTimeout(() => document.querySelector(".dark").remove(), 500);
+    }
+
+    function restartLvl(bol){
+        pages.canvasClose(true);
+        window.requestAnimationFrame(()=>pages.openLevel(levels[actualLevel], bol));
     }
 
     const switchFns = {
@@ -1872,8 +2106,7 @@ function mainStart() {
             el.firstElementChild.style.transition = "transform 0.4s ease 0s";
             el.firstElementChild.style.transform = "rotate(360deg)";
             pages.lvlCleared.close();
-            pages.canvasClose(true);
-            window.requestAnimationFrame(()=>pages.openLevel(levels[actualLevel]));
+            restartLvl();
             removeDark();
 
         },
@@ -1939,9 +2172,9 @@ function mainStart() {
 
 
     const pages = {
-        openLevel(json) {
+        openLevel(json, bol) {
             const obj = JSON.parse(json);
-            const pt = new Physics(obj);
+            const pt = new Physics(obj, bol);
             document.getElementById("pitchIn").append(pt.elem);
             const pause = `<div class="closeBar" data-link="pause"></div>`;
             const can = document.createElement("canvas");
@@ -1983,8 +2216,7 @@ function mainStart() {
             },
             close() {
                 pages.lvlCleared.close();
-                document.querySelector(".dark").style.animationName = "canRemove";
-                setTimeout(() => document.querySelector(".dark").remove(), 500);
+                setTimeout(removeDark, 100);
             }
         },
         lvlCleared: {
@@ -2324,10 +2556,8 @@ function mainStart() {
 
                     pitchIn.insertAdjacentHTML("beforeend", el);
                     const img = document.getElementById("img");
-                    let time = Date.now();
-                    const fn2 = () => {
-                        const time2 = Date.now()-time;
-                        const iterations = Math.trunc(time2/34.324)%37+1;
+                    const fn2 = (time) => {
+                        const iterations = Math.trunc(time/34.324)%37+1;
                         img.src = "fish/00" + String(iterations).padStart(2, "0") + ".jpg";
                         if (document.body.contains(img)) requestAnimationFrame(fn2);
                     }
