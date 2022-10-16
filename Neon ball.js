@@ -550,6 +550,11 @@ function mainStart() {
             this.cleared = true;
             this.timeBeforeRestartConditionsCheck = Infinity;
             if (!isNaN(Number(actualLevel))) window.availableLevels.push(String(Number(actualLevel)+1));
+            passedLevels.push(String(actualLevel));
+            window.availableLevels = [...(new Set(window.availableLevels))];
+            window.passedLevels = [...(new Set(window.passedLevels))];
+            document.cookie = "passedLevels = " + passedLevels.join(",");
+            document.cookie = "availableLevels = " + availableLevels.join(",");
             pages.lvlCleared.open(actualLevel);
         }
 
@@ -1179,18 +1184,20 @@ function mainStart() {
                 this.main((timed)/1000, (timed)/1000);
                 this.inMain();
                 this.actualFPS = 1000/(timed);
-                this.timeBeforeRestartConditionsCheck -= timed;
-                if (this.allLaunched) this.timeSinceAllLaunched += timed;
-                this.timeSinceStart += timed;
                 this.time = time;
-                if (this.timeBeforeRestartConditionsCheck < 0) {
-                    this.timeBeforeRestartConditionsCheck = 200;
-                    const result = this.checkRestartConditions();
-                    if (result) {
-                        this.timeBeforeRestartConditionsCheck = Infinity;
-                        restartLvl(true);
-                        generateRetryPic();
-                        setTimeout(()=>start(), 800);
+                if (window.gameSettings.autoRestart) {
+                    this.timeBeforeRestartConditionsCheck -= timed;
+                    if (this.allLaunched) this.timeSinceAllLaunched += timed;
+                    this.timeSinceStart += timed;
+                    if (this.timeBeforeRestartConditionsCheck < 0) {
+                        this.timeBeforeRestartConditionsCheck = 200;
+                        const result = this.checkRestartConditions();
+                        if (result) {
+                            this.timeBeforeRestartConditionsCheck = Infinity;
+                            restartLvl(true);
+                            generateRetryPic();
+                            setTimeout(()=>start(), 800);
+                        }
                     }
                 }
             });
@@ -2025,6 +2032,8 @@ function mainStart() {
         }, 900);
     }
 
+
+
     const pitchIn = document.getElementById("pitchIn");
     pitchIn.addEventListener("pointerdown", (event) => {
         if (!pitch) {
@@ -2146,7 +2155,7 @@ function mainStart() {
             if (this.inStart) return;
             this.inStart = true;
             setTimeout(()=>this.inStart = false, 500);
-            pages.lvls.close()
+            pages.lvls.close();
             setTimeout(() => {
                 pages.home.open();
                 document.getElementById("home").style.animationDelay = "0.1s";
@@ -2167,9 +2176,52 @@ function mainStart() {
             setTimeout(()=>this.inStart = false, 500);
             setTimeout(() => start(), 500);
             pages.lvlPause.close();
+        },
+        settings() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.lvls.close(false, true);
+            setTimeout(()=>{
+                pages.settings.open();
+            }, 500);
+        },
+        closeSettings() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.settings.close();
+            setTimeout(()=>{
+                pages.lvls.open(true);
+            }, 500);
+        },
+        refreshProgress(){
+            window.passedLevels = [...window._all.passedLevels];
+            window.availableLevels = [...window._all.alwaysAvailable];
+            document.cookie = "passedLevels = " + passedLevels.join(",");
+            document.cookie = "availableLevels = " + availableLevels.join(",");
         }
     }
 
+    function drawStar(con, x, y, r){
+        const r2 = r*0.374;
+        con.beginPath();
+        con.fillStyle = lineColor;
+        con.moveTo(x, y+r);
+        con.lineTo(x+r*Math.cos(-90/180*Math.PI), y+r*Math.sin(-90/180*Math.PI));
+        con.lineTo(x+r2*Math.cos(-54/180*Math.PI), y+r2*Math.sin(-54/180*Math.PI));
+        con.lineTo(x+r*Math.cos(-18/180*Math.PI), y+r*Math.sin(-18/180*Math.PI));
+        con.lineTo(x+r2*Math.cos(18/180*Math.PI), y+r2*Math.sin(18/180*Math.PI));
+        con.lineTo(x+r*Math.cos(54/180*Math.PI), y+r*Math.sin(54/180*Math.PI));
+        con.lineTo(x+r2*Math.cos(90/180*Math.PI), y+r2*Math.sin(90/180*Math.PI));
+        con.lineTo(x+r*Math.cos(126/180*Math.PI), y+r*Math.sin(126/180*Math.PI));
+        con.lineTo(x+r2*Math.cos(162/180*Math.PI), y+r2*Math.sin(162/180*Math.PI));
+        con.lineTo(x+r*Math.cos(198/180*Math.PI), y+r*Math.sin(198/180*Math.PI));
+        con.lineTo(x+r2*Math.cos(234/180*Math.PI), y+r2*Math.sin(234/180*Math.PI));
+        con.lineTo(x+r*Math.cos(270/180*Math.PI), y+r*Math.sin(270/180*Math.PI));
+        con.fill();
+        con.closePath();
+    }
 
     const pages = {
         openLevel(json, bol) {
@@ -2421,8 +2473,8 @@ function mainStart() {
             }, 500);
         },
         lvls: {
-            open() {
-                document.body.insertAdjacentHTML("beforeend", lvlsBack);
+            open(bol) {
+                if (!bol) document.body.insertAdjacentHTML("beforeend", lvlsBack);
                 const can = document.createElement("canvas");
                 can.resize = () => {
                     const con = can.getContext("2d");
@@ -2449,11 +2501,77 @@ function mainStart() {
                 this.canvases = new Set([can]);
 
 
+                const settingsBt = document.createElement("canvas");
+                settingsBt.resize = () => {
+                    const con = settingsBt.getContext("2d");
+                    settingsBt.width = pitchIn.getBoundingClientRect().width * 0.1;
+                    settingsBt.height = settingsBt.width;
+                    con.beginPath();
+                    con.fillStyle = lineColor;
+                    const w = settingsBt.width;
+                    const r1 = 0.4*w;
+                    const r2 = 0.2*w;
+                    con.moveTo(w*0.5+Math.cos((90-11.25)/180*Math.PI)*r1, w*0.5+Math.sin((90-11.25)/180*Math.PI)*r1);
+                    let angle = 90-11.25;
+                    for (let i = 0; i < 17; i++) {
+                        angle -= 22.5;
+                        if (i % 2 === 0) {
+
+                        }
+                        else {
+                            con.arcTo(w*0.5+Math.cos((angle+22.5)/180*Math.PI)*r1, w*0.5+Math.sin((angle+22.5)/180*Math.PI)*r1,w*0.5+Math.cos(angle/180*Math.PI)*r1, w*0.5+Math.sin(angle/180*Math.PI)*r1, r1);
+                        }
+                    }
+                    con.fill();
+                    con.closePath();
+                }
+
+                settingsBt.resize();
+                canvases.add(settingsBt);
+                this.canvases.add(settingsBt);
+
                 let levelsIn = "";
                 const nums = [];
                 const nums2 = new Map();
+                function isStarAvailable({x, y, r}, arr) {
+                    for (const i of arr) {
+                        if (Math.sqrt((i.x-x)**2+(i.y-y)**2) < (i.r+r)*0.8) return false;
+                    }
+                    return true;
+                }
+                function createCords() {
+                    return {
+                        x: Math.random()*100,
+                        y: Math.random()*100,
+                        r: Math.random()*10+10
+                    }
+                }
                 for (let i = 1; i < 31; i++) {
-                    if ((new Set(availableLevels)).has(String(i))) levelsIn += `<div class="levelBt" data-link="level.${i}"><span>${i}</span></div>`;
+                    if ((new Set(availableLevels)).has(String(i))) {
+                        if ((new Set(passedLevels)).has(String(i))) {
+                            const can = document.createElement("canvas");
+                            can.classList.add("starCanvas");
+                            can.resize = () => {
+                                setTimeout(()=>{
+                                    can.width = can.height = 100;
+                                    const con = can.getContext("2d");
+                                    const arr = [];
+                                    for (let i = 0; i < 15; i++) {
+                                        let cords = createCords();
+                                        while (!isStarAvailable(cords, arr)) cords = createCords();
+                                        arr.push(cords);
+                                        drawStar(con, cords.x, cords.y, cords.r);
+                                    }
+                                })
+                            };
+                            can.resize();
+                            canvases.add(can);
+                            this.canvases.add(can);
+                            nums.push(i);
+                            nums2.set(i, can);
+                        }
+                        levelsIn += `<div class="levelBt" data-link="level.${i}"><span>${i}</span></div>`;
+                    }
                     else {
                         const can = document.createElement("canvas");
                         can.resize = () => {
@@ -2465,7 +2583,6 @@ function mainStart() {
                             con.lineCap = "round";
                             con.fillStyle = lineColor;
                             con.shadowColor = lineShadowColor;
-                            // con.shadowBlur = blur / 8;
                             con.moveTo(w*0.13, w*0.55);
                             con.lineTo(w*0.13,w*0.78);
                             con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
@@ -2500,6 +2617,7 @@ function mainStart() {
                 const levels = `
             <div class="levels">
                 <div class="closeBar" data-link="closeLvls"></div>
+                <div class="closeBar" data-link="settings"></div>
                 <div class="levelsTxtTop">Уровни</div>
                 <div class="levelsTxt">${window.seasons[0].name}</div>
                 <div class="levelsHolder">${levelsIn}</div>
@@ -2507,6 +2625,7 @@ function mainStart() {
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
+                document.querySelector(`[data-link="settings"]`).append(settingsBt);
                 nums.forEach(i=>{
                     document.querySelector(`.levelBt:nth-of-type(${i})`).append(nums2.get(i));
                 });
@@ -2515,23 +2634,80 @@ function mainStart() {
                     if (el) makeButton(el);
                 });
             },
-            close(bol) {
+            close(bol, bol2) {
                 canvases.forEach(i => canvases.delete(i));
-                document.querySelectorAll(".rolling0, .rolling1").forEach(i=>i.style.animationPlayState = "paused");
                 document.querySelector(".levels").style.animationName = "remove";
-                if (bol) {
-                    document.querySelector(".video").style.animationName = "removeCan";
-                    setTimeout(() => document.querySelector(".video").remove(), 500)
-                } else {
-                    document.querySelector(".video").style.animationDuration = "1s";
-                    document.querySelector(".video").style.animationTimingFunction = "cubic-bezier(.71,0,.66,-0.01)";
-                    document.querySelector(".video").style.animationName = "removeCan";
-                    setTimeout(() => {
-                        setTimeout(() => document.querySelector(".video").remove(), 500);
-                    }, 500);
+                if (!bol2) {
+                    document.querySelectorAll(".rolling0, .rolling1").forEach(i=>i.style.animationPlayState = "paused");
+                    if (bol) {
+                        document.querySelector(".video").style.animationName = "removeCan";
+                        setTimeout(() => document.querySelector(".video").remove(), 500)
+                    } else {
+                        document.querySelector(".video").style.animationDuration = "1s";
+                        document.querySelector(".video").style.animationTimingFunction = "cubic-bezier(.71,0,.66,-0.01)";
+                        document.querySelector(".video").style.animationName = "removeCan";
+                        setTimeout(() => {
+                            setTimeout(() => document.querySelector(".video").remove(), 500);
+                        }, 500);
+                    }
                 }
                 setTimeout(() => {
                     document.querySelector(".levels").remove();
+                }, 500);
+            }
+        },
+        settings: {
+            open() {
+                const can = document.createElement("canvas");
+                can.resize = () => {
+                    const con = can.getContext("2d");
+                    can.width = pitchIn.getBoundingClientRect().width * 0.1;
+                    can.height = can.width;
+                    con.beginPath();
+                    con.lineCap = "round";
+                    con.strokeStyle = lineColor;
+                    con.shadowColor = lineShadowColor;
+                    con.shadowBlur = blur / 3;
+                    con.lineWidth = can.width / 10;
+                    con.moveTo(can.height * 0.4, can.height * 0.8);
+                    con.lineTo(can.height * 0.1, can.height * 0.5);
+                    con.lineTo(can.height * 0.4, can.height * 0.2);
+                    con.stroke();
+                    con.moveTo(can.height * 0.1, can.height * 0.5);
+                    con.lineTo(can.height * 0.9, can.height * 0.5);
+                    con.stroke();
+                    con.closePath();
+                }
+
+                can.resize();
+                canvases.add(can);
+                this.canvases = new Set([can]);
+
+
+                const settings = `
+                <div class="settings">
+                    <div data-link="closeSettings" class="closeBar"></div>
+                    <div class="levelsTxtTop">Настройки</div>
+                    <div class="levelsTxt sbt" style="opacity: 0.7;"><span>Язык</span></div>
+                    <div class="levelsTxt sbt" data-link="refreshProgress"><span>Обнулить прогресс</span></div>
+                    <div class="levelsTxt" style="opacity: 0.7;">Авто-перезапуск уровня</div>
+                    <div class="levelsTxt" style="opacity: 0.7;">Сохранять прогресс</div>
+                   
+                </div>
+                `;
+                pitchIn.insertAdjacentHTML("afterbegin", settings);
+                document.querySelector('[data-link="closeSettings"]').append(can);
+
+                document.querySelector(".settings").addEventListener("pointerdown", (event) => {
+                    const el = event.target.closest(`[data-link]`);
+                    if (el) makeButton(el);
+                });
+            },
+            close() {
+                canvases.forEach(i => canvases.delete(i));
+                document.querySelector(".settings").style.animationName = "remove";
+                setTimeout(() => {
+                    document.querySelector(".settings").remove();
                 }, 500);
             }
         },

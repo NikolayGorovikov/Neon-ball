@@ -126,19 +126,39 @@
         }
         window.actualLevel = 1;
         getPlayerInfo();
+
+
         readTextFile("main.json", function (text) {
             const all = JSON.parse(text);
             window.levels = all.levels;
             window.seasons = all.seasons;
             window.alwaysAvailable = all.alwaysAvailable;
-            if (!playerInfo.availableLevels) playerInfo.availableLevels = window.alwaysAvailable
+            window.passedLevels = all.passedLevels;
+            window.gameSettings = all.gameSettings;
+            if (!playerInfo.availableLevels) playerInfo.availableLevels = [...window.alwaysAvailable];
             window.availableLevels = window.playerInfo.availableLevels;
+            if (!playerInfo.passedLevels) playerInfo.passedLevels = [...window.passedLevels];
+            window.passedLevels = playerInfo.passedLevels;
+            if (!playerInfo.gameSettings) playerInfo.gameSettings = Object.assign({}, window.gameSettings);
+            window.gameSettings = playerInfo.gameSettings;
+
+            window._all = all;
+
+            document.cookie = "max-age=2592000";
             for (let i in levels) levels[i] = JSON.stringify(levels[i]);
             window.version = all.version;
             a();
         });
 
     }
+
+    function getCookie(name) {
+        let matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    }
+
     function a(){
         added++;
         if (added === requestedLength) allLoaded();
@@ -147,7 +167,9 @@
     function getPlayerInfo() {
         //
         window.playerInfo = {
-            availableLevels: undefined,
+            availableLevels: getCookie("availableLevels") ? getCookie("availableLevels").split(","): undefined,
+            passedLevels: getCookie("passedLevels") ? getCookie("passedLevels").split(",") : undefined,
+            gameSettings: getCookie("gameSettings") ? JSON.parse(getCookie("gameSettings")) : undefined
         };
         //
     }
