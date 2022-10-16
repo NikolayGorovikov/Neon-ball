@@ -2501,35 +2501,6 @@ function mainStart() {
                 this.canvases = new Set([can]);
 
 
-                const settingsBt = document.createElement("canvas");
-                settingsBt.resize = () => {
-                    const con = settingsBt.getContext("2d");
-                    settingsBt.width = pitchIn.getBoundingClientRect().width * 0.1;
-                    settingsBt.height = settingsBt.width;
-                    con.beginPath();
-                    con.fillStyle = lineColor;
-                    const w = settingsBt.width;
-                    const r1 = 0.4*w;
-                    const r2 = 0.2*w;
-                    con.moveTo(w*0.5+Math.cos((90-11.25)/180*Math.PI)*r1, w*0.5+Math.sin((90-11.25)/180*Math.PI)*r1);
-                    let angle = 90-11.25;
-                    for (let i = 0; i < 17; i++) {
-                        angle -= 22.5;
-                        if (i % 2 === 0) {
-
-                        }
-                        else {
-                            con.arcTo(w*0.5+Math.cos((angle+22.5)/180*Math.PI)*r1, w*0.5+Math.sin((angle+22.5)/180*Math.PI)*r1,w*0.5+Math.cos(angle/180*Math.PI)*r1, w*0.5+Math.sin(angle/180*Math.PI)*r1, r1);
-                        }
-                    }
-                    con.fill();
-                    con.closePath();
-                }
-
-                settingsBt.resize();
-                canvases.add(settingsBt);
-                this.canvases.add(settingsBt);
-
                 let levelsIn = "";
                 const nums = [];
                 const nums2 = new Map();
@@ -2543,7 +2514,7 @@ function mainStart() {
                     return {
                         x: Math.random()*100,
                         y: Math.random()*100,
-                        r: Math.random()*10+10
+                        r: Math.random()*10+8
                     }
                 }
                 for (let i = 1; i < 31; i++) {
@@ -2556,7 +2527,7 @@ function mainStart() {
                                     can.width = can.height = 100;
                                     const con = can.getContext("2d");
                                     const arr = [];
-                                    for (let i = 0; i < 15; i++) {
+                                    for (let i = 0; i < 24; i++) {
                                         let cords = createCords();
                                         while (!isStarAvailable(cords, arr)) cords = createCords();
                                         arr.push(cords);
@@ -2617,7 +2588,9 @@ function mainStart() {
                 const levels = `
             <div class="levels">
                 <div class="closeBar" data-link="closeLvls"></div>
-                <div class="closeBar" data-link="settings"></div>
+                <div class="closeBar" data-link="settings" ><svg class="settingSing" width="100%" height="100%" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M.974 8.504l1.728-.825a.94.94 0 00.323-1.439l-1.21-1.498a7.009 7.009 0 011.494-1.895l1.727.847a.931.931 0 001.32-.642l.407-1.88a6.96 6.96 0 012.412.001L9.6 3.057a.934.934 0 001.323.637l1.721-.847a7.053 7.053 0 011.511 1.894L12.957 6.24a.942.942 0 00.33 1.437l1.74.826a7.086 7.086 0 01-.529 2.362l-1.914-.012a.935.935 0 00-.912 1.155l.446 1.874a7.002 7.002 0 01-2.17 1.05l-1.194-1.514a.93.93 0 00-1.466.002l-1.18 1.512a7.09 7.09 0 01-2.178-1.05l.43-1.878a.94.94 0 00-.917-1.15l-1.92.011a7.095 7.095 0 01-.06-.149 7.102 7.102 0 01-.488-2.212zM9.96 7.409a2.11 2.11 0 01-1.18 2.74 2.11 2.11 0 01-2.733-1.195 2.11 2.11 0 011.179-2.741A2.11 2.11 0 019.96 7.409z" fill="rgb(252, 243, 211)"></path>
+</svg></div>
                 <div class="levelsTxtTop">Уровни</div>
                 <div class="levelsTxt">${window.seasons[0].name}</div>
                 <div class="levelsHolder">${levelsIn}</div>
@@ -2625,7 +2598,6 @@ function mainStart() {
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
-                document.querySelector(`[data-link="settings"]`).append(settingsBt);
                 nums.forEach(i=>{
                     document.querySelector(`.levelBt:nth-of-type(${i})`).append(nums2.get(i));
                 });

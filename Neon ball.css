@@ -685,7 +685,6 @@ canvas{
 
 .levelsTxtTop{
     position: absolute;
-    top: 0;
     display: inline-block;
 }
 
@@ -737,6 +736,24 @@ canvas{
     transition-duration: 0.2s;
 }
 
+.settingSing {
+    -webkit-filter: drop-shadow( 0 0 4px rgb(175, 125, 46));
+    filter: drop-shadow( 0 0 4px rgb(175, 125, 46));
+    /* Similar syntax to box-shadow */
+}
+
+.pressEnd[data-link="settings"]{
+    animation: 0.5s rotate1;
+}
+
+@keyframes rotate1 {
+    0%{
+        transform: rotate(0deg)
+    }
+    100%{
+         transform: rotate(360deg)
+     }
+}
 
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */
