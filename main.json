@@ -1,7 +1,7 @@
 {
   "seasons": [
     {
-      "name": "at the beginning...",
+      "name": "beginning",
       "state": "ready"
     },
     {
@@ -9,10 +9,121 @@
       "state": "soon"
     }
   ],
+  "translations": {
+    "levels": {
+      "ru": "Уровни",
+      "en": "Levels",
+      "sas": "Сасные сасы"
+    },
+    "beginning": {
+      "ru": "Начало",
+      "en": "at the beginning...",
+      "sas": "Сас..."
+    },
+    "author": {
+      "ru": "автор и разработчик - горовиков николай константинович",
+      "en": "author and creator - gorovikov nikolai konstantinovich",
+      "sas": "сас сас - горовиков николай константинович"
+    },
+    "version": {
+      "ru": "версия",
+      "en": "version",
+      "sas": "Сас"
+    },
+    "gratitudes": {
+      "ru": "Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность <span data-link=\"bonusLevel.bonus 2\" style=\"display: inline-block;transition-property: transform;transition-duration: 0.2s;\">Карине</span>, спасибо за помощь с придумыванием уровней и поддержку",
+      "en": "Lots of thanks to Katya, //спасибо катя; Lots of thanks to <span data-link=\"bonusLevel.bonus 2\" style=\"display: inline-block;transition-property: transform;transition-duration: 0.2s;\">Karina</span>, thank you for helping with ideas for levels and always supporting me",
+      "sas": "Сас сос Кате, //спасибо катя; сасный сас <span data-link=\"bonusLevel.bonus 2\" style=\"display: inline-block;transition-property: transform;transition-duration: 0.2s;\">Карине</span>, сас за сас с сосом сасов и сас"
+    },
+    "contact": {
+      "ru": "Контактные данные",
+      "en": "contact me",
+      "sas": "Сос сасный"
+    },
+    "copy": {
+    "ru": "горовиков николай константинович, 2021-2022 | все права защищены",
+    "en": "gorovikov nikolai konstantinovich, 2021-2022 | all rights reserved",
+    "sas": "горовиков николай константинович, 2021-2022 | сас сас сас"
+    },
+    "level": {
+    "ru": "уроыень",
+    "en": "level",
+    "sas": "Сосный сас"
+    },
+    "pause": {
+    "ru": "пауза",
+    "en": "pause",
+    "sas": "Сас"
+    },
+    "completed": {
+    "ru": "пройдено",
+    "en": "completed",
+    "sas": "Сас"
+    },
+    "settings": {
+    "ru": "настройки",
+    "en": "settings",
+    "sas": "Сасы"
+    },
+    "language": {
+    "ru": "язык",
+    "en": "language",
+    "sas": "Сос"
+    },
+    "refresh": {
+    "ru": "обнулить прогресс",
+    "en": "reset a progress",
+    "sas": "Сос сас"
+    },
+    "restart": {
+    "ru": "авто-перезапуск уровня",
+    "en": "level's auto-restart",
+    "sas": "авто-сас соса"
+    },
+    "save": {
+    "ru": "сохранять прогресс",
+    "en": "save progress",
+    "sas": "Сас сос"
+    },
+    "languageChosing": {
+    "ru": "Выбор языка",
+    "en": "languages",
+    "sas": "Сасы"
+    },
+    "refreshing": {
+    "ru": "Обнуление прогресса",
+    "en": "Resetting a progress",
+    "sas": "Сас сос сас"
+    },
+    "attention": {
+    "ru": "Внимание",
+    "en": "Attention",
+    "sas": "Сас"
+    },
+    "sureness": {
+    "ru": "Вы действительно хотите обнулить прогресс? Нажав на \"Все равно обнулить\" все открытые вами за время игры уровни закроются и условия игры вернутся к самому началу",
+    "en": "Are you sure that you want to reset your game progress? Pressing \"Reset anyway\" all opened levels will become closed and all the game conditions will be reseted right to the beginning",
+    "sas": "Сос сасом сасный сосовый сас? сас сос \"сас сас\" саснический сас сос сасу сас и сас сасом сас к сасу сас о сасе сосном"
+    },
+    "anyway": {
+    "ru": "Все равно обнулить",
+    "en": "Reset anyway",
+    "sas": "Сас сас"
+    }
+
+  },
+  "languages": ["ru", "en", "sas"],
+  "languagesNames": {
+  "ru": "Русский",
+  "en": "English",
+  "sas": "Сас"
+  },
   "alwaysAvailable": ["bonus 1", "bonus 2", "1"],
   "passedLevels": [],
   "gameSettings": {
-    "autoRestart": 1
+    "autoRestart": 1,
+    "saveProgress": 1,
+    "language": "ru"
   },
   "levels" : {
     "home": {
@@ -430,5 +541,5 @@
 
 
 },
-  "version": "0.2.5 demo"
+  "version": "0.2.6 demo"
 }

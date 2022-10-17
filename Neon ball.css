@@ -61,7 +61,7 @@ body{
     .levelsTxtTop{
         height: calc(100vh * 5 / 6 * 0.1);
         line-height: calc(100vh * 5 / 6 * 0.1);
-        top: calc(100vh * 5 / 6* 0.05 *2/5);
+        top: calc(100vh * 5 / 6* 0.05 / 5);
     }
     #pitchIn > *:not(.neonBall100, .dark, .fullScreen, .restartAnimation){
         height: 100vh;
@@ -79,14 +79,14 @@ body{
         top: calc((100vh - (100vh + 100vh * 5 / 6))/2);
     }
     .levelText, .levelsTxtTop{
-        font-size: calc(100vh/10);
+        font-size: calc(100vh/11);
     }
     .levelsTxt{
         font-size: calc(100vh/14);
         height: calc(100vh * 5 / 6 * 0.1 * 9 / 5);
         line-height: calc(100vh * 5 / 6 * 0.1 * 9 / 5);
     }
-    .settings .levelsTxt{
+    .settings .levelsTxt:not(.settingsInner .levelsTxt){
         height: calc(100vh * 5 / 12 * 0.1 * 9 / 5);
         line-height: calc(100vh * 5 / 12 * 0.1 * 9 / 5);
         border-radius: calc(100vh * 5 / 12 * 0.1 * 9 / 5 / 6);
@@ -97,7 +97,7 @@ body{
     .levelName, .mailCopied{
         font-size: calc(100vh/15);
     }
-    .infoText > *{
+    .infoText > *, .infoTextIn{
         font-size: calc(100vh/30);
     }
     .welcomeTo, .levelBt{
@@ -159,17 +159,17 @@ body{
     .levelsTxtTop{
         height: 10vw;
         line-height: 10vw;
-        top: 2vw;
+        top: 1vw;
     }
     .levelText, .levelsTxtTop{
-        font-size: calc(100vw * 6 / 5 /10);
+        font-size: calc(100vw * 6 / 5 /11);
     }
     .levelsTxt{
         font-size: calc(100vw * 6 / 5 /14);
         height: 18vw;
         line-height: 18vw;
     }
-    .settings .levelsTxt{
+    .settings .levelsTxt:not(.settingsInner .levelsTxt){
         height: 9vw;
         line-height: 9vw;
         border-radius: 1.5vw;
@@ -180,7 +180,7 @@ body{
     .levelName, .mailCopied{
         font-size: calc(100vw * 6 / 5/15);
     }
-    .infoText > *{
+    .infoText > *, .infoTextIn{
         font-size: calc(100vw * 6 / 5/30);
     }
     .welcomeTo, .levelBt{
@@ -429,6 +429,7 @@ canvas{
     text-shadow: 0 0 0.3em rgb(175, 125, 46), 0 0 0.2em rgb(175, 125, 46);
 }
 
+
 [data-link] canvas{
     display: flex;
     margin: auto;
@@ -462,7 +463,7 @@ canvas{
     justify-content: center;
 }
 
-.infoText > *{
+.infoText > *, .infoTextIn{
     color: rgb(252, 243, 211);
     text-shadow: 0 0 20px rgb(175, 125, 46);
     font-family: "Ubuntu Condensed";
@@ -751,8 +752,18 @@ canvas{
         transform: rotate(0deg)
     }
     100%{
-         transform: rotate(360deg)
+         transform: rotate(200deg)
      }
+}
+
+.active1{
+    opacity: 1;
+    transition: opacity 2s;
+}
+
+.active0{
+    opacity: 0.6;
+    transition: opacity 2s;
 }
 
 /* @keyframes duration | timing-function | delay |

@@ -139,6 +139,8 @@
             window.availableLevels = window.playerInfo.availableLevels;
             if (!playerInfo.passedLevels) playerInfo.passedLevels = [...window.passedLevels];
             window.passedLevels = playerInfo.passedLevels;
+            const l = navigator.language.split("-")[0]+1;
+            window.playerInfo.gameSettings.language =  window.playerInfo.gameSettings.language ? window.playerInfo.gameSettings.language : (new Set(all.languages)).has(l) ? l : "en";
             if (!playerInfo.gameSettings) playerInfo.gameSettings = Object.assign({}, window.gameSettings);
             window.gameSettings = playerInfo.gameSettings;
 

@@ -553,8 +553,10 @@ function mainStart() {
             passedLevels.push(String(actualLevel));
             window.availableLevels = [...(new Set(window.availableLevels))];
             window.passedLevels = [...(new Set(window.passedLevels))];
-            document.cookie = "passedLevels = " + passedLevels.join(",");
-            document.cookie = "availableLevels = " + availableLevels.join(",");
+            if (window.gameSettings.saveProgress) {
+                document.cookie = "passedLevels = " + passedLevels.join(",");
+                document.cookie = "availableLevels = " + availableLevels.join(",");
+            }
             pages.lvlCleared.open(actualLevel);
         }
 
@@ -1966,6 +1968,11 @@ function mainStart() {
         return d > 0 ? [(-b + Math.sqrt(d)) / (2 * a), (-b - Math.sqrt(d)) / (2 * a)] : d === 0 ? [-b / (2 * a), -b / (2 * a)] : [NaN];
     }
 
+    function setSettings(prop, val) {
+        window.gameSettings[prop] = val;
+        document.cookie = "gameSettings = "+decodeURIComponent(JSON.stringify(window.gameSettings));
+    }
+
     function createFromJson(json) {
         const obj = JSON.parse(json);
         const pitch = new Physics(obj);
@@ -2196,11 +2203,108 @@ function mainStart() {
             }, 500);
         },
         refreshProgress(){
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.settings.close();
+            setTimeout(()=>{
+                pages.refreshConfirmation.open();
+            }, 500);
+        },
+        refreshConfirmationYes(el) {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 5900);
             window.passedLevels = [...window._all.passedLevels];
             window.availableLevels = [...window._all.alwaysAvailable];
             document.cookie = "passedLevels = " + passedLevels.join(",");
             document.cookie = "availableLevels = " + availableLevels.join(",");
+            setTimeout(()=>{
+                const amount = el.children.length;
+                const arr1 = [];
+                for (let i = 1; i < amount+1; i++) arr1.push(i);
+                const arr2 = [];
+                for (let i = 1; i < amount+1; i++) arr2.push(i);
+                const slots = [new Set(arr1), new Set(arr2)];
+                const interval = setInterval(function fn(){
+                    let num = randomInteger(-1, 1);
+                    if (slots[0].size === 0) num = 1;
+                    else if (slots[1].size === 0) num = 0;
+                    if (slots[0].size + slots[1].size === 0) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    const num2 = randomInteger(-1, slots[num].size-1);
+                    el.querySelector(`span:nth-of-type(${[...slots[num]][num2]})`).innerHTML = (Math.round(Math.random()*10000))%2;
+                    slots[num].delete([...slots[num]][num2]);
+                }, 1500/(amount+1));
+            }, 700);
+            setTimeout(()=>{
+                pages.refreshConfirmation.close();
+                setTimeout(()=>{
+                    pages.settings.open();
+                }, 500);
+            }, 5000);
+        },
+        refreshConfirmationClose() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.refreshConfirmation.close();
+            setTimeout(()=>{
+                pages.settings.open();
+            }, 500);
+        },
+        autoRestartSet(el) {
+            el.classList.remove("active"+window.gameSettings.autoRestart);
+            setSettings("autoRestart", (window.gameSettings.autoRestart+1)%2);
+            el.classList.add("active"+window.gameSettings.autoRestart);
+        },
+        progressSaveSet(el) {
+            el.classList.remove("active"+window.gameSettings.saveProgress);
+            setSettings("saveProgress", (window.gameSettings.saveProgress+1)%2);
+            el.classList.add("active"+window.gameSettings.saveProgress);
+            if (window.gameSettings.saveProgress) {
+                document.cookie = "passedLevels = " + passedLevels.join(",");
+                document.cookie = "availableLevels = " + availableLevels.join(",");
+            }
+        },
+        languageChose(){
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.settings.close();
+            setTimeout(()=>{
+                pages.languageChose.open();
+            }, 500);
+        },
+        languageChoseBack() {
+            if (this.inStart) return;
+            this.inStart = true;
+            setTimeout(()=>this.inStart = false, 900);
+            pages.languageChose.close();
+            setTimeout(()=>{
+                pages.settings.open();
+            }, 500);
+        },
+        lan(ln, el) {
+            document.querySelectorAll(`.languages [data-link]:not(.closeBar)`).forEach(i=> {
+                i.classList.remove("active1");
+                i.classList.add("active0");
+            });
+            el.classList.add("active1");
+            el.classList.remove("active0");
+            setSettings("language", ln);
+            document.querySelector(".languages .levelsTxtTop").innerHTML = trl("languageChosing");
         }
+    }
+
+    function randomInteger(from, to) {
+        return from+Math.floor(Math.random()*(to-from))+1;
+    }
+
+    function trl(key) {
+        return window._all.translations[key][window.gameSettings.language];
     }
 
     function drawStar(con, x, y, r){
@@ -2223,7 +2327,92 @@ function mainStart() {
         con.closePath();
     }
 
+    function createArrow() {
+        const can = document.createElement("canvas");
+        can.resize = () => {
+            const con = can.getContext("2d");
+            can.width = pitchIn.getBoundingClientRect().width * 0.1;
+            can.height = can.width;
+            con.beginPath();
+            con.lineCap = "round";
+            con.strokeStyle = lineColor;
+            con.shadowColor = lineShadowColor;
+            con.shadowBlur = blur / 3;
+            con.lineWidth = can.width / 10;
+            con.moveTo(can.height * 0.4, can.height * 0.8);
+            con.lineTo(can.height * 0.1, can.height * 0.5);
+            con.lineTo(can.height * 0.4, can.height * 0.2);
+            con.stroke();
+            con.moveTo(can.height * 0.1, can.height * 0.5);
+            con.lineTo(can.height * 0.9, can.height * 0.5);
+            con.stroke();
+            con.closePath();
+        }
+        can.resize();
+        return can;
+    }
+
     const pages = {
+        refreshConfirmation: {
+            open() {
+                const can = createArrow();
+                canvases.add(can);
+                this.canvases = new Set([can]);
+                const fraze = decodeURIComponent(trl("anyway"));
+                let str = "";
+                for (const i of fraze) {
+                    if (i !== " ") str+="<span>"+i+"</span>";
+                    else str+="<span>"+"&nbsp"+"</span>";
+                }
+                const inner = `
+            <div class="settings settingsInner">
+                <div class="closeBar" data-link="refreshConfirmationClose"></div>
+                <div class="levelsTxtTop">${trl("refreshing")}</div>
+                <div class="levelsTxt">${trl("attention")}!</div>
+                <div class="infoTextIn">${trl("sureness")}</div>
+                <div class="levelsTxt" data-link="refreshConfirmationYes">${str}</div>
+            </div>
+                `;
+                pitchIn.insertAdjacentHTML("beforeend", inner);
+                document.querySelector(".closeBar").append(can);
+                document.querySelector(".settings").addEventListener("pointerdown", (event) => {
+                    const el = event.target.closest(`[data-link]`);
+                    if (el) makeButton(el);
+                });
+            },
+            close() {
+                pages.settings.close();
+            }
+        },
+        languageChose: {
+            open() {
+                const can = createArrow();
+                canvases.add(can);
+                this.canvases = new Set([can]);
+                let inner2 = "";
+                for (let i of window._all.languages) {
+                    inner2 += `<div class="levelsTxt active0" data-link="lan.${i}">${window._all.languagesNames[i]}</div>`;
+                }
+                const inner = `
+            <div class="settings languages">
+                <div class="closeBar" data-link="languageChoseBack"></div>
+                <div class="levelsTxtTop">${trl("languageChosing")}</div>
+                ${inner2}
+            </div>
+                `;
+                pitchIn.insertAdjacentHTML("beforeend", inner);
+                document.querySelector(`[data-link="lan.${window.gameSettings.language}"]`).classList.add("active1");
+                document.querySelector(`[data-link="lan.${window.gameSettings.language}"]`).classList.remove("active0");
+                document.querySelector(".closeBar").append(can);
+                document.querySelector(".settings").addEventListener("pointerdown", (event) => {
+                    const el = event.target.closest(`[data-link]`);
+                    if (el) makeButton(el);
+                });
+            },
+            close() {
+                pages.settings.close();
+            }
+        },
         openLevel(json, bol) {
             const obj = JSON.parse(json);
             const pt = new Physics(obj, bol);
@@ -2355,8 +2544,8 @@ function mainStart() {
     <div class="dark"></div>
     <div class="lvlCleared">
         <div class="levelText">
-            <div class="levelName">Уровень ${name}</div>
-            <div class="levelDoneText">${pause ? "Пауза" : "Пройдено"}</div>
+            <div class="levelName">${trl("level")} ${name}</div>
+            <div class="levelDoneText">${pause ? trl("pause") : trl("completed")}</div>
         </div>
         <div class="subMenu">
             <div data-link="menu"></div>
@@ -2475,32 +2664,9 @@ function mainStart() {
         lvls: {
             open(bol) {
                 if (!bol) document.body.insertAdjacentHTML("beforeend", lvlsBack);
-                const can = document.createElement("canvas");
-                can.resize = () => {
-                    const con = can.getContext("2d");
-                    can.width = pitchIn.getBoundingClientRect().width * 0.1;
-                    can.height = can.width;
-                    con.beginPath();
-                    con.lineCap = "round";
-                    con.strokeStyle = lineColor;
-                    con.shadowColor = lineShadowColor;
-                    con.shadowBlur = blur / 3;
-                    con.lineWidth = can.width / 10;
-                    con.moveTo(can.height * 0.4, can.height * 0.8);
-                    con.lineTo(can.height * 0.1, can.height * 0.5);
-                    con.lineTo(can.height * 0.4, can.height * 0.2);
-                    con.stroke();
-                    con.moveTo(can.height * 0.1, can.height * 0.5);
-                    con.lineTo(can.height * 0.9, can.height * 0.5);
-                    con.stroke();
-                    con.closePath();
-                }
-
-                can.resize();
+                const can = createArrow();
                 canvases.add(can);
                 this.canvases = new Set([can]);
-
-
                 let levelsIn = "";
                 const nums = [];
                 const nums2 = new Map();
@@ -2591,8 +2757,8 @@ function mainStart() {
                 <div class="closeBar" data-link="settings" ><svg class="settingSing" width="100%" height="100%" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M.974 8.504l1.728-.825a.94.94 0 00.323-1.439l-1.21-1.498a7.009 7.009 0 011.494-1.895l1.727.847a.931.931 0 001.32-.642l.407-1.88a6.96 6.96 0 012.412.001L9.6 3.057a.934.934 0 001.323.637l1.721-.847a7.053 7.053 0 011.511 1.894L12.957 6.24a.942.942 0 00.33 1.437l1.74.826a7.086 7.086 0 01-.529 2.362l-1.914-.012a.935.935 0 00-.912 1.155l.446 1.874a7.002 7.002 0 01-2.17 1.05l-1.194-1.514a.93.93 0 00-1.466.002l-1.18 1.512a7.09 7.09 0 01-2.178-1.05l.43-1.878a.94.94 0 00-.917-1.15l-1.92.011a7.095 7.095 0 01-.06-.149 7.102 7.102 0 01-.488-2.212zM9.96 7.409a2.11 2.11 0 01-1.18 2.74 2.11 2.11 0 01-2.733-1.195 2.11 2.11 0 011.179-2.741A2.11 2.11 0 019.96 7.409z" fill="rgb(252, 243, 211)"></path>
 </svg></div>
-                <div class="levelsTxtTop">Уровни</div>
-                <div class="levelsTxt">${window.seasons[0].name}</div>
+                <div class="levelsTxtTop">${trl("levels")}</div>
+                <div class="levelsTxt">${trl(window.seasons[0].name)}</div>
                 <div class="levelsHolder">${levelsIn}</div>
             </div>
             `;
@@ -2630,28 +2796,7 @@ function mainStart() {
         },
         settings: {
             open() {
-                const can = document.createElement("canvas");
-                can.resize = () => {
-                    const con = can.getContext("2d");
-                    can.width = pitchIn.getBoundingClientRect().width * 0.1;
-                    can.height = can.width;
-                    con.beginPath();
-                    con.lineCap = "round";
-                    con.strokeStyle = lineColor;
-                    con.shadowColor = lineShadowColor;
-                    con.shadowBlur = blur / 3;
-                    con.lineWidth = can.width / 10;
-                    con.moveTo(can.height * 0.4, can.height * 0.8);
-                    con.lineTo(can.height * 0.1, can.height * 0.5);
-                    con.lineTo(can.height * 0.4, can.height * 0.2);
-                    con.stroke();
-                    con.moveTo(can.height * 0.1, can.height * 0.5);
-                    con.lineTo(can.height * 0.9, can.height * 0.5);
-                    con.stroke();
-                    con.closePath();
-                }
-
-                can.resize();
+                const can = createArrow();
                 canvases.add(can);
                 this.canvases = new Set([can]);
 
@@ -2659,11 +2804,11 @@ function mainStart() {
                 const settings = `
                 <div class="settings">
                     <div data-link="closeSettings" class="closeBar"></div>
-                    <div class="levelsTxtTop">Настройки</div>
-                    <div class="levelsTxt sbt" style="opacity: 0.7;"><span>Язык</span></div>
-                    <div class="levelsTxt sbt" data-link="refreshProgress"><span>Обнулить прогресс</span></div>
-                    <div class="levelsTxt" style="opacity: 0.7;">Авто-перезапуск уровня</div>
-                    <div class="levelsTxt" style="opacity: 0.7;">Сохранять прогресс</div>
+                    <div class="levelsTxtTop">${trl("settings")}</div>
+                    <div class="levelsTxt sbt" data-link="languageChose"><span>${trl("language")}</span></div>
+                    <div class="levelsTxt sbt" data-link="refreshProgress"><span>${trl("refresh")}</span></div>
+                    <div class="levelsTxt active${window.gameSettings.autoRestart}" data-link="autoRestartSet">${trl("restart")}</div>
+                    <div class="levelsTxt active${window.gameSettings.saveProgress}" data-link="progressSaveSet">${trl("save")}</div>
                    
                 </div>
                 `;
@@ -2692,16 +2837,15 @@ function mainStart() {
                     const el = `
             <div class="infoText">
                 <div class="closeBar" data-link="closeInfo"></div>
-                <div class="infoTextIn">Автор и разработчик - Горовиков Николай Константинович</div>
-                <div class="infoTextIn">Версия - ${version}</div>
-                <div class="infoTextIn">Отдельная благодарность Кате, //спасибо катя; Отдельная благодарность <span data-link="bonusLevel.bonus 2" style="display: inline-block;transition-property: transform;transition-duration: 0.2s;">Карине</span>, спасибо за помощь с придумыванием уровней и поддержку</div>
-                <div class="infoTextIn mail" >Контактные данные - gorovikov.work@gmail.com</div>
+                <div class="infoTextIn">${trl("author")}</div>
+                <div class="infoTextIn">${trl("version")} - ${version}</div>
+                <div class="infoTextIn">${trl("gratitudes")}</div>
+                <div class="infoTextIn mail" >${trl("contact")} - gorovikov.work@gmail.com</div>
                 <div class="infoTextIn"><div data-link="bonusLevel.bonus 3" id="video"><img id="img"></div></div>
-                <div class="infoTextIn">&copy Горовиков Николай Константинович, 2021-2022 | Все права защищены</div>
+                <div class="infoTextIn">&copy${trl("copy")}</div>
                 
             </div>
             `;
-
                     pitchIn.insertAdjacentHTML("beforeend", el);
                     const img = document.getElementById("img");
                     const fn2 = (time) => {
@@ -2779,7 +2923,7 @@ function mainStart() {
             el.removeEventListener("pointerout", fn);
             el.removeEventListener("pointerup", fn2);
             if (el.dataset.link.indexOf(".") !== -1) {
-                switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1]);
+                switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el);
             } else switchFns[el.dataset.link](el);
             clearInterval(pitch?.specialInterval);
         }
