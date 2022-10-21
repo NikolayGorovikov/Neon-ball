@@ -2296,6 +2296,200 @@ function mainStart() {
             el.classList.remove("active0");
             setSettings("language", ln);
             document.querySelector(".languages .levelsTxtTop").innerHTML = trl("languageChosing");
+        },
+        slideTo(num, el, time){
+            if (this.inStart || num == this.slide) return;
+            this.inStart = true;
+            this.stopDragging();
+            num = Number(num);
+            const time2 = 500 + (Math.abs(this.slide - num) - 1)*180;
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(this.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                this.inStart = false;
+                this.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time2);
+            this.slider.firstElementChild.style.transition = `${time2}ms transform`;
+            this.slider.firstElementChild.style.transform = `translateX(-${num*100}%)`;
+            setTimeout(()=>{
+                document.querySelector(".activePoint")?.classList?.remove("activePoint");
+                el.classList.add("activePoint");
+                el.style.transform = "";
+            }, time);
+            this.basis = this.slider.getBoundingClientRect().width/2+this.slider.getBoundingClientRect().x;
+            this.width = this.slider.getBoundingClientRect().width;
+            this.slide = this.actualButton = num;
+        },
+        stopDragging(){}
+    }
+
+    function createSlideAnimation(speed, position) {
+        position++;
+        const left = Math.floor(position);
+        const right = Math.ceil(position);
+        if (speed > 0 && right <= switchFns.amount) {
+            const border = switchFns.width*right;
+            const diff = Math.abs(switchFns.width*right-position*switchFns.width);
+            const time = diff/switchFns.width*400;
+
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                switchFns.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time);
+
+            switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
+            switchFns.slider.firstElementChild.style.transform = `translateX(-${(right-1)*100}%)`;
+            setTimeout(()=>{
+                setButton(right);
+            }, time);
+            switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+            switchFns.width = switchFns.slider.getBoundingClientRect().width;
+            switchFns.slide = switchFns.actualButton = right-1;
+        }
+        else if (speed < 0 && left > 0){
+            const border = switchFns.width*left;
+            const diff = Math.abs(switchFns.width*left-position*switchFns.width);
+            const time = diff/switchFns.width*400;
+
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                switchFns.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time);
+
+            switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
+            switchFns.slider.firstElementChild.style.transform = `translateX(-${(left-1)*100}%)`;
+            setTimeout(()=>{
+                setButton(left);
+            }, time);
+            switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+            switchFns.width = switchFns.slider.getBoundingClientRect().width;
+            switchFns.slide = switchFns.actualButton = left-1;
+        }
+        else if (speed === 0){
+            const closest = Math.round(position);
+            const border = switchFns.width*closest;
+            const diff = Math.abs(switchFns.width*closest-position*switchFns.width);
+            const time = Math.max(diff/switchFns.width*400, 120);
+
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                switchFns.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time);
+
+            switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
+            switchFns.slider.firstElementChild.style.transform = `translateX(-${(closest-1)*100}%)`;
+            setTimeout(()=>{
+                setButton(closest);
+            }, time);
+            switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+            switchFns.width = switchFns.slider.getBoundingClientRect().width;
+            switchFns.slide = switchFns.actualButton = closest-1;
+        }
+        else if (right > switchFns.amount) {
+            const time = Math.max(230*((-1)/(22*Math.abs(speed)/switchFns.width+1)+1), 80);
+            const length = ((-1)/(22*Math.abs(speed)/switchFns.width+1)+1)*(40-(position-Math.floor(position))*100);
+            const time2 = Math.max((length/100+(position-Math.floor(position)))*400, 120);
+
+
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                switchFns.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time2+time);
+
+
+            switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
+            switchFns.slider.firstElementChild.style.transform = `translateX(-${(position-1)*100+length}%)`;
+
+            setTimeout(()=>{
+                switchFns.slider.firstElementChild.style.transition = `${time2}ms ease-in-out transform`;
+                switchFns.slider.firstElementChild.style.transform = `translateX(-${(switchFns.amount-1)*100}%)`;
+            }, time);
+        }
+        else if (left === 0) {
+            const time = Math.max(230*((-1)/(22*Math.abs(speed)/switchFns.width+1)+1), 80);
+            const length = ((-1)/(22*Math.abs(speed)/switchFns.width+1)+1)*(40+(position-1)*100);
+            const time2 = Math.max((length/100-(position-1))*400, 120);
+
+            let animation = window.requestAnimationFrame(function main(){
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                animation = window.requestAnimationFrame(main);
+            });
+
+            setTimeout(()=> {
+                switchFns.slider.firstElementChild.style.transition = "";
+                window.cancelAnimationFrame(animation);
+            }, time2+time);
+
+
+            switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
+            switchFns.slider.firstElementChild.style.transform = `translateX(${-(position-1)*100+length}%)`;
+
+            setTimeout(()=>{
+                switchFns.slider.firstElementChild.style.transition = `${time2}ms ease-in-out transform`;
+                switchFns.slider.firstElementChild.style.transform = `translateX(0)`;
+            }, time);
+        }
+    }
+
+    function setButton(n) {
+        const el = document.getElementById(`slideBt${n}`);
+        document.querySelector(".activePoint")?.classList?.remove("activePoint");
+        el.classList.add("activePoint");
+        el.style.transform = "";
+    }
+
+    const scalePath = 0.92, startScale = 0.5, maxOver = 0.4;
+
+    function progressFn(x) {
+        return x;
+    }
+
+    function setOpacityAndScaleToAll(iterable) {
+        for (const i of iterable) {
+            const obj = getOpacityAndScale(i, switchFns.basis, switchFns.width);
+            i.style.opacity = obj.opacity;
+            i.style.transform = `scale(${obj.scale})`;
+        }
+    }
+
+    function getOpacityAndScale(el, basis, width) {
+        const elx = el.getBoundingClientRect().x + el.getBoundingClientRect().width/2;
+        const length = Math.abs(basis-elx);
+        if (length >= width*scalePath) return {
+            opacity: 0,
+            scale: 0,
+        };
+        else{
+            const progress = 1 - length/(width*scalePath);
+            const progressIn = progressFn(progress);
+            return {
+                opacity: progressIn,
+                scale: startScale+(1-startScale)*progressIn
+            };
         }
     }
 
@@ -2304,7 +2498,9 @@ function mainStart() {
     }
 
     function trl(key) {
-        return window._all.translations[key][window.gameSettings.language];
+        const a = window._all.translations[key];
+        if (!a) return "";
+        return a[window.gameSettings.language] ? a[window.gameSettings.language] : "";
     }
 
     function drawStar(con, x, y, r){
@@ -2667,7 +2863,7 @@ function mainStart() {
                 const can = createArrow();
                 canvases.add(can);
                 this.canvases = new Set([can]);
-                let levelsIn = "";
+
                 const nums = [];
                 const nums2 = new Map();
                 function isStarAvailable({x, y, r}, arr) {
@@ -2680,92 +2876,164 @@ function mainStart() {
                     return {
                         x: Math.random()*100,
                         y: Math.random()*100,
-                        r: Math.random()*10+8
+                        r: Math.random()*10+11
                     }
                 }
-                for (let i = 1; i < 31; i++) {
-                    if ((new Set(availableLevels)).has(String(i))) {
-                        if ((new Set(passedLevels)).has(String(i))) {
+                let j = 0;
+                let innerLevels = "";
+                for (let i of window.seasons) {
+                    let levelsIn = "";
+                    for (let k = 1; k < 31; k++) {
+                        let i = k+j*30;
+                        if ((new Set(availableLevels)).has(String(i))) {
+                            if ((new Set(passedLevels)).has(String(i))) {
+                                const can = document.createElement("canvas");
+                                can.classList.add("starCanvas");
+                                can.resize = () => {
+                                    setTimeout(()=>{
+                                        can.width = can.height = 100;
+                                        const con = can.getContext("2d");
+                                        const arr = [];
+                                        for (let i = 0; i < 14; i++) {
+                                            let cords = createCords();
+                                            while (!isStarAvailable(cords, arr)) cords = createCords();
+                                            arr.push(cords);
+                                            drawStar(con, cords.x, cords.y, cords.r);
+                                        }
+                                    })
+                                };
+                                can.resize();
+                                canvases.add(can);
+                                this.canvases.add(can);
+                                nums.push(i);
+                                nums2.set(i, can);
+                            }
+                            levelsIn += `<div class="levelBt" data-link="level.${i}" id="levelBtNumber${i}"><span>${i}</span></div>`;
+                        }
+                        else {
                             const can = document.createElement("canvas");
-                            can.classList.add("starCanvas");
                             can.resize = () => {
-                                setTimeout(()=>{
-                                    can.width = can.height = 100;
-                                    const con = can.getContext("2d");
-                                    const arr = [];
-                                    for (let i = 0; i < 24; i++) {
-                                        let cords = createCords();
-                                        while (!isStarAvailable(cords, arr)) cords = createCords();
-                                        arr.push(cords);
-                                        drawStar(con, cords.x, cords.y, cords.r);
-                                    }
-                                })
-                            };
+                                const con = can.getContext("2d");
+                                can.width = pitchIn.getBoundingClientRect().width * (0.11-0.02833) - 0.011 * Math.min(window.innerHeight, window.innerWidth);
+                                can.height = can.width;
+                                const w = can.width;
+                                con.beginPath();
+                                con.lineCap = "round";
+                                con.fillStyle = lineColor;
+                                con.shadowColor = lineShadowColor;
+                                con.moveTo(w*0.13, w*0.55);
+                                con.lineTo(w*0.13,w*0.78);
+                                con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
+                                con.lineTo(w*0.74,w*0.91);
+                                con.arc(0.74*w, w*0.78, 0.13*w,-3/2*Math.PI, 0, true);
+                                con.lineTo(w*0.87, w*0.55);
+                                con.arc(0.74*w, w*0.55, 0.13*w,0, -1/2*Math.PI, true);
+                                con.lineTo(0.72*w, w*0.42);
+                                con.arc(0.5*w, w*0.31, 0.22*w, 0, Math.PI, true);
+                                con.lineTo(0.28*w, w*0.42);
+                                con.lineTo(0.37*w, w*0.42);
+                                con.arc(0.5*w, w*0.31, 0.13*w, Math.PI, 0);
+                                con.lineTo(0.63*w, w*0.42);
+                                con.lineTo(w*0.26, w*0.42);
+                                con.arc(0.26*w, w*0.55, 0.13*w,-1/2*Math.PI, Math.PI, true);
+                                con.arc(0.5*w, 0.59*w, 0.09*w, 2/3*Math.PI, 1/3*Math.PI);
+                                con.arc(0.5*w, 0.75*w, 0.09*w/2, 0, Math.PI);
+                                con.lineTo(0.5*w-0.09*w/2, 0.59*w+0.09*w/2*Math.sqrt(3));
+                                con.fill();
+                                con.closePath();
+                            }
+
                             can.resize();
                             canvases.add(can);
                             this.canvases.add(can);
+                            levelsIn += `<div class="levelBt" id="levelBtNumber${i}" data-link="level.null"></div>`;
                             nums.push(i);
                             nums2.set(i, can);
                         }
-                        levelsIn += `<div class="levelBt" data-link="level.${i}"><span>${i}</span></div>`;
-                    }
-                    else {
-                        const can = document.createElement("canvas");
-                        can.resize = () => {
-                            const con = can.getContext("2d");
-                            can.width = pitchIn.getBoundingClientRect().width * (0.11-0.02833) - 0.011 * Math.min(window.innerHeight, window.innerWidth);
-                            can.height = can.width;
-                            const w = can.width;
-                            con.beginPath();
-                            con.lineCap = "round";
-                            con.fillStyle = lineColor;
-                            con.shadowColor = lineShadowColor;
-                            con.moveTo(w*0.13, w*0.55);
-                            con.lineTo(w*0.13,w*0.78);
-                            con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
-                            con.lineTo(w*0.74,w*0.91);
-                            con.arc(0.74*w, w*0.78, 0.13*w,-3/2*Math.PI, 0, true);
-                            con.lineTo(w*0.87, w*0.55);
-                            con.arc(0.74*w, w*0.55, 0.13*w,0, -1/2*Math.PI, true);
-                            con.lineTo(0.72*w, w*0.42);
-                            con.arc(0.5*w, w*0.31, 0.22*w, 0, Math.PI, true);
-                            con.lineTo(0.28*w, w*0.42);
-                            con.lineTo(0.37*w, w*0.42);
-                            con.arc(0.5*w, w*0.31, 0.13*w, Math.PI, 0);
-                            con.lineTo(0.63*w, w*0.42);
-                            con.lineTo(w*0.26, w*0.42);
-                            con.arc(0.26*w, w*0.55, 0.13*w,-1/2*Math.PI, Math.PI, true);
-                            con.arc(0.5*w, 0.59*w, 0.09*w, 2/3*Math.PI, 1/3*Math.PI);
-                            con.arc(0.5*w, 0.75*w, 0.09*w/2, 0, Math.PI);
-                            con.lineTo(0.5*w-0.09*w/2, 0.59*w+0.09*w/2*Math.sqrt(3));
-                            con.fill();
-                            con.closePath();
-                        }
 
-                        can.resize();
-                        canvases.add(can);
-                        this.canvases.add(can);
-                        levelsIn += `<div class="levelBt" data-link="level.null"></div>`;
-                        nums.push(i);
-                        nums2.set(i, can);
                     }
-
+                    innerLevels += `<div class="levelsInnerHolder" id="levelsHolder${j+1}">
+                        <div class="levelsTxt">${trl(window.seasons[j].name)}</div>
+                        <div class="levelsHolder">${levelsIn}</div>
+                    </div>`;
+                    j++;
                 }
+
+                switchFns.amount = j;
+                let buttons = "";
+                for (let i = 0; i < window.seasons.length; i++) buttons += `<div data-link="slideTo.${i}" class="dontScaleBack" id="slideBt${i+1}"></div>`;
+
                 const levels = `
             <div class="levels">
                 <div class="closeBar" data-link="closeLvls"></div>
                 <div class="closeBar" data-link="settings" ><svg class="settingSing" width="100%" height="100%" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M.974 8.504l1.728-.825a.94.94 0 00.323-1.439l-1.21-1.498a7.009 7.009 0 011.494-1.895l1.727.847a.931.931 0 001.32-.642l.407-1.88a6.96 6.96 0 012.412.001L9.6 3.057a.934.934 0 001.323.637l1.721-.847a7.053 7.053 0 011.511 1.894L12.957 6.24a.942.942 0 00.33 1.437l1.74.826a7.086 7.086 0 01-.529 2.362l-1.914-.012a.935.935 0 00-.912 1.155l.446 1.874a7.002 7.002 0 01-2.17 1.05l-1.194-1.514a.93.93 0 00-1.466.002l-1.18 1.512a7.09 7.09 0 01-2.178-1.05l.43-1.878a.94.94 0 00-.917-1.15l-1.92.011a7.095 7.095 0 01-.06-.149 7.102 7.102 0 01-.488-2.212zM9.96 7.409a2.11 2.11 0 01-1.18 2.74 2.11 2.11 0 01-2.733-1.195 2.11 2.11 0 011.179-2.741A2.11 2.11 0 019.96 7.409z" fill="rgb(252, 243, 211)"></path>
-</svg></div>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M.974 8.504l1.728-.825a.94.94 0 00.323-1.439l-1.21-1.498a7.009 7.009 0 011.494-1.895l1.727.847a.931.931 0 001.32-.642l.407-1.88a6.96 6.96 0 012.412.001L9.6 3.057a.934.934 0 001.323.637l1.721-.847a7.053 7.053 0 011.511 1.894L12.957 6.24a.942.942 0 00.33 1.437l1.74.826a7.086 7.086 0 01-.529 2.362l-1.914-.012a.935.935 0 00-.912 1.155l.446 1.874a7.002 7.002 0 01-2.17 1.05l-1.194-1.514a.93.93 0 00-1.466.002l-1.18 1.512a7.09 7.09 0 01-2.178-1.05l.43-1.878a.94.94 0 00-.917-1.15l-1.92.011a7.095 7.095 0 01-.06-.149 7.102 7.102 0 01-.488-2.212zM9.96 7.409a2.11 2.11 0 01-1.18 2.74 2.11 2.11 0 01-2.733-1.195 2.11 2.11 0 011.179-2.741A2.11 2.11 0 019.96 7.409z" fill="rgb(252, 243, 211)"></path></svg>
+                </div>
                 <div class="levelsTxtTop">${trl("levels")}</div>
-                <div class="levelsTxt">${trl(window.seasons[0].name)}</div>
-                <div class="levelsHolder">${levelsIn}</div>
+                <div class="slider" id="slider">
+                    <div>
+                        ${innerLevels}
+                    </div> 
+                </div>
+                <div class="switcher">${buttons}</div>
             </div>
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
+                switchFns.slider = document.getElementById("slider");
+                switchFns.slide = 0;
+
+                document.getElementById("slideBt"+(switchFns.slide+1)).classList.add("activePoint");
+                switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+                switchFns.width = switchFns.slider.getBoundingClientRect().width;
+                switchFns.actualButton = switchFns.slide;
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+
+                let x;
+                switchFns.slider.addEventListener("pointerdown", (event)=>{
+                    if (switchFns.isDragging) return;
+                    switchFns.isDragging = true;
+                    switchFns.stopDragging = () => {
+                        switchFns.slide = switchFns.actualButton;
+                        document.addEventListener("pointermove", main);
+                        document.addEventListener("pointerup", main2, {once: true});
+                    }
+                    x = event.pageX;
+                    switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+                    switchFns.width = switchFns.slider.getBoundingClientRect().width;
+                    let time = Date.now();
+                    let prevX = 0;
+                    let speed = 0;
+                    let diff;
+                    function main(event){
+                        time = Date.now();
+                        diff = event.pageX - x;
+                        if (diff-switchFns.width*switchFns.slide > 0) diff = (-1/((diff-switchFns.width*switchFns.slide)/switchFns.width*3+1)+1)*maxOver*switchFns.width+switchFns.width*switchFns.slide;
+                        else if (-(diff-switchFns.width*switchFns.slide) > switchFns.width*switchFns.amount-switchFns.width) diff = -(-1/((Math.abs((-(diff-switchFns.width*switchFns.slide))-(switchFns.width*switchFns.amount-switchFns.width)))/switchFns.width*3+1)+1)*maxOver*switchFns.width-(switchFns.amount-switchFns.slide-1)*switchFns.width;
+                        switchFns.slider.firstElementChild.style.transform = `translateX(${diff-switchFns.width*switchFns.slide}px)`;
+                        speed = prevX - diff;
+                        prevX = diff;
+                        setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
+                        const num2 = Math.round((Math.max(-(diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1
+                        if (num2 !== switchFns.actualButton) {
+                            setButton(num2);
+                            switchFns.actualButton = num2;
+                        }
+                    }
+                    function main2(event) {
+                        document.removeEventListener("pointermove", main);
+                        const time2 = Date.now() - time;
+                        if (time2 > 60) speed = 0;
+                        createSlideAnimation(speed,-(diff-switchFns.width*switchFns.slide)/switchFns.width);
+                        switchFns.isDragging = false;
+                        switchFns.stopDragging = () => {};
+                    }
+                    document.addEventListener("pointermove", main);
+                    document.addEventListener("pointerup", main2, {once: true});
+                });
+
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
                 nums.forEach(i=>{
-                    document.querySelector(`.levelBt:nth-of-type(${i})`).append(nums2.get(i));
+                    document.getElementById("levelBtNumber"+i).append(nums2.get(i));
                 });
                 document.querySelector(".levels").addEventListener("pointerdown", (event) => {
                     const el = event.target.closest(`[data-link]`);
@@ -2908,26 +3176,33 @@ function mainStart() {
         el.style.transform = "scale(0.8)";
         el.classList.add("pressStart");
         let time = Date.now();
-        const fn = () => {
-            el.style.transform = "scale(1)";
-            el.removeEventListener("pointerout", fn);
-            el.removeEventListener("pointerup", fn2);
+        const fn = (event) => {
+            if (!(el.contains(event.target) || event.target === el)) {
+                if (!el.classList.contains("dontScaleBack")) el.style.transform = "scale(1)";
+                else el.style.transform = "";
+                document.removeEventListener("pointermove", fn);
+                el.removeEventListener("pointerup", fn2);
+            }
         }
         const fn2 = () => {
+            const timeIn = Date.now() - time > 200 ? 0 : 200 - (Date.now() - time);
             setTimeout(() => {
-                el.style.transform = "scale(1.13)";
-                el.classList.remove("pressStart");
-                el.classList.add("pressEnd");
-                setTimeout(() => {el.style.transform = 'scale(1)'; setTimeout(()=>el.classList.remove("pressEnd"), 200)}, 200);
-            }, Date.now() - time > 200 ? 0 : 200 - (Date.now() - time));
-            el.removeEventListener("pointerout", fn);
+                if (!el.classList.contains("dontScaleBack")) {
+                    el.style.transform = "scale(1.13)";
+                    el.classList.remove("pressStart");
+                    el.classList.add("pressEnd");
+                    setTimeout(() => {el.style.transform = 'scale(1)'; setTimeout(()=>el.classList.remove("pressEnd"), 200)}, 200);
+                }
+                else el.style.transform = "";
+            }, timeIn);
+            document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
             if (el.dataset.link.indexOf(".") !== -1) {
-                switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el);
+                switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
             } else switchFns[el.dataset.link](el);
             clearInterval(pitch?.specialInterval);
         }
-        el.addEventListener("pointerout", fn);
+        document.addEventListener("pointermove", fn);
         el.addEventListener("pointerup", fn2);
     }
 

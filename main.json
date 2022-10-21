@@ -7,6 +7,30 @@
     {
       "name": "space",
       "state": "soon"
+    },
+    {
+      "name": "space",
+      "state": "soon"
+    },
+    {
+      "name": "space",
+      "state": "soon"
+    },
+    {
+      "name": "beginning",
+      "state": "ready"
+    },
+    {
+      "name": "space",
+      "state": "soon"
+    },
+    {
+      "name": "space",
+      "state": "soon"
+    },
+    {
+      "name": "space",
+      "state": "soon"
     }
   ],
   "translations": {
@@ -19,6 +43,11 @@
       "ru": "Начало",
       "en": "at the beginning...",
       "sas": "Сас..."
+    },
+    "space": {
+      "ru": "Космос",
+      "en": "Space",
+      "sas": "Сас"
     },
     "author": {
       "ru": "автор и разработчик - горовиков николай константинович",
@@ -541,5 +570,5 @@
 
 
 },
-  "version": "0.2.6 demo"
+  "version": "0.2.7 demo"
 }
