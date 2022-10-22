@@ -2308,11 +2308,14 @@ function mainStart() {
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+            this.stopSliding = ()=> {
                 this.inStart = false;
                 this.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
-            }, time2);
+                clearTimeout(timeout);
+            };
+
+            let timeout = setTimeout(this.stopSliding, time2);
             this.slider.firstElementChild.style.transition = `${time2}ms transform`;
             this.slider.firstElementChild.style.transform = `translateX(-${num*100}%)`;
             setTimeout(()=>{
@@ -2331,10 +2334,11 @@ function mainStart() {
         position++;
         const left = Math.floor(position);
         const right = Math.ceil(position);
+        speed = Math.round(speed/switchFns.width*50);
         if (speed > 0 && right <= switchFns.amount) {
             const border = switchFns.width*right;
             const diff = Math.abs(switchFns.width*right-position*switchFns.width);
-            const time = diff/switchFns.width*400;
+            const time = Math.max(diff/switchFns.width*440, 200);
 
             let animation = window.requestAnimationFrame(function main(){
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
@@ -2350,7 +2354,7 @@ function mainStart() {
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(right-1)*100}%)`;
             setTimeout(()=>{
                 setButton(right);
-            }, time);
+            }, 0);
             switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
             switchFns.width = switchFns.slider.getBoundingClientRect().width;
             switchFns.slide = switchFns.actualButton = right-1;
@@ -2358,7 +2362,7 @@ function mainStart() {
         else if (speed < 0 && left > 0){
             const border = switchFns.width*left;
             const diff = Math.abs(switchFns.width*left-position*switchFns.width);
-            const time = diff/switchFns.width*400;
+            const time = Math.max(diff/switchFns.width*440, 200);
 
             let animation = window.requestAnimationFrame(function main(){
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
@@ -2374,7 +2378,7 @@ function mainStart() {
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(left-1)*100}%)`;
             setTimeout(()=>{
                 setButton(left);
-            }, time);
+            }, 0);
             switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
             switchFns.width = switchFns.slider.getBoundingClientRect().width;
             switchFns.slide = switchFns.actualButton = left-1;
@@ -2383,7 +2387,7 @@ function mainStart() {
             const closest = Math.round(position);
             const border = switchFns.width*closest;
             const diff = Math.abs(switchFns.width*closest-position*switchFns.width);
-            const time = Math.max(diff/switchFns.width*400, 120);
+            const time = Math.max(diff/switchFns.width*700, 250);
 
             let animation = window.requestAnimationFrame(function main(){
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
@@ -2399,7 +2403,7 @@ function mainStart() {
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(closest-1)*100}%)`;
             setTimeout(()=>{
                 setButton(closest);
-            }, time);
+            }, 0);
             switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
             switchFns.width = switchFns.slider.getBoundingClientRect().width;
             switchFns.slide = switchFns.actualButton = closest-1;
@@ -2418,6 +2422,7 @@ function mainStart() {
             setTimeout(()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
             }, time2+time);
 
 
@@ -2442,6 +2447,7 @@ function mainStart() {
             setTimeout(()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
+                setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
             }, time2+time);
 
 
@@ -2458,8 +2464,8 @@ function mainStart() {
     function setButton(n) {
         const el = document.getElementById(`slideBt${n}`);
         document.querySelector(".activePoint")?.classList?.remove("activePoint");
-        el.classList.add("activePoint");
-        el.style.transform = "";
+        if (el) el?.classList?.add("activePoint");
+        if (el) el.style.transform = "";
     }
 
     const scalePath = 0.92, startScale = 0.5, maxOver = 0.4;
@@ -2997,13 +3003,19 @@ function mainStart() {
                         document.addEventListener("pointermove", main);
                         document.addEventListener("pointerup", main2, {once: true});
                     }
-                    x = event.pageX;
+
                     switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
                     switchFns.width = switchFns.slider.getBoundingClientRect().width;
+                    const length = switchFns.basis-(document.getElementById(`levelsHolder${switchFns.slide+1}`).getBoundingClientRect().width/2+document.getElementById(`levelsHolder${switchFns.slide+1}`).getBoundingClientRect().x);
+                    if (switchFns.stopSliding instanceof Function) switchFns.stopSliding();
+                    x = event.pageX+length;
+                    switchFns.slider.firstElementChild.style.transform = `translateX(${-length-switchFns.width*switchFns.slide}px)`;
+                    setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
                     let time = Date.now();
                     let prevX = 0;
                     let speed = 0;
-                    let diff;
+                    let diff = length;
+                    setButton(Math.round((Math.max(-(-diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
                     function main(event){
                         time = Date.now();
                         diff = event.pageX - x;
