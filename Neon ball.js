@@ -2303,8 +2303,9 @@ function mainStart() {
             this.stopDragging();
             num = Number(num);
             const time2 = 500 + (Math.abs(this.slide - num) - 1)*180;
+            const elems = switchFns.slider.firstElementChild.children;
             let animation = window.requestAnimationFrame(function main(){
-                setOpacityAndScaleToAll(this.slider.firstElementChild.children);
+                setOpacityAndScaleToAll(elems);
                 animation = window.requestAnimationFrame(main);
             });
 
@@ -2345,10 +2346,13 @@ function mainStart() {
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+            switchFns.stopSliding = ()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
-            }, time);
+                clearTimeout(timeout);
+            }
+
+            const timeout = setTimeout(switchFns.stopSliding, time);
 
             switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(right-1)*100}%)`;
@@ -2369,10 +2373,13 @@ function mainStart() {
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+            switchFns.stopSliding = ()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
-            }, time);
+                clearTimeout(timeout);
+            }
+
+            const timeout = setTimeout(switchFns.stopSliding, time);
 
             switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(left-1)*100}%)`;
@@ -2394,10 +2401,13 @@ function mainStart() {
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+            switchFns.stopSliding = ()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
-            }, time);
+                clearTimeout(timeout);
+            }
+
+            const timeout = setTimeout(switchFns.stopSliding, time);
 
             switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(closest-1)*100}%)`;
@@ -2411,7 +2421,7 @@ function mainStart() {
         else if (right > switchFns.amount) {
             const time = Math.max(230*((-1)/(22*Math.abs(speed)/switchFns.width+1)+1), 80);
             const length = ((-1)/(22*Math.abs(speed)/switchFns.width+1)+1)*(40-(position-Math.floor(position))*100);
-            const time2 = Math.max((length/100+(position-Math.floor(position)))*400, 120);
+            const time2 = Math.max((length/100+(position-Math.floor(position)))*400, 200);
 
 
             let animation = window.requestAnimationFrame(function main(){
@@ -2419,17 +2429,21 @@ function mainStart() {
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+
+            switchFns.stopSliding = ()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
-            }, time2+time);
+                clearTimeout(timeout1);
+                clearTimeout(timeout2);
+            }
 
+            const timeout1 = setTimeout(switchFns.stopSliding, time+time2);
 
             switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
             switchFns.slider.firstElementChild.style.transform = `translateX(-${(position-1)*100+length}%)`;
 
-            setTimeout(()=>{
+            const timeout2 = setTimeout(()=>{
                 switchFns.slider.firstElementChild.style.transition = `${time2}ms ease-in-out transform`;
                 switchFns.slider.firstElementChild.style.transform = `translateX(-${(switchFns.amount-1)*100}%)`;
             }, time);
@@ -2437,24 +2451,27 @@ function mainStart() {
         else if (left === 0) {
             const time = Math.max(230*((-1)/(22*Math.abs(speed)/switchFns.width+1)+1), 80);
             const length = ((-1)/(22*Math.abs(speed)/switchFns.width+1)+1)*(40+(position-1)*100);
-            const time2 = Math.max((length/100-(position-1))*400, 120);
+            const time2 = Math.max((length/100-(position-1))*400, 200);
 
             let animation = window.requestAnimationFrame(function main(){
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
                 animation = window.requestAnimationFrame(main);
             });
 
-            setTimeout(()=> {
+            switchFns.stopSliding = ()=> {
                 switchFns.slider.firstElementChild.style.transition = "";
                 window.cancelAnimationFrame(animation);
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
-            }, time2+time);
+                clearTimeout(timeout1);
+                clearTimeout(timeout2);
+            }
 
+            const timeout1 = setTimeout(switchFns.stopSliding, time+time2);
 
             switchFns.slider.firstElementChild.style.transition = `${time}ms transform`;
             switchFns.slider.firstElementChild.style.transform = `translateX(${-(position-1)*100+length}%)`;
 
-            setTimeout(()=>{
+            const timeout2 = setTimeout(()=>{
                 switchFns.slider.firstElementChild.style.transition = `${time2}ms ease-in-out transform`;
                 switchFns.slider.firstElementChild.style.transform = `translateX(0)`;
             }, time);
@@ -2475,15 +2492,17 @@ function mainStart() {
     }
 
     function setOpacityAndScaleToAll(iterable) {
-        for (const i of iterable) {
-            const obj = getOpacityAndScale(i, switchFns.basis, switchFns.width);
+        const x = switchFns.slider.firstElementChild.getBoundingClientRect().x;
+        const arr = new Array(...iterable);
+        for (let j = 0 ,i = arr[j]; j < arr.length; j++, i = arr[j]) {
+            const obj = getOpacityAndScale(j, switchFns.basis, switchFns.width, switchFns.basis-switchFns.width/2-x);
             i.style.opacity = obj.opacity;
             i.style.transform = `scale(${obj.scale})`;
         }
     }
 
-    function getOpacityAndScale(el, basis, width) {
-        const elx = el.getBoundingClientRect().x + el.getBoundingClientRect().width/2;
+    function getOpacityAndScale(num, basis, width, left) {
+        const elx = basis+width*num-left;
         const length = Math.abs(basis-elx);
         if (length >= width*scalePath) return {
             opacity: 0,
@@ -3014,8 +3033,8 @@ function mainStart() {
                     let time = Date.now();
                     let prevX = 0;
                     let speed = 0;
-                    let diff = length;
-                    setButton(Math.round((Math.max(-(-diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
+                    let diff = -length;
+                    setButton(Math.round((Math.max(-(diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
                     function main(event){
                         time = Date.now();
                         diff = event.pageX - x;
