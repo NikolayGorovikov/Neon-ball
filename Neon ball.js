@@ -2299,7 +2299,7 @@ function mainStart() {
             document.querySelector(".languages .levelsTxtTop").innerHTML = trl("languageChosing");
         },
         slideTo(num, el, time){
-            if (this.inStart || num == this.slide) return;
+            if (this.inStart || num == this.slide || this.isDragging) return;
             this.inStart = true;
             this.stopDragging();
             num = Number(num);
@@ -2484,7 +2484,7 @@ function mainStart() {
     }
 
     function setButton(n) {
-        const el = document.getElementById(`slideBt${n}`);
+        const el = document.getElementById(`slideBt${n}`).firstElementChild;
         document.querySelector(".activePoint")?.classList?.remove("activePoint");
         if (el) el?.classList?.add("activePoint");
         if (el) el.style.transform = "";
@@ -2906,7 +2906,7 @@ function mainStart() {
                     return {
                         x: Math.random()*100,
                         y: Math.random()*100,
-                        r: Math.random()*10+11
+                        r: Math.random()*10+9
                     }
                 }
                 let j = 0;
@@ -2924,7 +2924,7 @@ function mainStart() {
                                         can.width = can.height = 100;
                                         const con = can.getContext("2d");
                                         const arr = [];
-                                        for (let i = 0; i < 14; i++) {
+                                        for (let i = 0; i < 20; i++) {
                                             let cords = createCords();
                                             while (!isStarAvailable(cords, arr)) cords = createCords();
                                             arr.push(cords);
@@ -2991,7 +2991,7 @@ function mainStart() {
 
                 switchFns.amount = j;
                 let buttons = "";
-                for (let i = 0; i < window.seasons.length; i++) buttons += `<div data-link="slideTo.${i}" class="dontScaleBack" id="slideBt${i+1}"></div>`;
+                for (let i = 0; i < window.seasons.length; i++) buttons += `<div data-link="slideTo.${i}" class="dontScaleBack" id="slideBt${i+1}"><div></div></div>`;
 
                 const levels = `
             <div class="levels">
@@ -3022,6 +3022,7 @@ function mainStart() {
                 switchFns.slider.addEventListener("pointerdown", (event)=>{
                     if (switchFns.isDragging) return;
                     switchFns.isDragging = true;
+                    switchFns.actualId = event.pointerId;
                     switchFns.slider.firstElementChild.style.animationPlayState = "paused";
                     switchFns.stopDragging = () => {
                         switchFns.slide = switchFns.actualButton;
@@ -3043,6 +3044,7 @@ function mainStart() {
                     let diff = -length;
                     setButton(Math.round((Math.max(-(diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
                     function main(event){
+                        if (event.pointerId !== switchFns.actualId) return;
                         time = Date.now();
                         diff = event.pageX - x;
                         if (diff-switchFns.width*switchFns.slide > 0) diff = (-1/((diff-switchFns.width*switchFns.slide)/switchFns.width*3+1)+1)*maxOver*switchFns.width+switchFns.width*switchFns.slide;
@@ -3058,6 +3060,7 @@ function mainStart() {
                         }
                     }
                     function main2(event) {
+                        if (event.pointerId !== switchFns.actualId) return;
                         document.removeEventListener("pointermove", main);
                         const time2 = Date.now() - time;
                         if (time2 > 60) speed = 0;
@@ -3143,6 +3146,7 @@ function mainStart() {
                     const el = `
             <div class="infoText">
                 <div class="closeBar" data-link="closeInfo"></div>
+                <div class="levelsTxtTop">${trl("about")}</div>
                 <div class="infoTextIn">${trl("author")}</div>
                 <div class="infoTextIn">${trl("version")} - ${version}</div>
                 <div class="infoTextIn">${trl("gratitudes")}</div>
@@ -3211,13 +3215,19 @@ function mainStart() {
     }
 
     function makeButton(el) {
-        el.style.transform = "scale(0.8)";
-        el.classList.add("pressStart");
+        if (!el.classList.contains("dontScaleBack")){
+            el.style.transform = "scale(0.8)";
+            el.classList.add("pressStart");
+        }
+        else {
+            el.firstElementChild.style.transform = "scale(0.8)";
+            el.firstElementChild.classList.add("pressStart");
+        }
         let time = Date.now();
         const fn = (event) => {
-            if (!(el.contains(event.target) || event.target === el)) {
+            if (!(el.contains(document.elementFromPoint(event.pageX, event.pageY)) || event.target === el)) {
                 if (!el.classList.contains("dontScaleBack")) el.style.transform = "scale(1)";
-                else el.style.transform = "";
+                else el.firstElementChild.style.transform = "";
                 document.removeEventListener("pointermove", fn);
                 el.removeEventListener("pointerup", fn2);
             }
@@ -3231,7 +3241,7 @@ function mainStart() {
                     el.classList.add("pressEnd");
                     setTimeout(() => {el.style.transform = 'scale(1)'; setTimeout(()=>el.classList.remove("pressEnd"), 200)}, 200);
                 }
-                else el.style.transform = "";
+                else el.firstElementChild.style.transform = "";
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);

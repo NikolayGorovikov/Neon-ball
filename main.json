@@ -9,27 +9,30 @@
       "state": "soon"
     },
     {
-      "name": "space",
+      "name": "i",
       "state": "soon"
     },
     {
-      "name": "space",
+      "name": "have",
       "state": "soon"
     },
     {
-      "name": "beginning",
+      "name": "finaly",
       "state": "ready"
     },
     {
-      "name": "space",
+      "name": "done",
       "state": "soon"
     },
     {
-      "name": "space",
+      "name": "this",
       "state": "soon"
     },
     {
-      "name": "space",
+      "name": "bullshit",
+      "state": "soon"
+    },{
+      "name": "slider",
       "state": "soon"
     }
   ],
@@ -39,9 +42,44 @@
       "en": "Levels",
       "sas": "Сасные сасы"
     },
+    "i": {
+      "ru": "Я",
+      "en": "i",
+      "sas": "Сас"
+    },
+    "have": {
+      "ru": "Блять",
+      "en": "have",
+      "sas": "Сас"
+    },
+    "finaly": {
+      "ru": "Наконец-то",
+      "en": "finaly",
+      "sas": "Сас"
+    },
+    "done": {
+      "ru": "Сделал",
+      "en": "done",
+      "sas": "Сас"
+    },
+    "this": {
+      "ru": "Этот",
+      "en": "this",
+      "sas": "Сас"
+    },
+    "bullshit": {
+      "ru": "Ебаный",
+      "en": "bullshit",
+      "sas": "Сас"
+    },
+    "slider": {
+      "ru": "Слайдер",
+      "en": "slider",
+      "sas": "Сас"
+    },
     "beginning": {
       "ru": "Начало",
-      "en": "at the beginning...",
+      "en": "at the beginning",
       "sas": "Сас..."
     },
     "space": {
@@ -57,6 +95,11 @@
     "version": {
       "ru": "версия",
       "en": "version",
+      "sas": "Сас"
+    },
+    "about": {
+      "ru": "About (на русском)",
+      "en": "About",
       "sas": "Сас"
     },
     "gratitudes": {
@@ -570,5 +613,5 @@
 
 
 },
-  "version": "0.2.10 demo"
+  "version": "0.2.11 demo"
 }
