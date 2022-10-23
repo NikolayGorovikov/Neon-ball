@@ -3062,6 +3062,7 @@ function mainStart() {
                     function main2(event) {
                         if (event.pointerId !== switchFns.actualId) return;
                         document.removeEventListener("pointermove", main);
+                        document.removeEventListener("pointerup", main2);
                         const time2 = Date.now() - time;
                         if (time2 > 60) speed = 0;
                         createSlideAnimation(speed,-(diff-switchFns.width*switchFns.slide)/switchFns.width);
@@ -3069,7 +3070,7 @@ function mainStart() {
                         switchFns.stopDragging = () => {};
                     }
                     document.addEventListener("pointermove", main);
-                    document.addEventListener("pointerup", main2, {once: true});
+                    document.addEventListener("pointerup", main2);
                 });
 
                 document.querySelector(`[data-link="closeLvls"]`).append(can);
@@ -3281,6 +3282,8 @@ function mainStart() {
     const canvases = new Set();
 
     window.onresize = () => {
+        switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+        switchFns.width = switchFns.slider.getBoundingClientRect().width;
         canvases.forEach(i => i.resize(pitchIn.getBoundingClientRect().width));
     }
 
