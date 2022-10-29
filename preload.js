@@ -109,7 +109,8 @@
         for (let i = 1; i < 38; i++) {
             const img = document.createElement("img");
             img.src = "fish/00"+String(i).padStart(2, "0")+".jpg";
-            img.style.display = "none";
+            img.style.visibility = "hidden";
+            img.style.position = "absolute";
             document.body.append(img);
             img.onload = a;
         }

@@ -1172,11 +1172,7 @@ function mainStart() {
         }
 
         inMain(first) {
-            if (first) {
-                window.requestAnimationFrame((time) => {
-                    this.time = time;
-                });
-            }
+            if (first) this.time = performance.now();
             if (!this.play) return;
             this.#movie = window.requestAnimationFrame((time) => {
                 let timed = time-this.time;
@@ -2324,7 +2320,7 @@ function mainStart() {
     }
 
     function easeOut(pr) {
-        return 1 - Math.pow(Math.sin(Math.acos(pr)), 1+pr);
+        return 1 - Math.pow(Math.sin(Math.acos(1-pr)), 2-pr);
     }
 
     function createAnimation(to, time) {
@@ -2424,7 +2420,7 @@ function mainStart() {
                 time3 = performance.now();
                 animation = window.requestAnimationFrame(function main23(time4) {
                     const progress = (time4 - time3)/time2;
-                    switchFns.slider.firstElementChild.style.transform = `translateX(${-(position-1)*100-length+(-(switchFns.amount-1)*100+(position-1)*100+length)*easeOut(progress)}%)`;
+                    switchFns.slider.firstElementChild.style.transform = `translateX(${-(position-1)*100-length+(-(switchFns.amount-1)*100+(position-1)*100+length)*ease(progress)}%)`;
                     setOpacityAndScaleToAll(elems);
                     animation = window.requestAnimationFrame(main23);
                 });
@@ -2461,17 +2457,17 @@ function mainStart() {
             let timeout2;
             let timeout1 = setTimeout(()=>{
                 switchFns.stopSliding();
-                switchFns.slider.firstElementChild.style.transform = `translateX(${(position-1)*100+length}%)`;
+                switchFns.slider.firstElementChild.style.transform = `translateX(-${(position-1)*100+length}%)`;
                 setOpacityAndScaleToAll(elems);
                 time3 = performance.now();
                 animation = window.requestAnimationFrame(function main23(time4) {
                     const progress = (time4 - time3)/time2;
-                    switchFns.slider.firstElementChild.style.transform = `translateX(${-(position-1)*100-length+((position-1)*100-length)*easeOut(progress)}%)`;
+                    switchFns.slider.firstElementChild.style.transform = `translateX(${-((position-1)*100+length)*easeOut(progress)}%)`;
                     setOpacityAndScaleToAll(elems);
                     animation = window.requestAnimationFrame(main23);
                 });
                 timeout2 = setTimeout(()=>{
-                    switchFns.slider.firstElementChild.style.transform = `translateX(0)`;
+                    // switchFns.slider.firstElementChild.style.transform = `translateX(0)`;
                     switchFns.stopSliding();
                     setOpacityAndScaleToAll(elems);
                 }, time2);
@@ -2484,7 +2480,7 @@ function mainStart() {
     }
 
     function setButton(n) {
-        const el = document.getElementById(`slideBt${n}`).firstElementChild;
+        const el = document.getElementById(`slideBt${n}`);
         document.querySelector(".activePoint")?.classList?.remove("activePoint");
         if (el) el?.classList?.add("activePoint");
         if (el) el.style.transform = "";
@@ -2549,6 +2545,25 @@ function mainStart() {
         con.lineTo(x+r*Math.cos(198/180*Math.PI), y+r*Math.sin(198/180*Math.PI));
         con.lineTo(x+r2*Math.cos(234/180*Math.PI), y+r2*Math.sin(234/180*Math.PI));
         con.lineTo(x+r*Math.cos(270/180*Math.PI), y+r*Math.sin(270/180*Math.PI));
+        con.fill();
+        con.closePath();
+    }
+
+    function drawQuestion(con, x, y, r) {
+        con.beginPath();
+        con.lineWidth = r/3;
+        con.strokeStyle = lineColor;
+        con.lineCap = "round";
+
+        con.arc(x, y-r/2,r/2, Math.PI, Math.PI/3);
+        con.arc(x+r/2, y-r/2+Math.sqrt(3)*r/2, r/2,-Math.PI*2/3, -Math.PI, true);
+        con.lineTo(x, y+r/2);
+
+        con.stroke();
+        con.closePath();
+        con.beginPath();
+        con.fillStyle = lineColor;
+        con.arc(x, y+r, r/3/Math.sqrt(3), 0, 2*Math.PI);
         con.fill();
         con.closePath();
     }
@@ -2896,22 +2911,131 @@ function mainStart() {
 
                 const nums = [];
                 const nums2 = new Map();
+                const soonCans = [];
+                const questionCanvases = [];
                 function isStarAvailable({x, y, r}, arr) {
                     for (const i of arr) {
                         if (Math.sqrt((i.x-x)**2+(i.y-y)**2) < (i.r+r)*0.8) return false;
                     }
                     return true;
                 }
-                function createCords() {
-                    return {
-                        x: Math.random()*100,
-                        y: Math.random()*100,
-                        r: Math.random()*10+9
+                function isStarAvailableQuestion({x, y, r}, arr, w, h) {
+                    for (const i of arr) {
+                        if (Math.sqrt((i.x-x)**2+(i.y-y)**2) < (i.r+r)*1.2) return false;
+                    }
+                    if (Math.sqrt((w/2-x)**2+(h*3/7-y)**2) < w/4.7) return false;
+                    return true;
+                }
+                function createCords(w = 100, h = 100, minR = 9, maxR = 19, inside = false) {
+                    if (inside) {
+                        const r = Math.random()*(maxR-minR)+minR;
+                        const x = r*1.1+Math.random()*(w-2.2*r);
+                        const y = r*1.1+Math.random()*(h-2.2*r);
+                        return {
+                            r,x,y
+                        };
+                    }
+                    else return {
+                        x: Math.random()*w,
+                        y: Math.random()*h,
+                        r: Math.random()*(maxR-minR)+minR
                     }
                 }
                 let j = 0;
                 let innerLevels = "";
                 for (let i of window.seasons) {
+                    if (i.state === "soon") {
+                        const can = document.createElement("canvas");
+                        can.resize = () => {
+                            const con = can.getContext("2d");
+                            can.width = pitchIn.getBoundingClientRect().width/3;
+                            can.height = can.width;
+                            const w = can.width;
+                            con.beginPath();
+                            con.lineCap = "round";
+                            con.fillStyle = lineColor;
+                            con.shadowColor = lineShadowColor;
+                            con.shadowBlur = can.width/10;
+                            con.moveTo(w*0.13, w*0.55);
+                            con.lineTo(w*0.13,w*0.78);
+                            con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
+                            con.lineTo(w*0.74,w*0.91);
+                            con.arc(0.74*w, w*0.78, 0.13*w,-3/2*Math.PI, 0, true);
+                            con.lineTo(w*0.87, w*0.55);
+                            con.arc(0.74*w, w*0.55, 0.13*w,0, -1/2*Math.PI, true);
+                            con.lineTo(0.72*w, w*0.42);
+                            con.arc(0.5*w, w*0.31, 0.22*w, 0, Math.PI, true);
+                            con.lineTo(0.28*w, w*0.42);
+                            con.lineTo(0.37*w, w*0.42);
+                            con.arc(0.5*w, w*0.31, 0.13*w, Math.PI, 0);
+                            con.lineTo(0.63*w, w*0.42);
+                            con.lineTo(w*0.26, w*0.42);
+                            con.arc(0.26*w, w*0.55, 0.13*w,-1/2*Math.PI, Math.PI, true);
+                            con.arc(0.5*w, 0.59*w, 0.09*w, 2/3*Math.PI, 1/3*Math.PI);
+                            con.arc(0.5*w, 0.75*w, 0.09*w/2, 0, Math.PI);
+                            con.lineTo(0.5*w-0.09*w/2, 0.59*w+0.09*w/2*Math.sqrt(3));
+                            con.fill();
+                            con.closePath();
+                        }
+
+                        can.resize();
+                        canvases.add(can);
+                        this.canvases.add(can);
+                        soonCans.push(can);
+//                         innerLevels += `<div class="levelsInnerHolder" id="levelsHolder${j+1}">
+//                         <div class="levelsTxt">${trl(window.seasons[j].name)}</div>
+//                         <div class="soonHolder">
+//                         <div class="soon"></div>
+//                         <div class="soonLock"></div>
+// </div>
+//                     </div>`;
+                        innerLevels += `<div class="levelsInnerHolder" id="levelsHolder${j + 1}">
+                        <div class="levelsTxt">${trl(window.seasons[j].name)}</div>
+                        <div class="levelsHolder soonHolder" style="flex-direction: column; justify-content: center;">
+                        <div class="soonLock levelBt" data-link="level.null" style="border: none; width: auto; height: auto; box-shadow: none; margin: 0;"></div>
+                        <div class="soon levelsTxtTop" style="position: static;">${trl("soon")}</div>
+                        <div class="question"></div>
+                      
+</div>
+                    </div>`;
+                        {
+                            const can = document.createElement("canvas");
+                            can.resize = () => {
+                                const con = can.getContext("2d");
+                                can.width = pitchIn.getBoundingClientRect().width*0.8;
+                                can.height = pitchIn.getBoundingClientRect().width*0.8*5/6;
+                                const w = can.width;
+                                if (!can.ownArr) {
+                                    const num = randomInteger(-1, window._all.questions.length-1)
+                                    const spots = window._all.questions[num];
+                                    for (const i of spots) {
+                                        i.r *= pitchIn.getBoundingClientRect().width/684;
+                                        i.x *= pitchIn.getBoundingClientRect().width/684;
+                                        i.y *= pitchIn.getBoundingClientRect().width/684;
+                                        drawQuestion(con,i.x, i.y, i.r);
+                                    }
+                                    can.ownArr = spots;
+                                    can.prev = pitchIn.getBoundingClientRect().width;
+                                }
+                                else {
+                                    for (const i of can.ownArr) {
+                                        i.r *= pitchIn.getBoundingClientRect().width/can.prev;
+                                        i.x *= pitchIn.getBoundingClientRect().width/can.prev;
+                                        i.y *= pitchIn.getBoundingClientRect().width/can.prev;
+                                        drawQuestion(con,i.x, i.y, i.r);
+                                    }
+                                    can.prev = pitchIn.getBoundingClientRect().width;
+                                }
+                            }
+
+                            setTimeout(()=>can.resize(), 0);
+                            canvases.add(can);
+                            this.canvases.add(can);
+                            questionCanvases.push(can);
+                        }
+                        j++;
+                        continue;
+                    }
                     let levelsIn = "";
                     for (let k = 1; k < 31; k++) {
                         let i = k+j*30;
@@ -2921,6 +3045,7 @@ function mainStart() {
                                 can.classList.add("starCanvas");
                                 can.resize = () => {
                                     setTimeout(()=>{
+                                        if (can.hasStars) return;
                                         can.width = can.height = 100;
                                         const con = can.getContext("2d");
                                         const arr = [];
@@ -2930,6 +3055,7 @@ function mainStart() {
                                             arr.push(cords);
                                             drawStar(con, cords.x, cords.y, cords.r);
                                         }
+                                        can.hasStars = true;
                                     })
                                 };
                                 can.resize();
@@ -3077,6 +3203,10 @@ function mainStart() {
                 nums.forEach(i=>{
                     document.getElementById("levelBtNumber"+i).append(nums2.get(i));
                 });
+                document.querySelectorAll(".soonHolder").forEach((el, n)=>{
+                    el.querySelector(".soonLock").append(soonCans[n]);
+                    el.querySelector(".question").append(questionCanvases[n]);
+                })
                 document.querySelector(".levels").addEventListener("pointerdown", (event) => {
                     const el = event.target.closest(`[data-link]`);
                     if (el) makeButton(el);
@@ -3226,7 +3356,8 @@ function mainStart() {
         }
         let time = Date.now();
         const fn = (event) => {
-            if (!(el.contains(document.elementFromPoint(event.pageX, event.pageY)) || event.target === el)) {
+            const element =document.elementFromPoint(event.pageX, event.pageY);
+            if (!(el.contains(element) || element === el)) {
                 if (!el.classList.contains("dontScaleBack")) el.style.transform = "scale(1)";
                 else el.firstElementChild.style.transform = "";
                 document.removeEventListener("pointermove", fn);
@@ -3282,8 +3413,10 @@ function mainStart() {
     const canvases = new Set();
 
     window.onresize = () => {
-        switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
-        switchFns.width = switchFns.slider.getBoundingClientRect().width;
+        if (switchFns.slider) {
+            switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+            switchFns.width = switchFns.slider.getBoundingClientRect().width;
+        }
         canvases.forEach(i => i.resize(pitchIn.getBoundingClientRect().width));
     }
 

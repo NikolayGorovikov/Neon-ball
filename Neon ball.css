@@ -33,6 +33,10 @@ body{
         height: 100vh;
         width: calc(100vh * 5 / 6);
     }
+    .soonLock{
+        width: calc(100vh * 5 / 18);
+        height: calc(100vh * 5 / 18);
+    }
     .switcher > div{
         width: 2vh;
         height: 2vh;
@@ -133,6 +137,10 @@ body{
     #pitchIn {
         height: calc(100vw * 6 / 5);
         width: 100vw;
+    }
+    .soonLock{
+        width: calc(100vw / 3);
+        height: calc(100vw / 3);
     }
     .switcher > div{
         width: calc(100vw * 6 / 5 / 50);
@@ -256,7 +264,7 @@ canvas{
     transition: 0.2s transform;
 }
 
-.activePoint{
+.activePoint *{
     transform: scale(1.5);
 }
 
@@ -640,10 +648,13 @@ canvas{
     left: 0;
 }
 
-.levelsHolder{
+.levelsHolder, .levelsInnerHolder{
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
+}
+
+.levelsHolder{
     align-items: center;
 }
 
@@ -727,7 +738,7 @@ canvas{
     margin: auto;
 }
 
-.pressEnd.levelBt canvas:not(.starCanvas){
+.pressEnd.levelBt canvas:not(.starCanvas),.soonLock canvas.pressEnd{
     animation: 0.4s ease-out lock;
 }
 
@@ -797,7 +808,7 @@ canvas{
     -webkit-text-stroke: 1px rgb(252, 243, 211);
 }
 
-.settings .levelsTxt{
+.settings .levelsTxt, .soonLock *{
     transition-property: transform;
     transition-duration: 0.2s;
 }
@@ -829,6 +840,17 @@ canvas{
 .active0{
     opacity: 0.6;
     transition: opacity 2s;
+}
+
+.question{
+    width: inherit;
+    height: inherit;
+    position: absolute;
+    opacity: 0.5;
+}
+
+.soonLock{
+    z-index: 3;
 }
 
 /* @keyframes duration | timing-function | delay |
