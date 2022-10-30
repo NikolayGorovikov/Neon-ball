@@ -2069,7 +2069,6 @@ function mainStart() {
     }
 
     const switchFns = {
-        removeListener: new Set(),
         level(lvl) {
             if (this.inStart) return;
             this.inStart = true;
@@ -3143,6 +3142,7 @@ function mainStart() {
 
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
 
+                switchFns.inMoving = false;
                 let x;
                 switchFns.slider.addEventListener("pointerdown", (event)=>{
                     if (switchFns.isDragging ||!available) return;
@@ -3167,6 +3167,7 @@ function mainStart() {
                     setButton(Math.round((Math.max(-(diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
                     function main(event){
                         if (event.pointerId !== switchFns.actualId) return;
+                        switchFns.inMoving = true;
                         time = Date.now();
                         diff = event.pageX - x;
                         if (diff-switchFns.width*switchFns.slide > 0) diff = (-1/((diff-switchFns.width*switchFns.slide)/switchFns.width*3+1)+1)*maxOver*switchFns.width+switchFns.width*switchFns.slide;
@@ -3180,10 +3181,10 @@ function mainStart() {
                             setButton(num2);
                             switchFns.actualButton = num2;
                         }
-                        switchFns.removeListener.forEach(i=>i());
                     }
                     function main2(event) {
                         if (event.pointerId !== switchFns.actualId) return;
+                        switchFns.inMoving = false;
                         document.removeEventListener("pointermove", main);
                         document.removeEventListener("pointerup", main2);
                         const time2 = Date.now() - time;
@@ -3361,10 +3362,9 @@ function mainStart() {
                 else el.firstElementChild.style.transform = "";
                 document.removeEventListener("pointermove", fn);
                 el.removeEventListener("pointerup", fn2);
-                switchFns.removeListener.delete(fn4);
             }
         }
-        const fn2 = (event, bol) => {
+        const fn2 = () => {
             const timeIn = Date.now() - time > 200 ? 0 : 200 - (Date.now() - time);
             setTimeout(() => {
                 if (!el.classList.contains("dontScaleBack")) {
@@ -3377,18 +3377,15 @@ function mainStart() {
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
-                if (!bol) {
+                if (!switchFns.inMoving) {
                     if (el.dataset.link.indexOf(".") !== -1) {
                         switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
                     } else switchFns[el.dataset.link](el);
                 }
-            switchFns.removeListener.delete(fn4);
             clearInterval(pitch?.specialInterval);
         }
         document.addEventListener("pointermove", fn);
         el.addEventListener("pointerup", fn2);
-        const fn4 = () => fn2(true, true);
-        switchFns.removeListener.add(fn4);
     }
 
 
