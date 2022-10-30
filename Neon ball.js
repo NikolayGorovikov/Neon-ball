@@ -2351,14 +2351,11 @@ function mainStart() {
         position++;
         const left = Math.floor(position);
         const right = Math.ceil(position);
-        if (Math.abs(Math.round(position)-position) < 0.05) switchFns.dontOpen = false;
-        else switchFns.dontOpen = true;
         speed = Math.round(speed/switchFns.width*50);
         if (speed > 0 && right <= switchFns.amount) {
             const border = switchFns.width*right;
             const diff = Math.abs(switchFns.width*right-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-
             createAnimation((right-1)*100, time);
             setTimeout(()=>{
                 setButton(right);
@@ -2371,7 +2368,6 @@ function mainStart() {
             const border = switchFns.width*left;
             const diff = Math.abs(switchFns.width*left-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-
             createAnimation((left-1)*100, time);
             setTimeout(()=>{
                 setButton(left);
@@ -3146,6 +3142,7 @@ function mainStart() {
 
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
 
+                switchFns.inMoving = false;
                 let x;
                 switchFns.slider.addEventListener("pointerdown", (event)=>{
                     if (switchFns.isDragging ||!available) return;
@@ -3170,6 +3167,7 @@ function mainStart() {
                     setButton(Math.round((Math.max(-(diff-switchFns.width*switchFns.slide),0))/switchFns.width)+1);
                     function main(event){
                         if (event.pointerId !== switchFns.actualId) return;
+                        switchFns.inMoving = true;
                         time = Date.now();
                         diff = event.pageX - x;
                         if (diff-switchFns.width*switchFns.slide > 0) diff = (-1/((diff-switchFns.width*switchFns.slide)/switchFns.width*3+1)+1)*maxOver*switchFns.width+switchFns.width*switchFns.slide;
@@ -3186,6 +3184,7 @@ function mainStart() {
                     }
                     function main2(event) {
                         if (event.pointerId !== switchFns.actualId) return;
+                        switchFns.inMoving = false;
                         document.removeEventListener("pointermove", main);
                         document.removeEventListener("pointerup", main2);
                         const time2 = Date.now() - time;
@@ -3378,14 +3377,11 @@ function mainStart() {
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
-            setTimeout(()=>{
-                if (!switchFns.dontOpen) {
+                if (!switchFns.inMoving) {
                     if (el.dataset.link.indexOf(".") !== -1) {
                         switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
                     } else switchFns[el.dataset.link](el);
                 }
-                switchFns.dontOpen = false;
-            });
             clearInterval(pitch?.specialInterval);
         }
         document.addEventListener("pointermove", fn);
