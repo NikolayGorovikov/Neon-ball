@@ -2069,6 +2069,7 @@ function mainStart() {
     }
 
     const switchFns = {
+        removeListener: new Set(),
         level(lvl) {
             if (this.inStart) return;
             this.inStart = true;
@@ -2351,14 +2352,11 @@ function mainStart() {
         position++;
         const left = Math.floor(position);
         const right = Math.ceil(position);
-        if (Math.abs(Math.round(position)-position) < 0.05) switchFns.dontOpen = false;
-        else switchFns.dontOpen = true;
         speed = Math.round(speed/switchFns.width*50);
         if (speed > 0 && right <= switchFns.amount) {
             const border = switchFns.width*right;
             const diff = Math.abs(switchFns.width*right-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-            if (right-1 !== switchFns.actualButton) switchFns.dontOpen = true;
             createAnimation((right-1)*100, time);
             setTimeout(()=>{
                 setButton(right);
@@ -2371,7 +2369,6 @@ function mainStart() {
             const border = switchFns.width*left;
             const diff = Math.abs(switchFns.width*left-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-            if (left-1 !== switchFns.actualButton) switchFns.dontOpen = true;
             createAnimation((left-1)*100, time);
             setTimeout(()=>{
                 setButton(left);
@@ -3183,6 +3180,7 @@ function mainStart() {
                             setButton(num2);
                             switchFns.actualButton = num2;
                         }
+                        switchFns.removeListener.forEach(i=>i());
                     }
                     function main2(event) {
                         if (event.pointerId !== switchFns.actualId) return;
@@ -3363,9 +3361,10 @@ function mainStart() {
                 else el.firstElementChild.style.transform = "";
                 document.removeEventListener("pointermove", fn);
                 el.removeEventListener("pointerup", fn2);
+                switchFns.removeListener.delete(fn4);
             }
         }
-        const fn2 = () => {
+        const fn2 = (event, bol) => {
             const timeIn = Date.now() - time > 200 ? 0 : 200 - (Date.now() - time);
             setTimeout(() => {
                 if (!el.classList.contains("dontScaleBack")) {
@@ -3378,18 +3377,18 @@ function mainStart() {
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
-            setTimeout(()=>{
-                if (!switchFns.dontOpen) {
+                if (!bol) {
                     if (el.dataset.link.indexOf(".") !== -1) {
                         switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
                     } else switchFns[el.dataset.link](el);
                 }
-                switchFns.dontOpen = false;
-            });
+            switchFns.removeListener.delete(fn4);
             clearInterval(pitch?.specialInterval);
         }
         document.addEventListener("pointermove", fn);
         el.addEventListener("pointerup", fn2);
+        const fn4 = () => fn2(true, true);
+        switchFns.removeListener.add(fn4);
     }
 
 
