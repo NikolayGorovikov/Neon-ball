@@ -2351,12 +2351,14 @@ function mainStart() {
         position++;
         const left = Math.floor(position);
         const right = Math.ceil(position);
+        if (Math.abs(Math.round(position)-position) < 0.05) switchFns.dontOpen = false;
+        else switchFns.dontOpen = true;
         speed = Math.round(speed/switchFns.width*50);
         if (speed > 0 && right <= switchFns.amount) {
             const border = switchFns.width*right;
             const diff = Math.abs(switchFns.width*right-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-
+            if (right-1 !== switchFns.actualButton) switchFns.dontOpen = true;
             createAnimation((right-1)*100, time);
             setTimeout(()=>{
                 setButton(right);
@@ -2369,7 +2371,7 @@ function mainStart() {
             const border = switchFns.width*left;
             const diff = Math.abs(switchFns.width*left-position*switchFns.width);
             const time = Math.max(diff/switchFns.width*400, 200);
-
+            if (left-1 !== switchFns.actualButton) switchFns.dontOpen = true;
             createAnimation((left-1)*100, time);
             setTimeout(()=>{
                 setButton(left);
@@ -2495,8 +2497,9 @@ function mainStart() {
     function setOpacityAndScaleToAll(iterable) {
         const x = switchFns.slider.firstElementChild.getBoundingClientRect().x;
         const arr = new Array(...iterable);
+        const localWidth = switchFns.slider.getBoundingClientRect().width;
         for (let j = 0 ,i = arr[j]; j < arr.length; j++, i = arr[j]) {
-            const obj = getOpacityAndScale(j, switchFns.basis, switchFns.width, switchFns.basis-switchFns.width/2-x);
+            const obj = getOpacityAndScale(j, switchFns.basis, localWidth, switchFns.basis-localWidth/2-x);
             i.style.opacity = obj.opacity;
             i.style.transform = `scale(${obj.scale})`;
         }
@@ -3008,23 +3011,17 @@ function mainStart() {
                                 if (!can.ownArr) {
                                     const num = randomInteger(-1, window._all.questions.length-1)
                                     const spots = window._all.questions[num];
+                                    const width = pitchIn.getBoundingClientRect().width;
                                     for (const i of spots) {
-                                        i.r *= pitchIn.getBoundingClientRect().width/684;
-                                        i.x *= pitchIn.getBoundingClientRect().width/684;
-                                        i.y *= pitchIn.getBoundingClientRect().width/684;
-                                        drawQuestion(con,i.x, i.y, i.r);
+                                        drawQuestion(con,i.x*width/684, i.y*width/684, i.r*width/684);
                                     }
                                     can.ownArr = spots;
-                                    can.prev = pitchIn.getBoundingClientRect().width;
                                 }
                                 else {
+                                    const width = pitchIn.getBoundingClientRect().width;
                                     for (const i of can.ownArr) {
-                                        i.r *= pitchIn.getBoundingClientRect().width/can.prev;
-                                        i.x *= pitchIn.getBoundingClientRect().width/can.prev;
-                                        i.y *= pitchIn.getBoundingClientRect().width/can.prev;
-                                        drawQuestion(con,i.x, i.y, i.r);
+                                        drawQuestion(con,i.x*width/684, i.y*width/684, i.r*width/684);
                                     }
-                                    can.prev = pitchIn.getBoundingClientRect().width;
                                 }
                             }
 
@@ -3135,18 +3132,23 @@ function mainStart() {
             </div>
             `;
                 pitchIn.insertAdjacentHTML("beforeend", levels);
+                let available = false;
+                setTimeout(()=>available = true, 400);
                 switchFns.slider = document.getElementById("slider");
-                switchFns.slide = 0;
-
+                if (!switchFns.actualButton) switchFns.actualButton = 0;
+                if (!switchFns.basis) {
+                    switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
+                    switchFns.width = pitchIn.getBoundingClientRect().width*0.8;
+                }
+                switchFns.slide = switchFns.actualButton;
+                switchFns.slider.firstElementChild.style.transform = `translateX(-${switchFns.width*switchFns.slide}px)`;
                 document.getElementById("slideBt"+(switchFns.slide+1)).classList.add("activePoint");
-                switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
-                switchFns.width = switchFns.slider.getBoundingClientRect().width;
-                switchFns.actualButton = switchFns.slide;
+
                 setOpacityAndScaleToAll(switchFns.slider.firstElementChild.children);
 
                 let x;
                 switchFns.slider.addEventListener("pointerdown", (event)=>{
-                    if (switchFns.isDragging) return;
+                    if (switchFns.isDragging ||!available) return;
                     switchFns.isDragging = true;
                     switchFns.actualId = event.pointerId;
                     switchFns.slider.firstElementChild.style.animationPlayState = "paused";
@@ -3155,9 +3157,6 @@ function mainStart() {
                         document.addEventListener("pointermove", main);
                         document.addEventListener("pointerup", main2, {once: true});
                     }
-
-                    switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
-                    switchFns.width = switchFns.slider.getBoundingClientRect().width;
                     const length = switchFns.basis-switchFns.width*switchFns.slide-switchFns.slider.firstElementChild.getBoundingClientRect().x-switchFns.width/2;
                     if (switchFns.stopSliding instanceof Function) switchFns.stopSliding();
                     switchFns.slider.firstElementChild.style.animationPlayState = "";
@@ -3191,9 +3190,11 @@ function mainStart() {
                         document.removeEventListener("pointerup", main2);
                         const time2 = Date.now() - time;
                         if (time2 > 60) speed = 0;
-                        createSlideAnimation(speed,-(diff-switchFns.width*switchFns.slide)/switchFns.width);
+                        const position = -(diff-switchFns.width*switchFns.slide)/switchFns.width
+                        createSlideAnimation(speed, position);
                         switchFns.isDragging = false;
                         switchFns.stopDragging = () => {};
+
                     }
                     document.addEventListener("pointermove", main);
                     document.addEventListener("pointerup", main2);
@@ -3377,9 +3378,14 @@ function mainStart() {
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
-            if (el.dataset.link.indexOf(".") !== -1) {
-                switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
-            } else switchFns[el.dataset.link](el);
+            setTimeout(()=>{
+                if (!switchFns.dontOpen) {
+                    if (el.dataset.link.indexOf(".") !== -1) {
+                        switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
+                    } else switchFns[el.dataset.link](el);
+                }
+                switchFns.dontOpen = false;
+            });
             clearInterval(pitch?.specialInterval);
         }
         document.addEventListener("pointermove", fn);
@@ -3415,7 +3421,7 @@ function mainStart() {
     window.onresize = () => {
         if (switchFns.slider) {
             switchFns.basis = switchFns.slider.getBoundingClientRect().width/2+switchFns.slider.getBoundingClientRect().x;
-            switchFns.width = switchFns.slider.getBoundingClientRect().width;
+            switchFns.width = pitchIn.getBoundingClientRect().width*0.8;
         }
         canvases.forEach(i => i.resize(pitchIn.getBoundingClientRect().width));
     }

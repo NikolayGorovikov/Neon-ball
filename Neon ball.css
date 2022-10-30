@@ -846,16 +846,16 @@ canvas{
     width: inherit;
     height: inherit;
     position: absolute;
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .soonLock{
     z-index: 3;
 }
 
-.soon{
-    -webkit-text-stroke: 1px rgb(252, 243, 211);
-}
+/*.soon{*/
+/*    -webkit-text-stroke: 1px rgb(252, 243, 211);*/
+/*}*/
 
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */
