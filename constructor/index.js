@@ -1110,7 +1110,7 @@ class drawObj {
     }
 }
 const image = new Image();
-image.src = "pasians.jpg";
+image.src = "star.png";
 var time;
 var prev = Date.now();
 var speed = 1;
@@ -1205,8 +1205,8 @@ class Physics extends HTMLElement {
         this.ziNormalize();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
-        let scale = 1.6;
-        // this.context.drawImage(image, 0, 0, 800*scale, 397*scale);
+        let scale = 1;
+        this.context.drawImage(image, 0, 0, 333*scale, 300*scale);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;
@@ -2932,6 +2932,14 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
             const y = window.COGY;
             const arrL = [];
             const arrA = [];
+            const i = pitch.linesInSystem[0];
+            const l = Math.sqrt(Math.pow(i.x1-x, 2)+Math.pow(i.y1-y, 2));
+            const tan = (i.y1-y)/(i.x1-x);
+            let angle;
+            if (i.x1-x > 0) angle = Math.atan(tan);
+            else angle = Math.atan(tan)+Math.PI;
+            arrL.push(l);
+            arrA.push(angle);
             for (const i of pitch.linesInSystem) {
                 const l = Math.sqrt(Math.pow(i.x2-x, 2)+Math.pow(i.y2-y, 2));
                 const tan = (i.y2-y)/(i.x2-x);

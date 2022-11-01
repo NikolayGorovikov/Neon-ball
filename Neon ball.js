@@ -2315,13 +2315,15 @@ function mainStart() {
         stopDragging(){}
     }
 
-    // const shape1 = [[1, Math.PI/3], [1, Math.PI*2/3], [1, Math.PI*4/3], [1, Math.PI*5/3]];
-    const shape1 = [[0.9160671420411286,1.6935765940767875],[0.8380047864668729,1.847102952307375],[0.7291816290083015,2.088494375590093],[0.6616232551581634,2.4075556172594395],[0.6491959717365293,2.7697570408462804],[0.6642068368574949,3.1409775823633126],[0.7082351300914308,3.3931093686237372],[0.7494054390241751,3.6553401320493677],[0.7939065084228344,3.9354803707961348],[0.7910099129251283,4.142876150423229],[0.7675903763116337,4.321354423448446],[0.6994042589847568,4.458444989249006],[0.6095824061959825,4.550927409905276],[0.5049529687223523,4.630906334553562],[0.3740785385040588,-1.5322159553351091],[0.3147813092160566,-1.4651278344091487],[0.3797489839061289,-1.409987847275018],[0.5379465708027172,-1.249507606771681],[0.6849171722497418,-1.1409566722727977],[0.7519445788620079,-1.0615742996377509],[0.8070093381784543,-0.9428126338082066],[0.8450126097812349,-0.8493962894135765],[0.8385690175478964,-0.7814895322504916],[0.838558444331882,-0.6916139539550464],[0.8249096579079317,-0.6026346275836285],[0.7858449357419627,-0.49155175136983936],[0.7372394600868977,-0.32107510948952206],[0.6713011535399604,-0.13970484324203872],[0.6113256692308797,0.10001025058769888],[0.5806742376878179,0.43926548408369465],[0.5995488583475183,0.7787975991896913],[0.6876047845554923,1.0895168705326035],[0.8126965826831509,1.3450781757733956],[0.9186036527222701,1.4932941030433355],[1,1.5727201291826955]];
-    const shapes = [shape1];
-    const atime = 5000;
-    const opacityTime = 4000;
+    const shape2 = [[1, Math.PI/3], [1, Math.PI*2/3], [1, Math.PI*4/3], [1, Math.PI*5/3]];
+    const shape1 = [[0.6655493770658406,2.452136742742777],[0.6756598841523511,2.6080414134220327],[0.6879663879970662,2.710722755012397],[0.70134931489481,2.8115577404430345],[0.7253248929942102,2.923949072990644],[0.7468203406980214,3.013747768324013],[0.7652298843540765,3.083155867851689],[0.7809776015361931,3.1368729458846727],[0.7989773577978109,3.1933944442585886],[0.8176269137927761,3.2506383140331314],[0.8297479481117622,3.290782591008438],[0.8581080475697972,3.380063388708961],[0.8695214042517633,3.431075501542053],[0.8819687930650846,3.4794478539680607],[0.8885343941837511,3.525227254596597],[0.8949121042056984,3.563731962955895],[0.8996882808557335,3.631578388621959],[0.8998525302439029,3.689431975447129],[0.8962498964513996,3.763342900826688],[0.8878654471951025,3.8280910006266207],[0.8788275854882374,3.8785336073787797],[0.8674417872265309,3.93062665931649],[0.8507702415313688,3.984492864083691],[0.837542351551072,4.022375704266802],[0.8132810049014358,4.086015053687526],[0.7811415642041988,4.1509244141769726],[0.7607979903280501,4.194821663622664],[0.7365132805859833,4.239700508259465],[0.7104619048618084,4.280404498276765],[0.6818660658825272,4.327004626707283],[0.6544267052464918,4.365286675844213],[0.6188216212199783,4.413923788584296],[0.5682872910272668,4.471487238880858],[0.5270255995016428,4.520791462996806],[0.4906045663543382,4.568257925465531],[0.45629773590303957,4.615338647708614],[0.4255853492133578,4.655944963593999],[0.4034373328770499,4.689416125705275],[0.3854700575244294,4.711757910678751],[0.40468055028567146,-1.538506364828794],[0.43286289836952363,-1.497226028015148],[0.4600124215969676,-1.4601976818051945],[0.4882533923957831,-1.4204878544749306],[0.520170474783194,-1.3882867107673549],[0.5491372387535938,-1.3459629239909976],[0.5711691272146463,-1.3221503707233815],[0.6103926972805916,-1.2724419803215044],[0.6363078579943277,-1.2401164850653903],[0.6580085097870102,-1.20883603532391],[0.6757949154417315,-1.1846741489405597],[0.7024136094392114,-1.1443378496878034],[0.729992058923475,-1.1002758465833797],[0.7546046474799554,-1.0573398300445929],[0.7747934436981451,-1.0221439476488177],[0.7978491663736335,-0.9756480658614056],[0.8214566954259575,-0.9228102227836553],[0.8380939822518371,-0.877215238011685],[0.8516613221461103,-0.8377662654427309],[0.861625852069629,-0.8000698206699304],[0.8734717285736368,-0.7543214690695624],[0.8813599271774861,-0.7143001284490302],[0.8905399782813802,-0.6725743932830452],[0.8952081664985829,-0.640283799824146],[0.8984678603934663,-0.6088074002179089],[0.8994965002014473,-0.5782638487342828],[0.9008456340814611,-0.5384852654608409],[0.9002087271023438,-0.5058240346316417],[0.8973115922650232,-0.46764749071750306],[0.8964159552862732,-0.4316974158705416],[0.8926867310045584,-0.40063338663663145],[0.8857615552825379,-0.3623922466355828],[0.8805561704734054,-0.3314286618532248],[0.8711597300686537,-0.29468531006315696],[0.8609736015796405,-0.2613250463909625],[0.8485540905767628,-0.21391754570750676],[0.8315444574649018,-0.15585602195495168],[0.8149102909408927,-0.10356027621648531],[0.7994171753858064,-0.05963394376706681],[0.7781955741020986,0.01722106838952935],[0.7619418810879273,0.07412614572062207],[0.7443418724112741,0.13351628136842403],[0.7288107890412064,0.19817351598169528],[0.7092146693192312,0.3021288976920775],[0.6888232646924843,0.41374680396798097],[0.6648682210386287,0.6521504885206038],[1,1.5678124779000964]];
+    const shape3 = [[0.9877575319503975,-1.5591034859607507],[0.7280700207907034,0.008812932819662047],[1,1.5688146093363025],[0.7059111681050281,3.072929883547948]];
+    const shape4 = [[1,3.4405955455326303],[0.37373504505725386,4.048446103283137],[0.9560265143368478,4.705311164253148],[0.37260830467190537,-0.9209925450552533],[0.9982620117420731,-0.3008637000337348],[0.3771786834855133,0.28399508468207424],[0.9738515140366668,0.9112762098201636],[0.36202946813066694,1.5722546092199479],[0.9732426021128109,2.221386886341876],[0.38429532524439575,2.8132280386658657]];
+    const shapes = [shape1, shape2, shape3, shape4];
+    const atime = 1500;
+    const opacityTime = 1000;
     const topTime = 700;
-    const gettingKf = 1.4;
+    const gettingKf = 1.1;
     const xPeriod = 2000;
     const aPeriod = 2000;
     const startOpacity = 0.65;
@@ -2346,16 +2348,22 @@ function mainStart() {
             this.remove();
         }
 
-        drawShape(shape, x, y, r, t, xm) {
+        drawShape(shape, x, y, r, t, xm, h) {
             const c = this.con;
+            h = -h;
+            let yy;
+            if (t > topTime) x = shape.toX-shape.x;
+            else x = y/h*(shape.toX-shape.x);
+            if (t < topTime) yy = shape.y+y/h*(shape.toY-shape.y);
+            else yy = shape.toY-(h-y);
             if (t < noMoveTime) t = t/10;
             else t = 11*t/10-noMoveTime;
             const sx = Math.sin((t)*2*Math.PI/xPeriod+shape.st)*xm;
             const ass = Math.sin((t)*2*Math.PI/aPeriod+shape.st)*shape.am;
             c.beginPath();
             c.fillStyle = lineColor;
-            c.moveTo(sx+shape.x+x+shapes[shape.t][0][0]*Math.cos(shapes[shape.t][0][1]+ass)*r, shape.y+y+shapes[shape.t][0][0]*Math.sin(shapes[shape.t][0][1]+ass)*r);
-            for (const i of shapes[shape.t]) c.lineTo(sx+shape.x+x+i[0]*Math.cos(i[1]+ass)*r, shape.y+y+i[0]*Math.sin(i[1]+ass)*r);
+            c.moveTo(sx+shape.x+x+shapes[shape.t][0][0]*Math.cos(shapes[shape.t][0][1]+ass)*r, yy+shapes[shape.t][0][0]*Math.sin(shapes[shape.t][0][1]+ass)*r);
+            for (const i of shapes[shape.t]) c.lineTo(sx+shape.x+x+i[0]*Math.cos(i[1]+ass)*r, yy+i[0]*Math.sin(i[1]+ass)*r);
             c.fill();
             c.closePath();
         }
@@ -2367,7 +2375,7 @@ function mainStart() {
             const k3 = h/(topTime*(1 - gettingKf*2)*topTime*(1 - gettingKf*2));
             const k4 = -2/((1 - gettingKf*2)*topTime*(1 - gettingKf*2))*h;
             const k5 = gettingKf*2*(2 - gettingKf*2)*h/((1 - gettingKf*2)**2);
-            const ms = pitchIn.getBoundingClientRect().height/atime;
+            const ms = pitchIn.getBoundingClientRect().height/2500;
             const x0 = (ms-k4)/k3/2;
             this.xOfT = xOfT.bind(null, -(h**3/topTime**2), 2*h**3/topTime, k3, k4, k5, x0, 2*k3*x0+k4, k5-k3*x0*x0);
             const time = performance.now();
@@ -2382,7 +2390,7 @@ function mainStart() {
                 }
                 const y = this.xOfT(t);
                 this.con.clearRect(0, 0, this.can.width, this.can.height);
-                for (const i of this.shapes) this.drawShape(i, 0, y, i.r, t, i.xm);
+                for (const i of this.shapes) this.drawShape(i, 0, y, i.r, t, i.xm, h);
                 this.animation = window.requestAnimationFrame(main);
             }
             this.animation = window.requestAnimationFrame(main);
@@ -2390,20 +2398,141 @@ function mainStart() {
 
         createShapes() {
             this.shapes = [];
-            const geometric = Math.sqrt(window.innerHeight*window.innerWidth);
-            const maxR = geometric/70;
-            const minR = geometric/100;
+            const geometric = Math.sqrt(pitchIn.getBoundingClientRect().height*pitchIn.getBoundingClientRect().width);
+            const maxR = geometric/45;
+            const minR = geometric/70;
             const minA = Math.PI/16;
             const maxA = Math.PI/6;
-            const minXm = geometric/170;
-            const maxXm = geometric/125;
-            const width = window.innerWidth+2*maxR;
-            const height = window.innerHeight*2;
-            const area = maxR*6;
-            for (let i = 0; i <= width+area; i+=area) {
-                for (let j = 0; j <= height+area; j+=area) {
-                    const shape = {x: i+Math.random()*area-maxR, y: j+Math.random()*area-height/5, t: 0, st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
-                    this.shapes.push(shape);
+            const minXm = geometric/130;
+            const maxXm = geometric/90;
+            const width = window.innerWidth*4;
+            const height = window.innerHeight*4;
+            const area = maxR*4;
+            const elRect = document.querySelector(`[data-link="next"]`).getBoundingClientRect();
+            const startRadius = elRect.width;
+            const startFocus1 = {
+                x: elRect.width/2+elRect.x,
+                y: elRect.height+elRect.y*1.5+pitchIn.getBoundingClientRect().height/5
+            };
+
+
+            const startFocus2 = {
+                x: pitchIn.getBoundingClientRect().x-pitchIn.getBoundingClientRect().width/2,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height/6*5-pitchIn.getBoundingClientRect().height/7+pitchIn.getBoundingClientRect().height/5
+            };
+
+            const startFocus3 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width/2*3,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height/6*5+pitchIn.getBoundingClientRect().height/5
+            };
+
+            const startFocus4 = {
+                x: pitchIn.getBoundingClientRect().x-pitchIn.getBoundingClientRect().width/2,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height/4
+            };
+
+            const startFocus5 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width/5*8,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height/4+pitchIn.getBoundingClientRect().height/9
+            };
+
+            const endArea1 = {
+                x: window.innerWidth/2+pitchIn.getBoundingClientRect().height/13,
+                y: pitchIn.getBoundingClientRect().top+pitchIn.getBoundingClientRect().height/5+pitchIn.getBoundingClientRect().height/5,
+                r: pitchIn.getBoundingClientRect().width*0.35
+            };
+
+            const endArea2 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width/5,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height*2/3-pitchIn.getBoundingClientRect().height/7+pitchIn.getBoundingClientRect().height/5,
+                r: pitchIn.getBoundingClientRect().width*0.27
+            };
+
+            const endArea3 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width/5*4,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height*2/3+pitchIn.getBoundingClientRect().height/5,
+                r: pitchIn.getBoundingClientRect().width*0.27
+            };
+
+            const endArea4 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width/6,
+                y: pitchIn.getBoundingClientRect().y+pitchIn.getBoundingClientRect().height/9,
+                r: pitchIn.getBoundingClientRect().width*0.27
+            };
+
+            const endArea5 = {
+                x: pitchIn.getBoundingClientRect().x+pitchIn.getBoundingClientRect().width*8/9,
+                y: pitchIn.getBoundingClientRect().y,
+                r: pitchIn.getBoundingClientRect().width*0.27
+            };
+
+            for (let i = -area/2-width/4; i <= width+area; i+=area) {
+                for (let j = -area/2-height/4; j <= height+area; j+=area) {
+                    const inX = endArea1.x-endArea1.r+i;
+                    const inY = endArea1.y-endArea1.r+j;
+                    if (Math.sqrt( Math.pow(inX-endArea1.x, 2) + Math.pow(inY-endArea1.y, 2) ) <= endArea1.r) {
+                        const alpha = Math.random()*2*Math.PI;
+                        const shape = {x: startFocus1.x+Math.random()*startRadius*Math.cos(alpha), y: startFocus1.y+Math.random()*startRadius*Math.sin(alpha), t: randomInteger(-1, shapes.length-1), st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                        shape.toX = inX+(0.5-Math.random())*2*maxR*2;
+                        shape.toY = inY+(0.5-Math.random())*2*maxR*2;
+                        this.shapes.push(shape);
+                    }
+                }
+            }
+
+            for (let i = -area/2-width/4; i <= width+area; i+=area) {
+                for (let j = -area/2-height/4; j <= height+area; j+=area) {
+                    const inX = endArea2.x-endArea2.r+i;
+                    const inY = endArea2.y-endArea2.r+j;
+                    if (Math.sqrt( Math.pow(inX-endArea2.x, 2) + Math.pow(inY-endArea2.y, 2) ) <= endArea2.r) {
+                        const alpha = Math.random()*2*Math.PI;
+                        const shape = {x: startFocus2.x+Math.random()*startRadius*Math.cos(alpha), y: startFocus2.y+Math.random()*startRadius*Math.sin(alpha), t: randomInteger(-1, shapes.length-1), st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                        shape.toX = inX+(0.5-Math.random())*2*maxR*2;
+                        shape.toY = inY+(0.5-Math.random())*2*maxR*2;
+                        this.shapes.push(shape);
+                    }
+                }
+            }
+
+            for (let i = -area/2-width/4; i <= width+area; i+=area) {
+                for (let j = -area/2-height/4; j <= height+area; j+=area) {
+                    const inX = endArea3.x-endArea3.r+i;
+                    const inY = endArea3.y-endArea3.r+j;
+                    if (Math.sqrt( Math.pow(inX-endArea3.x, 2) + Math.pow(inY-endArea3.y, 2) ) <= endArea3.r) {
+                        const alpha = Math.random()*2*Math.PI;
+                        const shape = {x: startFocus3.x+Math.random()*startRadius*Math.cos(alpha), y: startFocus3.y+Math.random()*startRadius*Math.sin(alpha), t: randomInteger(-1, shapes.length-1), st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                        shape.toX = inX+(0.5-Math.random())*2*maxR*2;
+                        shape.toY = inY+(0.5-Math.random())*2*maxR*2;
+                        this.shapes.push(shape);
+                    }
+                }
+            }
+
+            for (let i = -area/2-width/4; i <= width+area; i+=area) {
+                for (let j = -area/2-height/4; j <= height+area; j+=area) {
+                    const inX = endArea4.x-endArea4.r+i;
+                    const inY = endArea4.y-endArea4.r+j;
+                    if (Math.sqrt( Math.pow(inX-endArea4.x, 2) + Math.pow(inY-endArea4.y, 2) ) <= endArea4.r) {
+                        const alpha = Math.random()*2*Math.PI;
+                        const shape = {x: startFocus4.x+Math.random()*startRadius*Math.cos(alpha), y: startFocus4.y+Math.random()*startRadius*Math.sin(alpha), t: randomInteger(-1, shapes.length-1), st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                        shape.toX = inX+(0.5-Math.random())*2*maxR*2;
+                        shape.toY = inY+(0.5-Math.random())*2*maxR*2;
+                        this.shapes.push(shape);
+                    }
+                }
+            }
+
+            for (let i = -area/2-width/4; i <= width+area; i+=area) {
+                for (let j = -area/2-height/4; j <= height+area; j+=area) {
+                    const inX = endArea5.x-endArea5.r+i;
+                    const inY = endArea5.y-endArea5.r+j;
+                    if (Math.sqrt( Math.pow(inX-endArea5.x, 2) + Math.pow(inY-endArea5.y, 2) ) <= endArea5.r) {
+                        const alpha = Math.random()*2*Math.PI;
+                        const shape = {x: startFocus5.x+Math.random()*startRadius*Math.cos(alpha), y: startFocus5.y+Math.random()*startRadius*Math.sin(alpha), t: randomInteger(-1, shapes.length-1), st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                        shape.toX = inX+(0.5-Math.random())*2*maxR*2;
+                        shape.toY = inY+(0.5-Math.random())*2*maxR*2;
+                        this.shapes.push(shape);
+                    }
                 }
             }
 
