@@ -2315,6 +2315,121 @@ function mainStart() {
         stopDragging(){}
     }
 
+    // const shape1 = [[1, Math.PI/3], [1, Math.PI*2/3], [1, Math.PI*4/3], [1, Math.PI*5/3]];
+    const shape1 = [[0.9160671420411286,1.6935765940767875],[0.8380047864668729,1.847102952307375],[0.7291816290083015,2.088494375590093],[0.6616232551581634,2.4075556172594395],[0.6491959717365293,2.7697570408462804],[0.6642068368574949,3.1409775823633126],[0.7082351300914308,3.3931093686237372],[0.7494054390241751,3.6553401320493677],[0.7939065084228344,3.9354803707961348],[0.7910099129251283,4.142876150423229],[0.7675903763116337,4.321354423448446],[0.6994042589847568,4.458444989249006],[0.6095824061959825,4.550927409905276],[0.5049529687223523,4.630906334553562],[0.3740785385040588,-1.5322159553351091],[0.3147813092160566,-1.4651278344091487],[0.3797489839061289,-1.409987847275018],[0.5379465708027172,-1.249507606771681],[0.6849171722497418,-1.1409566722727977],[0.7519445788620079,-1.0615742996377509],[0.8070093381784543,-0.9428126338082066],[0.8450126097812349,-0.8493962894135765],[0.8385690175478964,-0.7814895322504916],[0.838558444331882,-0.6916139539550464],[0.8249096579079317,-0.6026346275836285],[0.7858449357419627,-0.49155175136983936],[0.7372394600868977,-0.32107510948952206],[0.6713011535399604,-0.13970484324203872],[0.6113256692308797,0.10001025058769888],[0.5806742376878179,0.43926548408369465],[0.5995488583475183,0.7787975991896913],[0.6876047845554923,1.0895168705326035],[0.8126965826831509,1.3450781757733956],[0.9186036527222701,1.4932941030433355],[1,1.5727201291826955]];
+    const shapes = [shape1];
+    const atime = 5000;
+    const opacityTime = 4000;
+    const topTime = 700;
+    const gettingKf = 1.4;
+    const xPeriod = 2000;
+    const aPeriod = 2000;
+    const startOpacity = 0.65;
+    const noMoveTime = 800;
+
+    function xOfT(k1, k2,k3, k4, k5, k6, k7, k8, t) {
+        if (t <= topTime) return -Math.pow(t**2*k1+t*k2, 1/3);
+        else if (t >= topTime && t <= k6) return t**2*k3+t*k4+k5;
+        else return k7*t+k8;
+    }
+
+    class Confetti extends HTMLElement {
+        createInner() {
+                this.can = document.createElement("canvas");
+                this.con = this.can.getContext("2d");
+                this.can.width = window.innerWidth;
+                this.can.height = window.innerHeight;
+                this.append(this.can);
+        }
+
+        resize() {
+            this.remove();
+        }
+
+        drawShape(shape, x, y, r, t, xm) {
+            const c = this.con;
+            if (t < noMoveTime) t = t/10;
+            else t = 11*t/10-noMoveTime;
+            const sx = Math.sin((t)*2*Math.PI/xPeriod+shape.st)*xm;
+            const ass = Math.sin((t)*2*Math.PI/aPeriod+shape.st)*shape.am;
+            c.beginPath();
+            c.fillStyle = lineColor;
+            c.moveTo(sx+shape.x+x+shapes[shape.t][0][0]*Math.cos(shapes[shape.t][0][1]+ass)*r, shape.y+y+shapes[shape.t][0][0]*Math.sin(shapes[shape.t][0][1]+ass)*r);
+            for (const i of shapes[shape.t]) c.lineTo(sx+shape.x+x+i[0]*Math.cos(i[1]+ass)*r, shape.y+y+i[0]*Math.sin(i[1]+ass)*r);
+            c.fill();
+            c.closePath();
+        }
+
+        startAnimation() {
+            this.createShapes();
+            const h = pitchIn.getBoundingClientRect().height/2;
+            const radius = pitchIn.getBoundingClientRect().height/10;
+            const k3 = h/(topTime*(1 - gettingKf*2)*topTime*(1 - gettingKf*2));
+            const k4 = -2/((1 - gettingKf*2)*topTime*(1 - gettingKf*2))*h;
+            const k5 = gettingKf*2*(2 - gettingKf*2)*h/((1 - gettingKf*2)**2);
+            const ms = pitchIn.getBoundingClientRect().height/atime;
+            const x0 = (ms-k4)/k3/2;
+            this.xOfT = xOfT.bind(null, -(h**3/topTime**2), 2*h**3/topTime, k3, k4, k5, x0, 2*k3*x0+k4, k5-k3*x0*x0);
+            const time = performance.now();
+            const main = (t2) => {
+                const t = t2 - time;
+                if (t > atime) {
+                    this.remove();
+                    return;
+                }
+                else if (t > opacityTime) {
+                    this.style.opacity = `${(1-(t-opacityTime)/(atime-opacityTime))*0.6}`;
+                }
+                const y = this.xOfT(t);
+                this.con.clearRect(0, 0, this.can.width, this.can.height);
+                for (const i of this.shapes) this.drawShape(i, 0, y, i.r, t, i.xm);
+                this.animation = window.requestAnimationFrame(main);
+            }
+            this.animation = window.requestAnimationFrame(main);
+        }
+
+        createShapes() {
+            this.shapes = [];
+            const geometric = Math.sqrt(window.innerHeight*window.innerWidth);
+            const maxR = geometric/70;
+            const minR = geometric/100;
+            const minA = Math.PI/16;
+            const maxA = Math.PI/6;
+            const minXm = geometric/170;
+            const maxXm = geometric/125;
+            const width = window.innerWidth+2*maxR;
+            const height = window.innerHeight*2;
+            const area = width/maxR*1.3;
+            for (let i = 0; i <= width+area; i+=area) {
+                for (let j = 0; j <= height+area; j+=area) {
+                    const shape = {x: i+Math.random()*area-maxR, y: j+Math.random()*area-height/5, t: 0, st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
+                    this.shapes.push(shape);
+                }
+            }
+
+        }
+
+
+        constructor() {
+            super();
+        }
+
+        stopAnimation() {
+            window.cancelAnimationFrame(this.animation);
+        }
+
+        connectedCallback() {
+            this.createInner();
+            this.startAnimation();
+        }
+
+        disconnectedCallback() {
+            this.stopAnimation();
+        }
+    }
+
+    customElements.define("confetti-element", Confetti);
+
     function ease(pr) {
         return Math.pow(Math.sin(Math.acos(1-pr)), 2-pr);
     }
@@ -2782,11 +2897,13 @@ function mainStart() {
                 this.canvases.forEach(i => canvases.add(i));
                 const lvl = `
     <div class="dark"></div>
+    <div class="confettiHolder"></div>
     <div class="lvlCleared">
         <div class="levelText">
             <div class="levelName">${trl("level")} ${name}</div>
             <div class="levelDoneText">${pause ? trl("pause") : trl("completed")}</div>
         </div>
+
         <div class="subMenu">
             <div data-link="menu"></div>
             ${pause ? `<div data-link="continue"></div>` : levels[String(Number(name)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
@@ -2795,6 +2912,12 @@ function mainStart() {
     </div>
     `;
                 pitchIn.insertAdjacentHTML("beforeend", lvl);
+                if (!pause) {
+                    const canvas = document.createElement("confetti-element");
+                    canvases.add(canvas);
+                    this.canvases.add(canvas);
+                    document.querySelector(".confettiHolder").append(canvas);
+                }
                 document.querySelector(`[data-link="menu"]`).append(canvasMenu);
                 document.querySelector(`[data-link="retry"]`).append(canvasRetry);
                 document.querySelector(`[data-link=${pause ? "continue" : "next"}]`).append(canvasNext);
@@ -2806,7 +2929,11 @@ function mainStart() {
             close() {
                 this.canvases.forEach(i => canvases.delete(i));
                 document.querySelector(".lvlCleared").style.animationName = "remove";
-                setTimeout(() => document.querySelector(".lvlCleared").remove(), 500);
+                document.querySelector(".confettiHolder").style.animationName = "confettiRemove";
+                setTimeout(() => {
+                    document.querySelector(".lvlCleared").remove();
+                    document.querySelector(".confettiHolder").remove();
+                }, 500);
             }
         },
         home: {

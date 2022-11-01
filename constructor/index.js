@@ -2926,6 +2926,36 @@ document.getElementById("menu").addEventListener("pointerdown", (event) => {
     else if (event.target.id === "autoCOG") {
         setAutoCOG();
     }
+    else if (event.target.id === "getConfetti") {
+        function getCordsConfetti() {
+            const x = window.COGX;
+            const y = window.COGY;
+            const arrL = [];
+            const arrA = [];
+            for (const i of pitch.linesInSystem) {
+                const l = Math.sqrt(Math.pow(i.x2-x, 2)+Math.pow(i.y2-y, 2));
+                const tan = (i.y2-y)/(i.x2-x);
+                let angle;
+                if (i.x2-x > 0) angle = Math.atan(tan);
+                else angle = Math.atan(tan)+Math.PI;
+                arrL.push(l);
+                arrA.push(angle);
+            }
+            const maxL = Math.max(...arrL);
+            arrL.forEach((i, j)=>{
+                arrL[j] = i/maxL;
+            });
+            const result = [];
+            for (let i = 0; i < arrL.length; i++) {
+                result.push([arrL[i], arrA[i]]);
+            }
+
+            return JSON.stringify(result);
+        }
+
+        const json = getCordsConfetti();
+        copy(json);
+    }
     else if (event.target.id === "copyToBuffer") {
         const json = containment;
 

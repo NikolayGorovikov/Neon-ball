@@ -45,7 +45,7 @@ body{
     .switcher{
         margin-top: 2vh;
     }
-    .dark, .fullScreen{
+    .dark, .fullScreen, .confettiHolder{
         top: 0;
         left: calc((100vh * 5 / 6 - 100vw)/2);
     }
@@ -78,7 +78,7 @@ body{
         line-height: calc(100vh * 5 / 6 * 0.1);
         top: calc(100vh * 5 / 6* 0.05 / 5);
     }
-    #pitchIn > *:not(.neonBall100, .dark, .fullScreen, .restartAnimation){
+    #pitchIn > *:not(.neonBall100, .dark,.confettiHolder, .fullScreen, .restartAnimation){
         height: 100vh;
         width: calc(100vh * 5 / 6);
     }
@@ -150,7 +150,7 @@ body{
     .switcher{
         margin-top: calc(100vw * 6 / 5 / 50);
     }
-    #pitchIn > *:not(.neonBall100, .dark, .fullScreen, .restartAnimation) {
+    #pitchIn > *:not(.neonBall100, .dark,.confettiHolder, .fullScreen, .restartAnimation) {
         height: calc(100vw * 6 / 5);
         width: 100vw;
     }
@@ -158,7 +158,7 @@ body{
         top: calc(100vw * 6 / 20);
         left: 25vw;
     }
-    .dark, .fullScreen{
+    .dark, .fullScreen, .confettiHolder{
         top: calc((100vw * 6 / 5 - 100vh)/2);
         left: 0;
     }
@@ -302,12 +302,38 @@ canvas{
     z-index: 2;
 }
 
-.lvlCleared, #home, .infoText, .levels, .settings{
+.confettiHolder{
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+}
+
+confetti-element{
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0.65;
+}
+
+.lvlCleared, #home, .infoText, .levels, .settings, .confettiHolder{
     animation-name: lvlClearedIn, lvlCleared;
     animation-timing-function: ease;
     animation-duration: 0.5s;
     animation-iteration-count: 1;
     z-index: 2;
+}
+
+.confettiHolder{
+    animation-name: lvlCleared;
+}
+
+@keyframes confettiRemove {
+    0%{
+        opacity: 0.65;
+    }
+    100%{
+        opacity: 0;
+    }
 }
 
 .settings{
