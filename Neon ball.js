@@ -2399,7 +2399,7 @@ function mainStart() {
             const maxXm = geometric/125;
             const width = window.innerWidth+2*maxR;
             const height = window.innerHeight*2;
-            const area = width/maxR*1.1;
+            const area = maxR*6;
             for (let i = 0; i <= width+area; i+=area) {
                 for (let j = 0; j <= height+area; j+=area) {
                     const shape = {x: i+Math.random()*area-maxR, y: j+Math.random()*area-height/5, t: 0, st: Math.random()*1000, am: minA+Math.random()*(maxA-minA), r: minR+Math.random()*(maxR-minR), xm: minXm+Math.random()*(maxXm-minXm)};
