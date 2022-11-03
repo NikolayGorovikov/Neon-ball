@@ -1205,13 +1205,13 @@ class Physics extends HTMLElement {
         this.ziNormalize();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
-        let scale = 1;
-        this.context.drawImage(image, 0, 0, 333*scale, 300*scale);
+        // let scale = 1;
+        // this.context.drawImage(image, 0, 0, 333*scale, 300*scale);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;
         this.context.shadowBlur = 0;
-        for (const i of this.drawings.rocks) if (i.zIndex === 1 )this.drawBySpots(i, this.context);
+        for (const i of this.drawings.rocks) if (i.zIndex === 1) this.drawBySpots(i, this.context);
         this.context.fill();
         this.context.closePath();
 

@@ -2257,6 +2257,11 @@ function mainStart() {
             setSettings("autoRestart", (window.gameSettings.autoRestart+1)%2);
             el.classList.add("active"+window.gameSettings.autoRestart);
         },
+        autoContinueSet(el) {
+            el.classList.remove("active"+window.gameSettings.autoContinue);
+            setSettings("autoContinue", (window.gameSettings.autoContinue+1)%2);
+            el.classList.add("active"+window.gameSettings.autoContinue);
+        },
         progressSaveSet(el) {
             el.classList.remove("active"+window.gameSettings.saveProgress);
             setSettings("saveProgress", (window.gameSettings.saveProgress+1)%2);
@@ -2324,8 +2329,8 @@ function mainStart() {
     const opacityTime = 1000;
     const topTime = 700;
     const gettingKf = 1.1;
-    const xPeriod = 2000;
-    const aPeriod = 2000;
+    const xPeriod = 1000;
+    const aPeriod = 1000;
     const startOpacity = 0.65;
     const noMoveTime = 800;
 
@@ -2403,8 +2408,8 @@ function mainStart() {
             const minR = geometric/70;
             const minA = Math.PI/16;
             const maxA = Math.PI/6;
-            const minXm = geometric/130;
-            const maxXm = geometric/90;
+            const minXm = geometric/110;
+            const maxXm = geometric/70;
             const width = window.innerWidth*4;
             const height = window.innerHeight*4;
             const area = maxR*4;
@@ -3050,8 +3055,18 @@ function mainStart() {
                 document.querySelector(`[data-link="menu"]`).append(canvasMenu);
                 document.querySelector(`[data-link="retry"]`).append(canvasRetry);
                 document.querySelector(`[data-link=${pause ? "continue" : "next"}]`).append(canvasNext);
+                if (window.gameSettings.autoContinue && !pause) {
+                    const el = document.querySelector(`[data-link="next"]`);
+                    el.append(document.createElement("div"));
+                    setTimeout(()=>{
+                        if (document.body.contains(el) && !switchFns.inStart) {
+                            el.dispatchEvent(new Event("pointerdown", {bubbles: true}));
+                            el.dispatchEvent(new Event("pointerup", {bubbles: true}));
+                        }
+                    }, 3000)
+                }
                 document.querySelector(".subMenu").addEventListener("pointerdown", (event) => {
-                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(name)+1)] ? `,[data-link="next"]` : ""}`)
+                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(name)+1)] ? `,[data-link="next"]` : ""}`);
                     if (el) makeButton(el);
                 })
             },
@@ -3504,6 +3519,7 @@ function mainStart() {
                     <div class="levelsTxt sbt" data-link="languageChose"><span>${trl("language")}</span></div>
                     <div class="levelsTxt sbt" data-link="refreshProgress"><span>${trl("refresh")}</span></div>
                     <div class="levelsTxt active${window.gameSettings.autoRestart}" data-link="autoRestartSet">${trl("restart")}</div>
+                    <div class="levelsTxt active${window.gameSettings.autoContinue}" data-link="autoContinueSet">${trl("autoContinue")}</div>
                     <div class="levelsTxt active${window.gameSettings.saveProgress}" data-link="progressSaveSet">${trl("save")}</div>
                    
                 </div>

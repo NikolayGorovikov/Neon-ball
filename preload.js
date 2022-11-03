@@ -148,6 +148,10 @@
             else window.playerInfo.gameSettings.language = window.playerInfo.gameSettings.language ? window.playerInfo.gameSettings.language : (new Set(all.languages)).has(l) ? l : "en";
             window.gameSettings = playerInfo.gameSettings;
 
+            for (const i in all.gameSettings) {
+                if (!window.gameSettings.hasOwnProperty(i)) window.gameSettings[i] = all.gameSettings[i];
+            }
+
             window._all = all;
 
             document.cookie = "max-age=2592000";

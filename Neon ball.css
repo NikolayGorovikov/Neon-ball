@@ -102,7 +102,6 @@ body{
         line-height: calc(100vh * 5 / 6 * 0.1 * 9 / 5);
     }
     .settings .levelsTxt:not(.settingsInner .levelsTxt){
-        height: calc(100vh * 5 / 12 * 0.1 * 9 / 5);
         line-height: calc(100vh * 5 / 12 * 0.1 * 9 / 5);
         border-radius: calc(100vh * 5 / 12 * 0.1 * 9 / 5 / 6);
     }
@@ -207,7 +206,6 @@ body{
         line-height: 18vw;
     }
     .settings .levelsTxt:not(.settingsInner .levelsTxt){
-        height: 9vw;
         line-height: 9vw;
         border-radius: 1.5vw;
     }
@@ -233,6 +231,10 @@ body{
 
 canvas{
     background-color: transparent;
+}
+
+.settings .levelsTxt:not(.settingsInner .levelsTxt){
+    flex-basis: 0;
 }
 
 .slider > div, .slider > div > div{
@@ -879,6 +881,26 @@ confetti-element{
     z-index: 3;
 }
 
+[data-link="next"] > div {
+    width: 0;
+    height: 100%;
+    background-color: rgb(252, 243, 211);
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: 3s linear forwards cover1;
+    transform: scale(1.05);
+}
+
+@keyframes cover1 {
+    0%{
+        width: 0;
+    }
+    100%{
+        width: 100%;
+    }
+}
 /*.soon{*/
 /*    -webkit-text-stroke: 1px rgb(252, 243, 211);*/
 /*}*/
