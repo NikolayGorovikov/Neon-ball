@@ -3055,7 +3055,7 @@ function mainStart() {
                 document.querySelector(`[data-link="menu"]`).append(canvasMenu);
                 document.querySelector(`[data-link="retry"]`).append(canvasRetry);
                 document.querySelector(`[data-link=${pause ? "continue" : "next"}]`).append(canvasNext);
-                if (window.gameSettings.autoContinue && !pause) {
+                if (window.gameSettings.autoContinue && !pause && levels[String(Number(name)+1)]) {
                     const el = document.querySelector(`[data-link="next"]`);
                     el.append(document.createElement("div"));
                     setTimeout(()=>{
@@ -3063,7 +3063,7 @@ function mainStart() {
                             el.dispatchEvent(new Event("pointerdown", {bubbles: true}));
                             el.dispatchEvent(new Event("pointerup", {bubbles: true}));
                         }
-                    }, 3000)
+                    }, 3000);
                 }
                 document.querySelector(".subMenu").addEventListener("pointerdown", (event) => {
                     const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(name)+1)] ? `,[data-link="next"]` : ""}`);
