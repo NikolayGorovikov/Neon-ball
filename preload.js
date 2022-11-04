@@ -81,6 +81,7 @@
             document.body.insertAdjacentHTML("beforeend", ` <div id="pitchIn"></div>`);
             window.onresize = null;
             mainStart();
+            window.scrollTo(0,0);
         }, 1000);
         document.querySelector(".downloading").innerHTML = "Done!";
         document.removeEventListener("pointermove", fn1);
