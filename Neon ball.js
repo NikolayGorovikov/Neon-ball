@@ -2162,9 +2162,11 @@ function mainStart() {
             pages.lvls.close();
             setTimeout(() => {
                 pages.home.open();
-                document.getElementById("home").style.animationDelay = "0.1s";
-                setTimeout(()=>document.getElementById("home").style.animationDelay = "", 500);
-            }, 500);
+                document.getElementById("home").style.animationDelay = "0.5s";
+            }, 0);
+            setTimeout(()=>{
+                document.getElementById("home").style.animationDelay = "";
+            }, 1000);
         },
         pause() {
             if (this.inStart) return;
@@ -3493,11 +3495,10 @@ function mainStart() {
                         setTimeout(() => document.querySelector(".video").remove(), 500)
                     } else {
                         document.querySelector(".video").style.animationDuration = "1s";
-                        document.querySelector(".video").style.animationTimingFunction = "cubic-bezier(.71,0,.66,-0.01)";
                         document.querySelector(".video").style.animationName = "removeCan";
                         setTimeout(() => {
                             setTimeout(() => document.querySelector(".video").remove(), 500);
-                        }, 500);
+                        }, 1000);
                     }
                 }
                 setTimeout(() => {

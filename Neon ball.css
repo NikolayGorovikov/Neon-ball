@@ -325,6 +325,7 @@ confetti-element{
     z-index: 2;
 }
 
+
 .confettiHolder{
     animation-name: lvlCleared;
 }
@@ -708,7 +709,6 @@ confetti-element{
     animation-duration: 0.5s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    opacity: 0;
     z-index: 1;
 }
 
