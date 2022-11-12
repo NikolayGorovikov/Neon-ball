@@ -129,7 +129,7 @@ body{
     width: 100%;
 }
 
-.infoText .infoTextIn{
+.infoText .infoTextIn, .settings .infoTextIn{
     width: 90%;
 }
 @media screen and (max-aspect-ratio: 5/6) {

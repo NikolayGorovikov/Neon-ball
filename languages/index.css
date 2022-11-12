@@ -1,0 +1,27 @@
+.holder{
+    display: flex;
+    background-color: #6e97bf;
+    width: auto;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+.translation{
+    display: flex;
+    flex-direction: row;
+}
+body{
+    display: flex;
+    flex-wrap: wrap;
+}
+.header{
+    font-size: 1.6em;
+    text-align: center;
+}
+.langName{
+    margin-right: 5%;
+    margin-left: 5%;
+    font-size: 1.5em;
+}
+body > *{
+    margin: 1%;
+}

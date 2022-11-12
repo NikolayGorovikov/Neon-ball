@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Languages Constructor</title>
+  <script defer src="languages.js"></script>
+  <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="../normalize.css">
+</head>
+<body>
+<button onclick="getNewJSON()">Скопировать JSON</button>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Добавить язык</h3>
+    <input type="text">
+    <button onclick="addLang(this.parentElement.querySelector(`input`).value)">Добавить</button>
+</div>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Удалить язык</h3>
+    <input type="text">
+    <button onclick="removeLang(this.parentElement.querySelector(`input`).value)">Удалить</button>
+</div>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Поменять название языка</h3>
+    Было <input type="text" id="inputMain1"> <br> Станет <input type="text" id="inputMain2"> <br>
+    <button onclick="renameLang(document.getElementById(`inputMain1`).value, document.getElementById(`inputMain2`).value)">Поменять</button>
+</div>
+</body>
+</html>
