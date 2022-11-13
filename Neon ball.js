@@ -2776,7 +2776,7 @@ function mainStart() {
     function trl(key) {
         const a = window._all.translations[key];
         if (!a) return "";
-        return a[window.gameSettings.language] ? a[window.gameSettings.language] : "";
+        return a[window.gameSettings.language] ? a[window.gameSettings.language] : "("+window.gameSettings.language+") " + a.en;
     }
 
     function drawStar(con, x, y, r){

@@ -45,7 +45,7 @@ function addLang(lang) {
         i.insertAdjacentHTML("beforeend", `
         <div class="translation">
             <div class="langName">${lang}</div>
-            <textarea rows="${2}" cols="40" class="innerTranslation"></textarea>
+            <textarea onblur="this.innerHTML = this.value" rows="${2}" cols="40" class="innerTranslation"></textarea>
         </div>
         `);
     }
@@ -72,7 +72,7 @@ function createHolder(name, obj) {
         inner += `
         <div class="translation">
             <div class="langName">${i}</div>
-            <textarea rows="${rows}" cols="40" class="innerTranslation">${obj[i]}</textarea>
+            <textarea rows="${rows}" onblur="this.innerHTML = this.value" cols="40" class="innerTranslation">${obj[i]}</textarea>
         </div>
         `;
     }
@@ -84,12 +84,54 @@ function createHolder(name, obj) {
     `;
 }
 readTextFile("../main.json", function (text) {
-    const json = JSON.parse(text);
-    const translations = json.translations;
-    const languages = json.languages
-    const languagesNames = json.languagesNames;
-    for (const i in translations) {
-        document.body.insertAdjacentHTML("beforeend",createHolder(i, translations[i]));
+    if (localStorage.getItem("data")) {
+        document.body.innerHTML = localStorage.getItem("data");
     }
-    document.body.insertAdjacentHTML("beforeend",createHolder("languages", languagesNames));
+    else {
+        const json = JSON.parse(text);
+        const translations = json.translations;
+        const languages = json.languages;
+        const languagesNames = json.languagesNames;
+        for (const i in translations) {
+            document.body.insertAdjacentHTML("beforeend",createHolder(i, translations[i]));
+        }
+        document.body.insertAdjacentHTML("beforeend",createHolder("languages", languagesNames));
+    }
 });
+
+function back() {
+    readTextFile("../main.json", function (text) {
+            document.body.innerHTML = `
+            <button onclick="getNewJSON()">Скопировать JSON</button>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Добавить язык</h3>
+    <input type="text">
+    <button onclick="addLang(this.parentElement.querySelector(\`input\`).value)">Добавить</button>
+</div>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Удалить язык</h3>
+    <input type="text">
+    <button onclick="removeLang(this.parentElement.querySelector(\`input\`).value)">Удалить</button>
+</div>
+<div style="background-color: white;">
+    <h3 style="text-align: center">Поменять название языка</h3>
+    Было <input type="text" id="inputMain1"> <br> Станет <input type="text" id="inputMain2"> <br>
+    <button onclick="renameLang(document.getElementById(\`inputMain1\`).value, document.getElementById(\`inputMain2\`).value)">Поменять</button>
+</div>
+<button ondblclick="back()">Откатить изменения (нажать два раза)</button>
+            `;
+            localStorage.setItem("data", "");
+            const json = JSON.parse(text);
+            const translations = json.translations;
+            const languages = json.languages;
+            const languagesNames = json.languagesNames;
+            for (const i in translations) {
+                document.body.insertAdjacentHTML("beforeend",createHolder(i, translations[i]));
+            }
+            document.body.insertAdjacentHTML("beforeend",createHolder("languages", languagesNames));
+    });
+}
+
+window.onclick = function (){
+    localStorage.setItem("data", document.body.innerHTML);
+}
