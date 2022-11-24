@@ -901,6 +901,20 @@ confetti-element{
         width: 100%;
     }
 }
+
+[color="31,2,67"], [color="31,2,67"] *{
+    color: rgb(247,212,243); !important;
+    border-color: rgb(247,212,243);
+}
+[color="31,2,67"] [data-link]{
+    box-shadow: 0 0 0.3em 0 rgb(170,52,124) inset, 0 0 0.3em 0 rgb(170,52,124);
+}
+[color="31,2,67"] [data-link="next"] div {
+    background-color: rgb(247,212,243);
+}
+[color="31,2,67"] .levelText div {
+    text-shadow: 0 0 20px rgb(170,52,124), 0 0 10px rgb(170,52,124);
+}
 /*.soon{*/
 /*    -webkit-text-stroke: 1px rgb(252, 243, 211);*/
 /*}*/

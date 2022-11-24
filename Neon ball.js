@@ -1,7 +1,48 @@
 // спасибо катя
 function mainStart() {
     let animationCounter = 0;
+    const gameMode = "test";
     var lastTime = 0;
+    window.themes = {
+        "main": {
+            colors: {
+                airColor: "rgba(165, 115, 41, 0.5)",
+                ballColor: "rgb(254, 254, 254)",
+                ballColor2: "254, 254, 254",
+                ballShadowColor: "rgb(254, 254, 254)",
+                endBackColor:"60, 30, 40",
+                endDrColor:"60, 30, 40",
+                finishColor:"252, 243, 211",
+                finishShadowColor:"175, 125, 46",
+                fixedBallColor:"250, 223, 160",
+                lineColor:"rgb(252, 243, 211)",
+                lineShadowColor:"rgb(175, 125, 46)",
+                mainBallColor:"rgb(37, 90, 181)",
+                mainBallColorShadowColor:"rgb(37, 90, 181)",
+                startBackColor:"21, 10, 13",
+                startDrColor:"100, 50, 57"
+            }
+        },
+        "2": {
+            colors: {
+                airColor: "rgba(165, 115, 41, 0.5)",
+                ballColor: "rgb(254, 254, 254)",
+                ballColor2: "254, 254, 254",
+                ballShadowColor: "rgb(254, 254, 254)",
+                endBackColor:"20, 1, 41",
+                endDrColor:"31,2,67",
+                finishColor:"247,212,243",
+                finishShadowColor:"170,52,124",
+                fixedBallColor:"250, 223, 160",
+                lineColor:"rgb(247,212,243)",
+                lineShadowColor:"rgb(170,52,124)",
+                mainBallColor:"rgb(253,246,224)",
+                mainBallColorShadowColor:"rgb(190, 149, 64)",
+                startBackColor:"21, 1, 53",
+                startDrColor:"31, 2, 67"
+            }
+        },
+    }
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
@@ -843,6 +884,10 @@ function mainStart() {
 
                     for (const i in obj.inPitch) this[i] = Number(obj.inPitch[i]);
                     for (const i in obj.pitchParams) window[i] = obj.pitchParams[i];
+                    if (obj.pitchParams.theme) {
+                        for (const i in window.themes[obj.pitchParams.theme].colors) window[i] = window.themes[obj.pitchParams.theme].colors[i];
+                    }
+                    else for (const i in window.themes.main.colors) window[i] = window.themes.main.colors[i];
 
                     this.g *= scale;
                     this.G *= scale;
@@ -2073,7 +2118,7 @@ function mainStart() {
             if (this.inStart) return;
             this.inStart = true;
             setTimeout(()=>this.inStart = false, 500);
-            if (!(new Set(availableLevels)).has(String(lvl))) return;
+            if (!(new Set(availableLevels)).has(String(lvl)) && gameMode !== "test") return;
             this.lvlStatus = "main";
             actualLevel = lvl;
             pages.lvls.close(true);
@@ -2716,7 +2761,6 @@ function mainStart() {
                     animation = window.requestAnimationFrame(main23);
                 });
                 timeout2 = setTimeout(()=>{
-                    // switchFns.slider.firstElementChild.style.transform = `translateX(0)`;
                     switchFns.stopSliding();
                     setOpacityAndScaleToAll(elems);
                 }, time2);
@@ -2782,7 +2826,7 @@ function mainStart() {
     function drawStar(con, x, y, r){
         const r2 = r*0.374;
         con.beginPath();
-        con.fillStyle = lineColor;
+        con.fillStyle = window.themes.main.colors.lineColor;
         con.moveTo(x, y+r);
         con.lineTo(x+r*Math.cos(-90/180*Math.PI), y+r*Math.sin(-90/180*Math.PI));
         con.lineTo(x+r2*Math.cos(-54/180*Math.PI), y+r2*Math.sin(-54/180*Math.PI));
@@ -2802,7 +2846,7 @@ function mainStart() {
     function drawQuestion(con, x, y, r) {
         con.beginPath();
         con.lineWidth = r/3;
-        con.strokeStyle = lineColor;
+        con.strokeStyle = window.themes.main.colors.lineColor;
         con.lineCap = "round";
 
         con.arc(x, y-r/2,r/2, Math.PI, Math.PI/3);
@@ -2812,7 +2856,7 @@ function mainStart() {
         con.stroke();
         con.closePath();
         con.beginPath();
-        con.fillStyle = lineColor;
+        con.fillStyle = window.themes.main.colors.lineColor;
         con.arc(x, y+r, r/3/Math.sqrt(3), 0, 2*Math.PI);
         con.fill();
         con.closePath();
@@ -2826,8 +2870,8 @@ function mainStart() {
             can.height = can.width;
             con.beginPath();
             con.lineCap = "round";
-            con.strokeStyle = lineColor;
-            con.shadowColor = lineShadowColor;
+            con.strokeStyle = window.themes.main.colors.lineColor;
+            con.shadowColor = window.themes.main.colors.lineShadowColor;
             con.shadowBlur = blur / 3;
             con.lineWidth = can.width / 10;
             con.moveTo(can.height * 0.4, can.height * 0.8);
@@ -2932,6 +2976,7 @@ function mainStart() {
                 con.closePath();
             }
             can.resize();
+            setTimeout(()=>window.requestAnimationFrame(()=>can.resize()));
             this.canvases = new Set([can]);
             canvases.add(can);
             pitch.elem.insertAdjacentHTML("beforeend", pause);
@@ -3034,7 +3079,7 @@ function mainStart() {
                 const lvl = `
     <div class="dark"></div>
     <div class="confettiHolder"></div>
-    <div class="lvlCleared">
+    <div class="lvlCleared" color="${window.endDrColor}">
         <div class="levelText">
             <div class="levelName">${trl("level")} ${name}</div>
             <div class="levelDoneText">${pause ? trl("pause") : trl("completed")}</div>
@@ -3225,8 +3270,8 @@ function mainStart() {
                             const w = can.width;
                             con.beginPath();
                             con.lineCap = "round";
-                            con.fillStyle = lineColor;
-                            con.shadowColor = lineShadowColor;
+                            con.fillStyle = window.themes.main.colors.lineColor;
+                            con.shadowColor = window.themes.main.colors.lineShadowColor;
                             con.shadowBlur = can.width/10;
                             con.moveTo(w*0.13, w*0.55);
                             con.lineTo(w*0.13,w*0.78);
@@ -3254,16 +3299,10 @@ function mainStart() {
                         canvases.add(can);
                         this.canvases.add(can);
                         soonCans.push(can);
-//                         innerLevels += `<div class="levelsInnerHolder" id="levelsHolder${j+1}">
-//                         <div class="levelsTxt">${trl(window.seasons[j].name)}</div>
-//                         <div class="soonHolder">
-//                         <div class="soon"></div>
-//                         <div class="soonLock"></div>
-// </div>
-//                     </div>`;
+
                         innerLevels += `<div class="levelsInnerHolder" id="levelsHolder${j + 1}">
                         <div class="levelsTxt">${trl(window.seasons[j].name)}</div>
-                        <div class="levelsHolder soonHolder" style="flex-direction: column; justify-content: center;">
+                        <div class="levelsHolder soonHolder" style="flex-direction: column; justify-content: center; margin: auto;">
                         <div class="soonLock levelBt" data-link="level.null" style="border: none; width: auto; height: auto; box-shadow: none; margin: 0;"></div>
                         <div class="soon levelsTxtTop" style="position: static;">${trl("soon")}</div>
                         <div class="question"></div>
@@ -3305,7 +3344,7 @@ function mainStart() {
                     let levelsIn = "";
                     for (let k = 1; k < 31; k++) {
                         let i = k+j*30;
-                        if ((new Set(availableLevels)).has(String(i))) {
+                        if ((new Set(availableLevels)).has(String(i)) || gameMode === "test") {
                             if ((new Set(passedLevels)).has(String(i))) {
                                 const can = document.createElement("canvas");
                                 can.classList.add("starCanvas");
@@ -3341,8 +3380,8 @@ function mainStart() {
                                 const w = can.width;
                                 con.beginPath();
                                 con.lineCap = "round";
-                                con.fillStyle = lineColor;
-                                con.shadowColor = lineShadowColor;
+                                con.fillStyle = window.themes.main.colors.lineColor;
+                                con.shadowColor = window.themes.main.colors.lineShadowColor;
                                 con.moveTo(w*0.13, w*0.55);
                                 con.lineTo(w*0.13,w*0.78);
                                 con.arc(0.26*w, w*0.78, 0.13*w,-Math.PI,-3/2*Math.PI, true);
@@ -3578,8 +3617,8 @@ function mainStart() {
                             const con = can.getContext("2d");
                             con.beginPath();
                             con.lineCap = "round";
-                            con.strokeStyle = lineColor;
-                            con.shadowColor = lineShadowColor;
+                            con.strokeStyle = window.themes.main.colors.lineColor;
+                            con.shadowColor = window.themes.main.colors.lineShadowColor;
                             con.shadowBlur = blur / 3;
                             con.lineWidth = can.width / 10;
                             con.moveTo(can.width / 10, can.width / 10);

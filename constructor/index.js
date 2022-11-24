@@ -4255,23 +4255,8 @@ function getAllJSON(){
         width: pitch.canvas.width,
         height: pitch.canvas.height,
         pitchParams: {
-            mainBallColor,
-            mainBallColorShadowColor,
-            lineColor,
-            lineShadowColor,
-            airColor,
-            ballColor,
-            ballShadowColor,
             lineWidth,
-            finishColor,
-            finishShadowColor,
-            startBackColor,
-            endBackColor,
-            startDrColor,
-            endDrColor,
-            ballColor2,
             elosLimit,
-            fixedBallColor
         }
     };
 
