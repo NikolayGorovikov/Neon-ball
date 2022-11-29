@@ -2118,7 +2118,7 @@ function mainStart() {
             if (this.inStart) return;
             this.inStart = true;
             setTimeout(()=>this.inStart = false, 500);
-            if (!(new Set(availableLevels)).has(String(lvl)) && gameMode !== "test") return;
+            if ((!(new Set(availableLevels)).has(String(lvl)) && gameMode !== "test") || !levels[lvl]) return;
             this.lvlStatus = "main";
             actualLevel = lvl;
             pages.lvls.close(true);
@@ -2949,6 +2949,7 @@ function mainStart() {
             }
         },
         openLevel(json, bol) {
+            if (!json) return;
             const obj = JSON.parse(json);
             const pt = new Physics(obj, bol);
             document.getElementById("pitchIn").append(pt.elem);
@@ -3369,7 +3370,7 @@ function mainStart() {
                                 nums.push(i);
                                 nums2.set(i, can);
                             }
-                            levelsIn += `<div class="levelBt" data-link="level.${i}" id="levelBtNumber${i}"><span>${i}</span></div>`;
+                            levelsIn += `<div class="levelBt" data-link="level.${i}" id="levelBtNumber${i}"><span>${(i-1) % 30+1}</span></div>`;
                         }
                         else {
                             const can = document.createElement("canvas");
