@@ -2999,6 +2999,7 @@ function mainStart() {
         },
         lvlCleared: {
             open(name = "1", pause) {
+                if (Number(name)) name = Number(name)%31+1;
                 const canvasMenu = document.createElement("canvas");
                 canvasMenu.resize = () => {
                     canvasMenu.width = pitchIn.getBoundingClientRect().width * 0.16 - 2*Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
