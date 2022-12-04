@@ -1580,7 +1580,7 @@ function mainStart() {
             return result < 0 ? result + 2 * Math.PI : result;
         }
 
-        findSmallestCircleTime(main, nomain) {
+        findSmallestCircleTime(main, nomain, time) {
             if (main.fixed && nomain.fixed) return new Shoot(Infinity, "b", null, {main, nomain});
             const v1 = main.vector;
             const v2 = nomain.vector;
@@ -2999,6 +2999,7 @@ function mainStart() {
         },
         lvlCleared: {
             open(name = "1", pause) {
+                const actualName = name;
                 if (Number(name)) name = Number(name)%31+1;
                 const canvasMenu = document.createElement("canvas");
                 canvasMenu.resize = () => {
@@ -3089,7 +3090,7 @@ function mainStart() {
 
         <div class="subMenu">
             <div data-link="menu"></div>
-            ${pause ? `<div data-link="continue"></div>` : levels[String(Number(name)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
+            ${pause ? `<div data-link="continue"></div>` : levels[String(Number(actualName)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
             <div data-link="retry"></div>
         </div>
     </div>
@@ -3104,7 +3105,7 @@ function mainStart() {
                 document.querySelector(`[data-link="menu"]`).append(canvasMenu);
                 document.querySelector(`[data-link="retry"]`).append(canvasRetry);
                 document.querySelector(`[data-link=${pause ? "continue" : "next"}]`).append(canvasNext);
-                if (window.gameSettings.autoContinue && !pause && levels[String(Number(name)+1)]) {
+                if (window.gameSettings.autoContinue && !pause && levels[String(Number(actualName)+1)]) {
                     const el = document.querySelector(`[data-link="next"]`);
                     el.append(document.createElement("div"));
                     setTimeout(()=>{
@@ -3115,7 +3116,7 @@ function mainStart() {
                     }, 3000);
                 }
                 document.querySelector(".subMenu").addEventListener("pointerdown", (event) => {
-                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(name)+1)] ? `,[data-link="next"]` : ""}`);
+                    const el = event.target.closest(`[data-link="menu"], [data-link="retry"] ${pause ? `,[data-link="continue"]` : levels[String(Number(actualName)+1)] ? `,[data-link="next"]` : ""}`);
                     if (el) makeButton(el);
                 })
             },
