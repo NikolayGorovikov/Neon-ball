@@ -71,6 +71,10 @@ function mainStart() {
             this.ay = obj.ay;
             this.mass = Number(obj.m);
             this.elos = Boolean(Number(obj.elos));
+            if (Number(obj.elos) === 2) {
+                this.elosBall = true;
+                this.elos = false;
+            }
             this.gravity = Boolean(Number(obj.gravity)) ? this : false;
             ({dragSpotMin: this.dragSpotMin, dragSpotMax: this.dragSpotMax, dragTime: this.dragTime, dragMinRadius: this.dragMinRadius, dragVMax: this.dragVMax, dragRadius: this.dragRadius} = obj);
             this.fixedBeforeTouch = Boolean(Number(obj.fixedBeforeTouch));
@@ -495,8 +499,10 @@ function mainStart() {
                 const tan = Math.abs((y - elem.y)/(x - elem.x));
                 const xsing = -(x - elem.x)/Math.abs(x - elem.x);
                 const ysing = -(y - elem.y)/Math.abs(y - elem.y);
-                const vx = v/Math.sqrt(tan**2+1)*xsing;
-                const vy = Math.sqrt(v**2-vx**2)*ysing;
+                let vx = v/Math.sqrt(tan**2+1)*xsing;
+                let vy = Math.sqrt(v**2-vx**2)*ysing;
+                if (Math.abs(vx/vy) > 250) vy = 0;
+                else if (Math.abs(vy/vx) > 250) vx = 0;
                 elem.draggingVector = [vx, vy];
             }
             else elem.onDragging = false;
@@ -1389,8 +1395,8 @@ function mainStart() {
                 const diff1 = x1 - a;
                 const diff2 = x2 - b;
 
-                x1 = a + diff1 * (main.elos ? elos1 : 1);
-                x2 = b + diff2 * (nomain.elos ? elos1 : 1);
+                x1 = a + diff1 * ((main.elos || main.elosBall) ? elos1 : 1);
+                x2 = b + diff2 * ((nomain.elos || nomain.elosBall) ? elos1 : 1);
             }
             const newYK = 1 / linesK * (-1);
             const xv1x = x1 / Math.sqrt(1 + Math.pow(linesK, 2));
@@ -3000,7 +3006,7 @@ function mainStart() {
         lvlCleared: {
             open(name = "1", pause) {
                 const actualName = name;
-                if (Number(name)) name = Number(name)%31+1;
+                if (Number(name)) name = (Number(name)-1)%30+1;
                 const canvasMenu = document.createElement("canvas");
                 canvasMenu.resize = () => {
                     canvasMenu.width = pitchIn.getBoundingClientRect().width * 0.16 - 2*Math.min(window.innerWidth*0.0085, window.innerHeight*0.0085);
