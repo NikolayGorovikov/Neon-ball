@@ -36,7 +36,7 @@ function mainStart() {
                 fixedBallColor:"250, 223, 160",
                 lineColor:"rgb(247,212,243)",
                 lineShadowColor:"rgb(170,52,124)",
-                mainBallColor:"rgb(253,246,224)",
+                mainBallColor:"rgb(255,235,156)",
                 mainBallColorShadowColor:"rgb(190, 149, 64)",
                 startBackColor:"21, 1, 53",
                 startDrColor:"31, 2, 67"
