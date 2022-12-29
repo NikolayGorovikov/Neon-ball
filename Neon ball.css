@@ -45,7 +45,7 @@ body{
     .switcher{
         margin-top: 2vh;
     }
-    .dark, .fullScreen, .confettiHolder{
+    .dark, snow-el, .fullScreen, .confettiHolder{
         top: 0;
         left: calc((100vh * 5 / 6 - 100vw)/2);
     }
@@ -78,7 +78,7 @@ body{
         line-height: calc(100vh * 5 / 6 * 0.1);
         top: calc(100vh * 5 / 6* 0.05 / 5);
     }
-    #pitchIn > *:not(.neonBall100, .dark,.confettiHolder, .fullScreen, .restartAnimation){
+    #pitchIn > *:not(.neonBall100, .dark, snow-el,.confettiHolder, .fullScreen, .restartAnimation){
         height: 100vh;
         width: calc(100vh * 5 / 6);
     }
@@ -149,7 +149,7 @@ body{
     .switcher{
         margin-top: calc(100vw * 6 / 5 / 50);
     }
-    #pitchIn > *:not(.neonBall100, .dark,.confettiHolder, .fullScreen, .restartAnimation) {
+    #pitchIn > *:not(.neonBall100, .dark, snow-el,.confettiHolder, .fullScreen, .restartAnimation) {
         height: calc(100vw * 6 / 5);
         width: 100vw;
     }
@@ -157,7 +157,7 @@ body{
         top: calc(100vw * 6 / 20);
         left: 25vw;
     }
-    .dark, .fullScreen, .confettiHolder{
+    .dark, snow-el, .fullScreen, .confettiHolder{
         top: calc((100vw * 6 / 5 - 100vh)/2);
         left: 0;
     }
@@ -922,7 +922,9 @@ confetti-element{
 /* @keyframes duration | timing-function | delay |
    iteration-count | direction | fill-mode | play-state | name */
 
-
+snow-el{
+    opacity: 0.6;
+}
 
 
 
