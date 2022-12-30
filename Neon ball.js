@@ -2405,6 +2405,7 @@ function mainStart() {
         constructor() {
             super();
             setTimeout(()=>{
+                this.id = Math.random();
                 this.can = document.createElement("canvas");
                 this.con = this.can.getContext("2d");
                 this.append(this.can);
@@ -3738,6 +3739,7 @@ function mainStart() {
                 <div class="infoTextIn">${trl("gratitudes")}</div>
                 <div class="infoTextIn mail" >${trl("contact")} - gorovikov.work@gmail.com</div>
                 <div class="infoTextIn"><div data-link="bonusLevel.bonus 3" id="video"><img id="img"></div></div>
+                <div class="infoTextIn">#PureJsNoLibraries</div>
                 <div class="infoTextIn">&copy${trl("copy")}</div>
                 
             </div>
