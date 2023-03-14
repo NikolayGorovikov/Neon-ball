@@ -481,6 +481,7 @@ function mainStart() {
         }
 
         startDragging(elem, x, y, id) {
+            if ([...this.drags.entries()].map(i=>i[1]).includes(elem)) return;
             if (!this.play) return;
             this.drags.set(id, elem);
             elem.onDragging = true;
@@ -2097,8 +2098,11 @@ function mainStart() {
         if (!pitch) return;
         const x1 = event.pageX - pitch.elem.getBoundingClientRect().left;
         const y1 = event.pageY - pitch.elem.getBoundingClientRect().top;
+        let closest = [undefined, Infinity];
         for (const i of pitch.clickable) {
-            if (Math.sqrt(Math.pow(i.x - x1, 2) + Math.pow(i.y - y1, 2)) <= i.radius+2*lineWidth) {
+            const ln = Math.sqrt(Math.pow(i.x - x1, 2) + Math.pow(i.y - y1, 2))
+            if (closest[1] > ln) closest = [i, ln];
+            if (ln <= i.radius+2*lineWidth) {
                 if (i.touchRemove) i.remove();
                 else if (i.fixedBeforeTouch) {
                     pitch.startDragging(i, event.pageX, event.pageY, event.pointerId);
@@ -2107,6 +2111,15 @@ function mainStart() {
                 return;
             }
         }
+        if (closest[0] && (closest[1] < Math.sqrt(pitch.width*pitch.height/200) || closest[1] < closest[0].radius*1.25)) {
+            const i = closest[0];
+            if (i.touchRemove) i.remove();
+            else if (i.fixedBeforeTouch) {
+                pitch.startDragging(i, event.pageX, event.pageY, event.pointerId);
+            }
+            else if (i.boombastick) i.explodeStart();
+        }
+
     });
 
     function removeDark() {
