@@ -2429,7 +2429,6 @@ function mainStart() {
                 this.w = this.can.width = window.innerWidth;
                 this.h = this.can.height = window.innerHeight;
                 this.amountOfSnowflakes = 80+Math.sqrt(this.w*this.h)/40;
-                console.log(this.amountOfSnowflakes);
                 this.pw = Math.ceil(this.w/Math.sqrt((this.w*this.h/this.amountOfSnowflakes)));
                 this.rmax = this.w/this.pw/this.occupancy;
                 this.rmin = this.rmax/2;
