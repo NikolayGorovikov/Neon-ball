@@ -1110,7 +1110,7 @@ class drawObj {
     }
 }
 const image = new Image();
-image.src = "snowingsnow.png";
+image.src = "bruh.jpg";
 var time;
 var prev = Date.now();
 var speed = 1;
@@ -1205,8 +1205,8 @@ class Physics extends HTMLElement {
         this.ziNormalize();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.createGradient(this.context);
-        // let scale = 0.24;
-        // this.context.drawImage(image, 0, 0, 2048*scale, 2896*scale);
+        let scale = 1;
+         // this.context.drawImage(image, 0, 0, 400*scale, 300*scale);
 
         this.context.beginPath();
         this.context.fillStyle = this.rocksGr;
