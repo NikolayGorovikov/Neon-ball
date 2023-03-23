@@ -602,9 +602,10 @@ function mainStart() {
             passedLevels.push(String(actualLevel));
             window.availableLevels = [...(new Set(window.availableLevels))];
             window.passedLevels = [...(new Set(window.passedLevels))];
+            if (!window.playerInfo.levelsData[actualLevel].completeAttempt) setLevelsData(actualLevel, "completeAttempt", window.playerInfo.levelsData[actualLevel].attempt);
             if (window.gameSettings.saveProgress) {
-                document.cookie = "passedLevels = " + passedLevels.join(",");
-                document.cookie = "availableLevels = " + availableLevels.join(",");
+                localStorage.setItem("passedLevels", passedLevels.join(","));
+                localStorage.setItem("availableLevels", availableLevels.join(","));
             }
             pages.lvlCleared.open(actualLevel);
         }
@@ -857,7 +858,7 @@ function mainStart() {
             stop = () => {
                 this.stop();
             }
-
+            setLevelsData(obj.__levelId, "attempt", window.playerInfo.levelsData[obj.__levelId]?.attempt ? Number(window.playerInfo.levelsData[obj.__levelId]?.attempt)+1 : 1);
             this.elem = document.createElement("div");
             this.elem.classList.add("canvasHolder");
             this.elem.physics = this;
@@ -2019,7 +2020,8 @@ function mainStart() {
 
     function setSettings(prop, val) {
         window.gameSettings[prop] = val;
-        document.cookie = "gameSettings = "+decodeURIComponent(JSON.stringify(window.gameSettings));
+        // document.cookie = "gameSettings = "+decodeURIComponent(JSON.stringify(window.gameSettings));
+        localStorage.setItem("gameSettings", decodeURIComponent(JSON.stringify(window.gameSettings)));
     }
 
     function createFromJson(json) {
@@ -2280,8 +2282,10 @@ function mainStart() {
             setTimeout(()=>this.inStart = false, 5900);
             window.passedLevels = [...window._all.passedLevels];
             window.availableLevels = [...window._all.alwaysAvailable];
-            document.cookie = "passedLevels = " + passedLevels.join(",");
-            document.cookie = "availableLevels = " + availableLevels.join(",");
+            window.playerInfo.levelsData = {};
+            localStorage.setItem("levelsData", "");
+            localStorage.setItem("passedLevels", passedLevels.join(","));
+            localStorage.setItem("availableLevels", availableLevels.join(","));
             setTimeout(()=>{
                 const amount = el.children.length;
                 const arr1 = [];
@@ -2333,8 +2337,10 @@ function mainStart() {
             setSettings("saveProgress", (window.gameSettings.saveProgress+1)%2);
             el.classList.add("active"+window.gameSettings.saveProgress);
             if (window.gameSettings.saveProgress) {
-                document.cookie = "passedLevels = " + passedLevels.join(",");
-                document.cookie = "availableLevels = " + availableLevels.join(",");
+                // document.cookie = "passedLevels = " + passedLevels.join(",");
+                // document.cookie = "availableLevels = " + availableLevels.join(",");
+                localStorage.setItem("passedLevels", passedLevels.join(","));
+                localStorage.setItem("availableLevels", availableLevels.join(","));
             }
         },
         languageChose(){
@@ -3233,6 +3239,7 @@ function mainStart() {
     <div class="dark"></div>
     <div class="confettiHolder"></div>
     <div class="lvlCleared" color="${window.endDrColor}">
+        <div class="attempt">${!String(name).includes("bonus") ? (window.playerInfo.levelsData[actualLevel].completeAttempt ? trl("completeAttempt") + " "+window.playerInfo.levelsData[actualLevel].completeAttempt : trl("attempt") + " "+window.playerInfo.levelsData[actualLevel].attempt) : ""}</div>
         <div class="levelText">
             <div class="levelName">${trl("level")} ${name}</div>
             <div class="levelDoneText">${pause ? trl("pause") : trl("completed")}</div>
@@ -3243,6 +3250,10 @@ function mainStart() {
             ${pause ? `<div data-link="continue"></div>` : levels[String(Number(actualName)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
             <div data-link="retry"></div>
         </div>
+        
+        
+        
+        
     </div>
     `;
                 pitchIn.insertAdjacentHTML("beforeend", lvl);
@@ -3893,4 +3904,13 @@ function mainStart() {
 
     pages.home.open();
     window.addEventListener("touchend", (e)=>e.preventDefault(), true);
+    function setLevelsData(level, prop, value) {
+        if (window.playerInfo.levelsData[level]) window.playerInfo.levelsData[level][prop] = value;
+        else {
+            window.playerInfo.levelsData[level] = {};
+            window.playerInfo.levelsData[level][prop] = value;
+        }
+        if (window.gameSettings.saveProgress) localStorage.setItem("levelsData", decodeURIComponent(JSON.stringify(window.playerInfo.levelsData)));
+    }
+
 }

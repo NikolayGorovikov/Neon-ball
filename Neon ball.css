@@ -111,6 +111,9 @@ body{
     .levelName, .mailCopied{
         font-size: calc(100vh/15);
     }
+    .attempt {
+        font-size: calc(100vh/15 * 0.82);
+    }
     .infoText > *:not(.levelsTxtTop), .infoTextIn{
         font-size: calc(100vh/30);
     }
@@ -214,6 +217,9 @@ body{
     }
     .levelName, .mailCopied{
         font-size: calc(100vw * 6 / 5/15);
+    }
+    .attempt {
+        font-size: calc(100vw * 6 / 5/15*0.82);
     }
     .infoText > *:not(.levelsTxtTop), .infoTextIn{
         font-size: calc(100vw * 6 / 5/30);
@@ -382,7 +388,7 @@ confetti-element{
     }
 }
 
-.levelText, .welcome, .levelsTxt, .levelsTxtTop{
+.levelText, .welcome, .levelsTxt, .levelsTxtTop, .attempt{
     color: rgb(252, 243, 211);
     text-shadow: 0 0 20px rgb(175, 125, 46), 0 0 10px rgb(175, 125, 46);
     font-family: "Ubuntu Condensed";
@@ -924,6 +930,13 @@ confetti-element{
 
 snow-el{
     opacity: 0.6;
+}
+
+.attempt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
 }
 
 

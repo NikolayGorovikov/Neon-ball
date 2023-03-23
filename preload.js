@@ -133,6 +133,7 @@
         readTextFile("main.json", function (text) {
             const all = JSON.parse(text);
             window.levels = all.levels;
+            for (const i in window.levels) window.levels[i].__levelId = i;
             window.seasons = all.seasons;
             window.alwaysAvailable = all.alwaysAvailable;
             window.passedLevels = all.passedLevels;
@@ -155,7 +156,6 @@
 
             window._all = all;
 
-            document.cookie = "max-age=2592000";
             for (let i in levels) levels[i] = JSON.stringify(levels[i]);
             window.version = all.version;
             a();
@@ -164,10 +164,11 @@
     }
 
     function getCookie(name) {
-        let matches = document.cookie.match(new RegExp(
-            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-        ));
-        return matches ? decodeURIComponent(matches[1]) : undefined;
+        // let matches = document.cookie.match(new RegExp(
+        //     "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        // ));
+        // return matches ? decodeURIComponent(matches[1]) : undefined;
+        return localStorage.getItem(name);
     }
 
     function a(){
@@ -180,7 +181,8 @@
         window.playerInfo = {
             availableLevels: getCookie("availableLevels") ? getCookie("availableLevels").split(","): undefined,
             passedLevels: getCookie("passedLevels") ? getCookie("passedLevels").split(",") : undefined,
-            gameSettings: getCookie("gameSettings") ? JSON.parse(getCookie("gameSettings")) : undefined
+            gameSettings: getCookie("gameSettings") ? JSON.parse(getCookie("gameSettings")) : undefined,
+            levelsData: localStorage.getItem("levelsData") ? JSON.parse(localStorage.getItem("levelsData")) : {}
         };
         //
     }
