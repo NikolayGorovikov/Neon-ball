@@ -3239,7 +3239,7 @@ function mainStart() {
     <div class="dark"></div>
     <div class="confettiHolder"></div>
     <div class="lvlCleared" color="${window.endDrColor}">
-        <div class="attempt">${!String(name).includes("bonus") ? (window.playerInfo.levelsData[actualLevel].completeAttempt ? trl("completeAttempt") + " "+window.playerInfo.levelsData[actualLevel].completeAttempt : trl("attempt") + " "+window.playerInfo.levelsData[actualLevel].attempt) : ""}</div>
+        
         <div class="levelText">
             <div class="levelName">${trl("level")} ${name}</div>
             <div class="levelDoneText">${pause ? trl("pause") : trl("completed")}</div>
@@ -3249,6 +3249,7 @@ function mainStart() {
             <div data-link="menu"></div>
             ${pause ? `<div data-link="continue"></div>` : levels[String(Number(actualName)+1)] ? `<div data-link="next"></div>` : `<div data-link="next" style="opacity: 0.5;"></div>`}
             <div data-link="retry"></div>
+            <div class="attempt">${!String(name).includes("bonus") ? (window.playerInfo.levelsData[actualLevel].completeAttempt ? trl("completeAttempt") + " "+window.playerInfo.levelsData[actualLevel].completeAttempt : trl("attempt") + " "+window.playerInfo.levelsData[actualLevel].attempt) : ""}</div>
         </div>
         
         
