@@ -1,8 +1,6 @@
 // спасибо катя
 function mainStart() {
-    let animationCounter = 0;
     const gameMode = "test";
-    var lastTime = 0;
     window.themes = {
         "main": {
             colors: {
@@ -3321,7 +3319,7 @@ function mainStart() {
             ${document.querySelector(".dark") ? "" : `<div class="dark"></div>`}
            
             <div id="home">
-                <snow-el></snow-el>
+<!--                snow-el was here, winter is ended, sad, no snow anymore-->
                 <div class="welcome">
                     <div class="welcomeTo">welcome to</div>
                     <div class="welcomeName"><span id="lt1">N</span>e<span id="lt2">o</span><span id="lt3">n</span> Ball</div>

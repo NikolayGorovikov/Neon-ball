@@ -101,6 +101,7 @@
         });
         setTimeout(()=>{
             if (window.added === 3 && !window.cssLoaded) allLoaded();
+            else document.querySelector(".downloading").innerHTML = "Try to draw!";
         }, 3000);
         const img = document.createElement("img");
         img.src = "rolling.png";
