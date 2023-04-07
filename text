@@ -1,0 +1,12 @@
+restartConditions
+cords: Number | -i | i;   i is Infinity;
+1. prop outOfZone, inZone: it is possible to give props inside one obj, or if ypu would like to create few of them you should put an array filled with objects
+values: x1,x2,y1,y2 - cords;
+id - id of element, has to be set in JSON, prop "id" of ball;
+once: 1 | not mentioned - if (1) then will only check the condition once, else will check it since time set;
+time: Number - sets time since that condition check begins;
+allLaunched: 1 | not mentioned - if (1) then will count time since all balls have been launched, else will count since main ball was launched;
+sinceStart: 1 | not mentioned - if (1) then will count since pitch construction, else will count time since the very first ball was launched;
+
+2. timeSinceAllLaunched: time since all launchable balls were launched;
+3. timeSinceStart: time since the first ball was launched;

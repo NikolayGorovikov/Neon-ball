@@ -137,7 +137,7 @@ function mainStart() {
                 this.ay = this.ay + ay;
             }
             if (this.main && this.parentElement.finish && a) {
-                const f = this.parentElement.finish;
+                const f = this.parentElement.finish.actualSize;
                 let goal;
                 if (this.getL(this.x, this.y, f.x1, f.y1) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x2, f.y1) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x1, f.y2) <= this.radius+lineWidth/2 || this.getL(this.x, this.y, f.x2, f.y2) <= this.radius+lineWidth/2 || (this.x >= f.x1-this.radius-lineWidth/2 && this.x <= f.x2+this.radius+lineWidth/2 && this.y >= f.y1-this.radius-lineWidth/2 && this.y <= f.y2+this.radius+lineWidth/2)) goal = true;
                 if (goal) this.parentElement.win(this);
@@ -278,6 +278,15 @@ function mainStart() {
         amount = 45;
         speed = 5;
 
+        get actualSize() {
+            return {
+                x1: this.x1,
+                y1: this.y1,
+                x2: this.x1+this.a*this.xAmount,
+                y2: this.y1+this.a*this.yAmount
+            };
+        }
+
         main() {
             const x1 = this.xx1 = Math.min(this.x1, this.x2);
             const y1 = this.yy1 = Math.min(this.y1, this.y2);
@@ -287,13 +296,11 @@ function mainStart() {
             const yAmount = this.yAmount = Math.trunc(Math.abs(this.y1 - this.y2) / a);
             const xm = this.xm = (Math.abs(this.x1 - this.x2) / a - xAmount) / 2;
             const ym = this.ym = (Math.abs(this.y1 - this.y2) / a - yAmount) / 2;
-
             this.levels = xAmount + yAmount - 2;
         }
 
         constructor(obj, pitch) {
             this.pitch = pitch;
-            pitch.finish = this;
             this.x1 = Math.min(obj.x1, obj.x2);
             this.x2 = Math.max(obj.x1, obj.x2);
             this.y1 = Math.min(obj.y1, obj.y2);
