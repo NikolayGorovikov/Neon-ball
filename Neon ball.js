@@ -1230,7 +1230,10 @@ function mainStart() {
         }
 
         inMain(first) {
-            if (first) this.time = performance.now();
+            if (first) {
+                this.time = performance.now();
+
+            }
             if (!this.play) return;
             this.#movie = window.requestAnimationFrame((time) => {
                 let timed = time-this.time;
@@ -1240,7 +1243,6 @@ function mainStart() {
                 }
                 this.main((timed)/1000, (timed)/1000);
                 this.inMain();
-                this.actualFPS = 1000/(timed);
                 this.time = time;
                 if (window.gameSettings.autoRestart) {
                     this.timeBeforeRestartConditionsCheck -= timed;
@@ -3299,7 +3301,7 @@ function mainStart() {
         },
         home: {
             open() {
-                const ph = new Physics(JSON.parse(levels.home));
+                const ph = new Physics(JSON.parse(levels.home), true);
                 const fr = document.createElement("div");
                 const startCanvas = document.createElement("canvas");
 
@@ -3629,7 +3631,7 @@ function mainStart() {
                 switchFns.inMoving = 0;
                 let x;
                 switchFns.slider.addEventListener("pointerdown", (event)=>{
-                    if (switchFns.isDragging ||!available) return;
+                    if (switchFns.isDragging ||!available || makeButton.isOpening) return;
                     switchFns.isDragging = true;
                     switchFns.inMoving = 0;
                     switchFns.actualId = event.pointerId;
@@ -3863,7 +3865,9 @@ function mainStart() {
             }, timeIn);
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
-                if (isNaN(Number(switchFns.inMoving)) || switchFns.inMoving < 4) {
+                if ((isNaN(Number(switchFns.inMoving)) || switchFns.inMoving < 4) && !makeButton.isOpening) {
+                    makeButton.isOpening = true;
+                    setTimeout(()=>makeButton.isOpening = false, 400);
                     if (el.dataset.link.indexOf(".") !== -1) {
                         switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
                     } else switchFns[el.dataset.link](el);

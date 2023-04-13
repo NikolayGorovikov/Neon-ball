@@ -446,29 +446,6 @@ confetti-element{
     transform: scale(1.2) scaleY(1.2);
 }
 
-@font-face {
-    font-family: 'Neon';
-    src: url('fonts/neon/beonmedium-7z34-webfont.eot');
-}
-
-@font-face {
-    font-family: 'Neon';
-    src: url("fonts/neon/beonmedium-7z34-webfont.woff2") format('woff2'),
-    url("fonts/neon/beonmedium-7z34-webfont.woff") format('woff'),
-    url('fonts/neon/beonmedium-7z34-webfont.ttf') format('truetype');
-
-}
-
-@font-face {
-    font-family: 'Ubuntu Condensed';
-    src: url('fonts/text/ubuntucondensed-regular-webfont.eot');
-}
-
-@font-face {
-    font-family: 'Ubuntu Condensed';
-    src: url('fonts/text/UbuntuCondensed-Regular.ttf') format('truetype');
-
-}
 
 #lt1, #lt2, #lt3{
     opacity: 1;
