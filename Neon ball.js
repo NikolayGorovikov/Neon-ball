@@ -56,6 +56,32 @@ function mainStart() {
         nearBalls = new Set();
         #vector = [0.00000001, 0.00000001];
         #fixedBeforeTouch = false;
+        #draggingVector = [0,0];
+        #onDragging = false;
+        ff = false;
+        get fixed() {
+            return this.ff;
+        }
+
+        set fixed(d) {
+            this.ff = d;
+        }
+
+        set draggingVector(s){
+            this.#draggingVector = s;
+        }
+
+        get draggingVector() {
+            return this.#draggingVector;
+        }
+
+        get onDragging() {
+            return this.#onDragging;
+        }
+
+        set onDragging(p) {
+            this.#onDragging = p;
+        }
 
         constructor(obj, pitch) {
             this.parentElement = pitch;
@@ -1816,7 +1842,7 @@ function mainStart() {
             const m = this.mass;
             const getGravity = this.parentElement.getGravity.bind(this.parentElement);
             this.remove();
-            this.mass = -this.#f * 10000000;
+            this.mass = -this.#f * 4000000;
             this.exploded = true;
             const gr = {
                 handler: this,
