@@ -18,7 +18,10 @@ function mainStart() {
                 mainBallColor:"rgb(37, 90, 181)",
                 mainBallColorShadowColor:"rgb(37, 90, 181)",
                 startBackColor:"21, 10, 13",
-                startDrColor:"100, 50, 57"
+                startDrColor:"100, 50, 57",
+                destColor:"rgb(230, 50, 35)",
+                destColor2:"230, 50, 35",
+                destShadowColor:"rgb(230, 50, 35)"
             }
         },
         "2": {
@@ -37,7 +40,10 @@ function mainStart() {
                 mainBallColor:"rgb(255,235,156)",
                 mainBallColorShadowColor:"rgb(190, 149, 64)",
                 startBackColor:"21, 1, 53",
-                startDrColor:"31, 2, 67"
+                startDrColor:"31, 2, 67",
+                destColor:"rgb(230, 50, 35)",
+                destColor2:"230, 50, 35",
+                destShadowColor:"rgb(230, 50, 35)"
             }
         },
     }
@@ -95,6 +101,7 @@ function mainStart() {
             this.ay = obj.ay;
             this.mass = Number(obj.m);
             this.elos = Boolean(Number(obj.elos));
+            this.dest = Boolean(Number(obj.dest));
             if (Number(obj.elos) === 2) {
                 this.elosBall = true;
                 this.elos = false;
@@ -195,18 +202,13 @@ function mainStart() {
         renderCanvas(con, can, time) {
             con.beginPath();
             let col;
-            col = con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor : this.fixed ? lineColor : ballColor;
+            col = con.strokeStyle = con.fillStyle = this.main ? mainBallColor : this.fixedBeforeTouch ? ballColor : this.dest ? destColor : this.fixed ? lineColor : ballColor;
             con.lineWidth = lineWidth;
             con.shadowBlur = blur;
             con.lineCap = 'round';
-            con.shadowColor = this.main ? mainBallColorShadowColor : this.fixedBeforeTouch ? ballShadowColor : this.fixed ? lineShadowColor : ballShadowColor;
+            con.shadowColor = this.main ? mainBallColorShadowColor : this.fixedBeforeTouch ? ballShadowColor : this.dest ? destShadowColor : this.fixed ? lineShadowColor : ballShadowColor;
             if (this.fixedBeforeTouch && time && !this.onDragging) {
-                // const kf = Math.abs(Math.sin(2 * (this.time + time)));
                 this.time += time;
-                // const color = `rgb(${Math.round(this.fl0 + (this.bl0 - this.fl0) * kf)}, ${Math.round(this.fl1 + (this.bl1 - this.fl1) * kf)}, ${Math.round(this.fl2 + (this.bl2 - this.fl2) * kf)})`;
-                // con.strokeStyle = color;
-                // con.shadowColor = color;
-                // con.lineWidth *= (1 + (1 - kf) / 5);
                 const arr = col.split(")");
                 arr[0] = arr[0].replace("rgb", "rgba");
                 arr[1] = ","+(Math.cos(this.time*3-3)/2+0.5);
@@ -421,11 +423,12 @@ function mainStart() {
     }
 
     class Line {
-        constructor({x1, x2, y1, y2}) {
+        constructor({x1, x2, y1, y2, dest}) {
             this.x1 = x1;
             this.y1 = y1;
             this.x2 = x2;
             this.y2 = y2;
+            this.dest = Boolean(Number(dest));
             this.main();
         }
 
@@ -998,6 +1001,7 @@ function mainStart() {
                             line.x2 *= scalex;
                             line.y1 *= scaley;
                             line.y2 *= scaley;
+                            line.dest = i.dest
                             return new Line(line);
                         });
                         i.spots = i.spots.map(spot => {
@@ -1267,7 +1271,12 @@ function mainStart() {
                     this.time = time;
                     timed = 0;
                 }
-                this.main((timed)/1000, (timed)/1000);
+                let tt = timed;
+                while (tt > 17) {
+                    this.main(0.016666667, 0.016666667);
+                    tt -= 16.666667;
+                }
+                this.main((tt)/1000, (tt)/1000);
                 this.inMain();
                 this.time = time;
                 if (window.gameSettings.autoRestart) {
@@ -1278,14 +1287,20 @@ function mainStart() {
                         this.timeBeforeRestartConditionsCheck = 200;
                         const result = this.checkRestartConditions();
                         if (result) {
-                            this.timeBeforeRestartConditionsCheck = Infinity;
-                            restartLvl(true);
-                            generateRetryPic();
-                            setTimeout(()=>start(), 800);
+                            this.restart();
                         }
                     }
                 }
             });
+        }
+
+        restart() {
+            if (this.cleared) return;
+            this.cleared = true;
+            this.timeBeforeRestartConditionsCheck = Infinity;
+            restartLvl(true);
+            generateRetryPic();
+            setTimeout(()=>start(), 800);
         }
 
         stop() {
@@ -1370,6 +1385,8 @@ function mainStart() {
             const yv1y = y1 / Math.sqrt(1 + Math.pow(1 / newYK, 2));
             const yv1x = yv1y / newYK;
             main.vector = [(xv1x + yv1x), (xv1y + yv1y)];
+
+            if (line.dest && main.main) this.restart();
         }
 
         createCircleVector(main, nomain) {
@@ -1446,6 +1463,9 @@ function mainStart() {
             const resultNotMain = [(xv2x + yv2x), (xv2y + yv2y)];
             main.vector = resultMain;
             nomain.vector = resultNotMain;
+
+            if (main.main && nomain.dest) this.restart();
+            else if (nomain.main && main.dest) this.restart();
         }
 
         changeVectors(time) {
@@ -1737,15 +1757,15 @@ function mainStart() {
                 let x = (b-b2)/(k2-k);
                 if (ln.isInRange(x)) return new Shoot(t, "bl", null, {cr, ln});
                 {
-                    const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1});
-                    const time2 = this.findSmallestCircleSpotTime(cr, {x: ln.x2, y: ln.y2});
+                    const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1, dest: ln.dest});
+                    const time2 = this.findSmallestCircleSpotTime(cr, {x: ln.x2, y: ln.y2, dest: ln.dest});
 
                     return time1.t < time2.t ? time1 : time2;
                 }
             }
             else {
-                const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1});
-                const time2 = this.findSmallestCircleSpotTime(cr, {x: ln.x2, y: ln.y2});
+                const time1 = this.findSmallestCircleSpotTime(cr, {x: ln.x1, y: ln.y1, dest: ln.dest});
+                const time2 = this.findSmallestCircleSpotTime(cr, {x: ln.x2, y: ln.y2, dest: ln.dest});
 
                 return time1.t < time2.t ? time1 : time2;
             }
@@ -1776,7 +1796,7 @@ function mainStart() {
             const y2 = sp.y;
             const k1 = (y1 - y2) / (x1 - x2);
             const k2 = -1 / k1;
-            this.createLineCircleVector(cr, {k: k2});
+            this.createLineCircleVector(cr, {k: k2, dest: sp.dest});
         }
 
         get airLines() {
@@ -3892,8 +3912,10 @@ function mainStart() {
             document.removeEventListener("pointermove", fn);
             el.removeEventListener("pointerup", fn2);
                 if ((isNaN(Number(switchFns.inMoving)) || switchFns.inMoving < 4) && !makeButton.isOpening) {
-                    makeButton.isOpening = true;
-                    setTimeout(()=>makeButton.isOpening = false, 400);
+                    if (el.dataset.link !== "pause") {
+                        makeButton.isOpening = true;
+                        setTimeout(()=>makeButton.isOpening = false, 500);
+                    }
                     if (el.dataset.link.indexOf(".") !== -1) {
                         switchFns[el.dataset.link.split(".")[0]](el.dataset.link.split(".")[1], el, timeIn);
                     } else switchFns[el.dataset.link](el);

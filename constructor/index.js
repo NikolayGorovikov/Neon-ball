@@ -459,6 +459,8 @@ var startDrColor = "100, 50, 57";
 var endDrColor = "60, 30, 40";
 var ballColor2 = "254, 254, 254";
 var fixedBallColor = "250, 223, 160";
+var destColor = "255, 254, 253";
+var destShadowColor = "230, 50, 35";
 
 class Shoot {
     constructor(time, type, target, data) {
